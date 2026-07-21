@@ -31,4 +31,5 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         run: node daily-digest.js
