@@ -1,0 +1,29 @@
+{
+  "name": "rona-erp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "build:packages": "turbo run build --filter=@rona/config",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.15.1",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "devDependencies": {
+    "turbo": "^2.10.5",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,4 +1,0 @@
-# Rona ERP
-
-sUAS
-New
