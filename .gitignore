@@ -1,3 +1,4 @@
 # directories
 /.turbo
 /node_modules/
+/.agents 
