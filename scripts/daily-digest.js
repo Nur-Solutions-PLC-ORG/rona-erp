@@ -1,5 +1,5 @@
-const { Octokit } = require("@octokit/rest");
-const nodemailer = require("nodemailer");
+import { Octokit } from "@octokit/rest";
+import nodemailer from "nodemailer";
 
 const octokit = new Octokit({ auth: process.env.GH_TOKEN });
 const ORG = process.env.GH_ORG;
