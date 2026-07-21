@@ -9,4 +9,9 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('status')
+  getStatus(): string {
+    return 'Server is up and running!';
+  }
 }
