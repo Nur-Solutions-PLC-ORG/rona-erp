@@ -206,6 +206,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       turbo:
         specifier: ^2.10.5
@@ -219,6 +223,15 @@ importers:
       '@rona/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@rona/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@rona/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@rona/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -292,6 +305,15 @@ importers:
       '@rona/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@rona/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@rona/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@rona/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -370,6 +392,12 @@ importers:
         version: 8.64.0(eslint@9.39.5(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3)
 
   packages/config: {}
+
+  packages/types: {}
+
+  packages/utils: {}
+
+  packages/validation: {}
 
 packages:
 

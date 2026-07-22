@@ -1,5 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
+import type { ServerStatus } from '@rona/types';
+import { ServerStatusSchema } from '@rona/validation';
 
 @Controller()
 export class AppController {
@@ -11,7 +13,14 @@ export class AppController {
   }
 
   @Get('status')
-  getStatus(): string {
-    return 'Server is up and running!';
+  getStatus(): ServerStatus {
+    const statusData: ServerStatus = {
+      ok: true,
+      message: 'Operational',
+    };
+
+    const parsedStatusData = ServerStatusSchema.parse(statusData);
+
+    return parsedStatusData;
   }
 }
