@@ -1,0 +1,35 @@
+name: Daily GitHub Digest
+
+on:
+  schedule:
+    - cron: "0 7 * * *" # 7am UTC daily — we can adjust this later
+  workflow_dispatch: {} # lets you trigger manually to test
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        working-directory: scripts
+        run: npm install --no-save @octokit/rest nodemailer
+
+      - name: Generate and send digest
+        working-directory: scripts
+        env:
+          GH_TOKEN: ${{ secrets.DIGEST_GH_TOKEN }}
+          GH_ORG: ${{ vars.GH_ORG }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+        run: node daily-digest.js
