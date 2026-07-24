@@ -1,3 +1,3 @@
 import { Request } from "@/api";
 
-export const ApiServerStatusCheck = Request("get", "/status");
+export const ApiServerStatusCheck = Request<string>("get", "/status");

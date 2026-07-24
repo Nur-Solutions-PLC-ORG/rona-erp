@@ -13,6 +13,7 @@ const Client = () => {
 
   return (
     <CardWrapper
+      center
       footer={
         <>
           <Button asChild className="w-full" variant={"outline"}>
@@ -25,7 +26,7 @@ const Client = () => {
       description={errorMessage}
       descriptionClassName="sr-only"
     >
-      <p>{errorMessage}</p>
+      <p className="text-center">{errorMessage}</p>
     </CardWrapper>
   );
 };
