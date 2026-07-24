@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Inter, Public_Sans } from "next/font/google";
 import "./globals.css";
+import QueryClientWrapper from "@/components/query-client-wrapper";
 
 const fontHeading = Public_Sans({
   subsets: ["latin"],
@@ -42,7 +43,9 @@ export default function RootLayout({
         fontHeading.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <QueryClientWrapper>{children}</QueryClientWrapper>
+      </body>
     </html>
   );
 }

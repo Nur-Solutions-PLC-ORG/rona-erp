@@ -13,6 +13,7 @@
     "@rona/types": "workspace:*",
     "@rona/utils": "workspace:*",
     "@rona/validation": "workspace:*",
+    "@tanstack/react-query": "^5.101.4",
     "axios": "^1.18.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
