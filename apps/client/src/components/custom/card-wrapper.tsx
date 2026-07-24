@@ -13,27 +13,33 @@ type Props = {
   title: string;
   titleClassName?: string;
   description?: string;
+  descriptionClassName?: string;
   children?: React.ReactNode;
   headerClassName?: string;
   footer?: React.ReactNode;
+  className?: string;
 };
 
 const CardWrapper = ({
   title,
   titleClassName,
   description,
+  descriptionClassName,
   children,
   footer,
   headerClassName,
+  className,
 }: Props) => {
   return (
-    <Card className="min-w-100">
+    <Card className={cn("min-w-120", className)}>
       <CardHeader className={cn(headerClassName)}>
         <CardTitle className={cn(titleClassName)}>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardDescription className={cn(descriptionClassName)}>
+          {description}
+        </CardDescription>
       </CardHeader>
-      <CardContent>{children}</CardContent>
-      {footer && <CardFooter>{footer}</CardFooter>}
+      {children && <CardContent>{children}</CardContent>}
+      {footer && <CardFooter className="flex flex-col">{footer}</CardFooter>}
     </Card>
   );
 };

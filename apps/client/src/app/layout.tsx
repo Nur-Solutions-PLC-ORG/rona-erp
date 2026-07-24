@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Inter, Montserrat } from "next/font/google";
+import { Inter, Public_Sans } from "next/font/google";
 import "./globals.css";
 
-const fontHeading = Montserrat({
+const fontHeading = Public_Sans({
   subsets: ["latin"],
   variable: "--font-heading",
 });

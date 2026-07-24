@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import Client from "./client";
 
 export const metadata: Metadata = {
-  title: "Signin",
-  description: "Signin to your Rona account",
+  title: "Sign in",
+  description: "Sign in to your Rona account",
 };
 
 const Page = () => {

@@ -1,12 +1,17 @@
 import { Metadata } from "next";
 import Client from "./client";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Error occurred",
-  description: "Signin to your Rona account",
+  description: "An error occurred during authentication",
 };
 
 const Page = () => {
-  return <Client />;
+  return (
+    <Suspense>
+      <Client />
+    </Suspense>
+  );
 };
 export default Page;

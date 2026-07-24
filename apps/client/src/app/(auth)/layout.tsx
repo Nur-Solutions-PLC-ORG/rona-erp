@@ -8,7 +8,7 @@ type Props = {
 
 const Layout = ({ children }: Props) => {
   return (
-    <main className="flex flex-col flex-1 items-center justify-center bg-secondary gap-2">
+    <main className="flex flex-col flex-1 items-center justify-center bg-muted gap-2">
       <Logo className="mb-4" />
       {children}
       <div className="flex items-center justify-center gap-6">
