@@ -11,11 +11,12 @@ export class EmailService {
       this.resend = new Resend(process.env.RESEND_API_KEY);
       this.logger.log(`Resend initialized`);
     } else {
-      this.logger.log('RESEND_API_KEY not configured. Verification codes will be output to server logs and API responses in dev mode.');
+      this.logger.log('resend api key not configured.');
     }
   }
 
   async sendVerificationEmail(toEmail: string, code: string): Promise<boolean> {
+    const sanitizedEmail = toEmail.toLowerCase().trim().replace(/[<>"'&]/g, '');
     const subject = 'Your Email Verification Code';
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">

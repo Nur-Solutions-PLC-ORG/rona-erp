@@ -1,22 +1,36 @@
 @baseUrl = http://localhost:8502
-
-
-
-### 
-GET {{baseUrl}}/auth/status
+@csrf_token = 
+@refresh_token =
 
 ### 
-POST {{baseUrl}}/auth/signin
+GET {{baseUrl}}/auth/csrf
+
+### Register a new user
+POST {{baseUrl}}/auth/register
 Content-Type: application/json
+X-CSRF-Token: {{csrf_token}}
 
 {
   "email": "test@example.com",
-  "password": "password123"
+  "password": "SecurePass1!",
+  "name": "Test User",
+  "orgName": "Test Org"
+}
+
+### Login with email and password
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+X-CSRF-Token: {{csrf_token}}
+
+{
+  "email": "test@example.com",
+  "password": "SecurePass1!"
 }
 
 ### 
 POST {{baseUrl}}/auth/signin
 Content-Type: application/json
+X-CSRF-Token: {{csrf_token}}
 
 {
   "eid": "EMP123",
@@ -24,25 +38,65 @@ Content-Type: application/json
   "password": "password123"
 }
 
-### 
+### Request password reset code
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+X-CSRF-Token: {{csrf_token}}
+
+{
+  "email": "test@example.com"
+}
+
+### Reset password with code
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+X-CSRF-Token: {{csrf_token}}
+
+{
+  "email": "test@example.com",
+  "code": "123456",
+  "newPassword": "NewSecurePass1!"
+}
+
+### Refresh access token
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+CSRF-Token: {{csrf_token}}
+
+{
+  "refreshToken": "{{refresh_token}}"
+}
+
+### Send email verification code
 POST {{baseUrl}}/auth/send-verification
 Content-Type: application/json
+CSRF-Token: {{csrf_token}}
 
 {
-  "email": "oliyadabenet@gmail.com"
+  "email": "test@example.com"
 }
 
-### 
+### Verify email code
 POST {{baseUrl}}/auth/verify-code
 Content-Type: application/json
+CSRF-Token: {{csrf_token}}
 
 {
-  "email": "oliyadabenet@gmail.com",
-  "code": "895322"
+  "email": "test@example.com",
+  "code": "123456"
 }
 
 ### 
+GET {{baseUrl}}/auth/status
+
+###
 GET {{baseUrl}}/auth/user
 
 ### 
 POST {{baseUrl}}/auth/signout
+
+### 
+GET {{baseUrl}}/auth/google/url
+
+### 
+GET {{baseUrl}}/auth/google/callback

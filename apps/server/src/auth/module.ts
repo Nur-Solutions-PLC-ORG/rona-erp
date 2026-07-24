@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthService } from './service';
 import { AuthController } from './controller';
 import { jwtConstants } from './constants/auth.constants';
@@ -13,6 +14,23 @@ import { EmailService } from './email/email.service';
 @Module({
   imports: [
     PassportModule,
+    ThrottlerModule.forRoot([
+      {
+        name: 'login',
+        ttl: 60000,
+        limit: 5,
+      },
+      {
+        name: 'verify',
+        ttl: 60000,
+        limit: 5,
+      },
+      {
+        name: 'sendVerification',
+        ttl: 60000,
+        limit: 3,
+      },
+    ]),
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,

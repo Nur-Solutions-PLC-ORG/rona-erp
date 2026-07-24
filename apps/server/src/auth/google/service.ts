@@ -3,6 +3,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { randomUUID } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import sql from '../../db';
+import { sanitizeInput } from '../dto/register.dto';
 
 @Injectable()
 export class GoogleAuthService {
@@ -24,7 +25,7 @@ export class GoogleAuthService {
       const payload = ticket.getPayload();
       
       if (!payload || !payload.email) {
-        throw new BadRequestException('Invalid Google token payload or missing email');
+        throw new BadRequestException('invalid google token');
       }
 
       return {
@@ -36,7 +37,7 @@ export class GoogleAuthService {
       };
     } catch (error: any) {
       this.logger.error(`Google token verification failed: ${error.message}`);
-      throw new UnauthorizedException('Invalid Google ID Token');
+      throw new UnauthorizedException('Invalid google id token');
     }
   }
 
@@ -46,8 +47,10 @@ export class GoogleAuthService {
     }
 
     try {
-      const email = googleUser.email;
-      const full_name = `${googleUser.firstName || ''} ${googleUser.lastName || ''}`.trim() || 'Google User';
+      const email = googleUser.email.toLowerCase().trim();
+      const full_name = sanitizeInput(
+        `${googleUser.firstName || ''} ${googleUser.lastName || ''}`.trim() || 'Google User'
+      );
 
       const result = await sql.begin(async (tx) => {
         let [user] = await tx`SELECT id, email, full_name FROM public.users WHERE email = ${email}`;
@@ -114,7 +117,7 @@ export class GoogleAuthService {
         },
       };
     } catch (err: any) {
-      this.logger.error(`Google Login Error: ${err.message}`, err.stack);
+      this.logger.error(`Google Login Error for ${googleUser.email}: ${err.message}`, err.stack);
       throw new InternalServerErrorException('Google authentication failed');
     }
   }

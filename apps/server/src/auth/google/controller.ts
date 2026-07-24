@@ -2,11 +2,13 @@ import { Controller, Post, Body, HttpCode, HttpStatus, Get, Req, Res, Inject } f
 import { GoogleAuthService } from './service';
 import { GoogleLoginDto } from '../dto/google-login.dto';
 import { Public } from '../decorators/public.decorator';
+import { AuthService } from '../service';
 
 @Controller('auth/google')
 export class GoogleAuthController {
   constructor(
-    @Inject(GoogleAuthService) private googleAuthService: GoogleAuthService
+    @Inject(GoogleAuthService) private googleAuthService: GoogleAuthService,
+    @Inject(AuthService) private authService: AuthService
   ) {}
 
   @Public()
@@ -40,7 +42,21 @@ export class GoogleAuthController {
       const googleUser = await this.googleAuthService.verifyGoogleToken(tokens.id_token!);
       const result = await this.googleAuthService.googleLogin(googleUser);
 
-      res.redirect(`${frontendUrl}/login?token=${result.accessToken}`);
+      const refreshToken = await this.authService.generateRefreshToken(result.user.id, '');
+
+      res.cookie('token', result.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      });
+      res.redirect(`${frontendUrl}/login`);
     } catch (err: any) {
       res.redirect(`${frontendUrl}/login?error=auth_failed`);
     }

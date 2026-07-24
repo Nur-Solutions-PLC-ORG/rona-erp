@@ -5,11 +5,21 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor() {
+    const clientID = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const callbackURL = process.env.GOOGLE_CALLBACK_URL || `${process.env.APP_URL || 'http://localhost:8502'}/auth/google/callback`;
+
+    if (!clientID || !clientSecret) {
+      throw new Error('GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are required');
+    }
+
     super({
-      clientID: process.env.GOOGLE_CLIENT_ID || 'GOOGLE_CLIENT_ID_PLACEHOLDER',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'GOOGLE_CLIENT_SECRET_PLACEHOLDER',
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || `${process.env.APP_URL || 'http://localhost:3000'}/auth/google/callback`,
+      clientID,
+      clientSecret,
+      callbackURL,
       scope: ['email', 'profile'],
+      state: true,
+      passReqToCallback: false,
     });
   }
 

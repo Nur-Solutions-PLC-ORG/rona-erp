@@ -8,7 +8,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(@Inject(Reflector) private reflector: Reflector) {
     super();
   }
-
   canActivate(context: ExecutionContext) {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),

@@ -1,13 +1,16 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Get, Req, Res, UseGuards, UseFilters, Inject } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Get, Req, Res, UseGuards, UseFilters, Inject, BadRequestException } from '@nestjs/common';
 import { AuthService } from './service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
-import { VerifyEmailDto, ResendVerificationDto } from './dto/verify-email.dto';
+import { RegisterDto } from './dto/register.dto';
+import { VerifyEmailDto, ResendVerificationDto, ForgotPasswordDto, ResetPasswordDto } from './dto/verify-email.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { AuthExceptionFilter } from './filters/auth-exception.filter';
 import { serverConfig } from '@rona/config';
+import { randomBytes } from 'crypto';
 @Controller('auth')
 @UseFilters(AuthExceptionFilter)
 export class AuthController {
@@ -23,36 +26,114 @@ export class AuthController {
       maxAge: serverConfig.auth.cookieMaxAge,
     });
   }
+
+  private setCsrfCookie(res: any, csrfToken: string) {
+    res.cookie('csrf_token', csrfToken, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 1000,
+    });
+  }
+
+  @Public()
+  @Get('csrf')
+  getCsrfToken(@Req() req: any, @Res({ passthrough: true }) res: any) {
+    const existingToken = req.cookies?.csrf_token;
+    const csrfToken = existingToken || randomBytes(32).toString('hex');
+    this.setCsrfCookie(res, csrfToken);
+    return { csrfToken };
+  }
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('signin')
   async signin(@Req() req: any, @Res({ passthrough: true }) res: any, @Body() body: LoginDto) {
+    this.validateCsrf(req);
     const result = await this.authService.login(body, req.ip, req.headers['user-agent']);
     if (result.mfa_required) {
       return result;}
     if (result.accessToken) {
       this.setTokenCookie(res, result.accessToken);
     }
+    if (result.refreshToken) {
+      res.cookie('refresh_token', result.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      });
+    }
     return { user: result.user, accessToken: result.accessToken };
   }
+
+  @Public()
+  @HttpCode(HttpStatus.CREATED)
+  @Post('register')
+  async register(@Req() req: any, @Body() body: RegisterDto) {
+    this.validateCsrf(req);
+    return this.authService.register(body);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('send-verification')
+  async sendVerification(@Req() req: any, @Body() body: ResendVerificationDto) {
+    this.validateCsrf(req);
+    return this.authService.sendVerificationCode(body.email);
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('verify-code')
+  async verifyCode(@Req() req: any, @Body() body: VerifyEmailDto) {
+    this.validateCsrf(req);
+    return this.authService.verifyCode(body.email, body.code);
+  }
+
+  private validateCsrf(req: any) {
+    const csrfHeader = req.headers['x-csrf-token'];
+    const csrfCookie = req.cookies?.csrf_token;
+    if (process.env.NODE_ENV === 'production' && csrfHeader && csrfCookie) {
+      if (csrfHeader !== csrfCookie) {
+        throw new BadRequestException('Invalid CSRF token');
+      }
+    }
+  }
+
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('signout')
-  async signout(@Res({ passthrough: true }) res: any) {
+  async signout(@Req() req: any, @Res({ passthrough: true }) res: any) {
+    const token = req.cookies?.[serverConfig.auth.cookieName] || req.headers.authorization?.split(' ')[1];
+    if (token) {
+      const decoded = await this.jwtService.decode(token) as any;
+      if (decoded?.sub) {
+        await this.authService.logout(decoded.sub, token);
+      }
+    }
     res.clearCookie(serverConfig.auth.cookieName);
     return { success: true };}
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Post('send-verification')
-  async sendVerification(@Body() body: ResendVerificationDto) {
-    return this.authService.sendVerificationCode(body.email);
+  @Post('forgot-password')
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
+    return this.authService.forgotPassword(body.email);
   }
+
   @Public()
   @HttpCode(HttpStatus.OK)
-  @Post('verify-code')
-  async verifyCode(@Body() body: VerifyEmailDto) {
-    return this.authService.verifyCode(body.email, body.code);
+  @Post('reset-password')
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    return this.authService.resetPassword(body.email, body.code, body.newPassword);
   }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('refresh')
+  async refreshToken(@Body() body: RefreshTokenDto) {
+    return this.authService.refreshToken(body.refreshToken);
+  }
+
   @Public()
   @Get('status')
   async status(@Req() req: any) {
