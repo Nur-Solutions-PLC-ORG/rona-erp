@@ -1,0 +1,48 @@
+@baseUrl = http://localhost:8502
+
+
+
+### 
+GET {{baseUrl}}/auth/status
+
+### 
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 
+POST {{baseUrl}}/auth/signin
+Content-Type: application/json
+
+{
+  "eid": "EMP123",
+  "tenant_id": "YOUR-TENANT-UUID-HERE",
+  "password": "password123"
+}
+
+### 
+POST {{baseUrl}}/auth/send-verification
+Content-Type: application/json
+
+{
+  "email": "oliyadabenet@gmail.com"
+}
+
+### 
+POST {{baseUrl}}/auth/verify-code
+Content-Type: application/json
+
+{
+  "email": "oliyadabenet@gmail.com",
+  "code": "895322"
+}
+
+### 
+GET {{baseUrl}}/auth/user
+
+### 
+POST {{baseUrl}}/auth/signout

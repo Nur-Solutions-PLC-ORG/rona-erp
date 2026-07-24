@@ -3,13 +3,24 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { jwtConstants } from '../constants/auth.constants';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
-import sql from '../../db';
+import { db } from '../../db';
+import { users } from '../../db/schema';
+import { eq } from 'drizzle-orm';
+import { serverConfig } from '@rona/config';
+
+const cookieExtractor = (req: any): string | null => {
+  let token = null;
+  if (req && req.cookies) {
+    token = req.cookies[serverConfig.auth.cookieName];
+  }
+  return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+};
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: cookieExtractor,
       ignoreExpiration: false,
       secretOrKey: jwtConstants.secret,
       passReqToCallback: true,
@@ -17,10 +28,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(req: any, payload: JwtPayload) {
-    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+    const token = cookieExtractor(req);
     if (!token) throw new UnauthorizedException();
 
-    const [user] = await sql`SELECT id, email, full_name FROM public.users WHERE id = ${payload.sub}`;
+    const result = await db.select({ id: users.id, email: users.email, full_name: users.full_name }).from(users).where(eq(users.id, payload.sub as string)).limit(1);
+    const user = result[0];
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -30,7 +42,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     return {
       userId: payload.sub,
-      email: payload.email,
       role,
       tenantId,
       ...user,

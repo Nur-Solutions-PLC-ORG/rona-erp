@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@rona/config": "workspace:*",
-    "@rona/utils": "workspace:*",
     "@rona/types": "workspace:*",
     "@rona/validation": "workspace:*",
     "class-variance-authority": "^0.7.1",

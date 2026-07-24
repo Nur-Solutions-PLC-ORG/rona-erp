@@ -1,25 +1,17 @@
-import {Injectable, Logger} from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import { Injectable, Logger } from '@nestjs/common';
+import { Resend } from 'resend';
 
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter | null = null;
+  private resend: Resend | null = null;
 
   constructor() {
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      this.transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: process.env.SMTP_PORT === '465',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
-      this.logger.log(`SMTP settings found, sending emails through Google.t: ${process.env.SMTP_HOST}`);
+    if (process.env.RESEND_API_KEY) {
+      this.resend = new Resend(process.env.RESEND_API_KEY);
+      this.logger.log(`Resend initialized`);
     } else {
-      this.logger.log('no smtp settings found.');
+      this.logger.log('RESEND_API_KEY not configured. Verification codes will be output to server logs and API responses in dev mode.');
     }
   }
 
@@ -36,22 +28,28 @@ export class EmailService {
       </div>
     `;
 
-    if (this.transporter) {
+    if (this.resend) {
       try {
-        await this.transporter.sendMail({
-          from: process.env.SMTP_FROM || '"Auth Service" <noreply@example.com>',
+        const result = await this.resend.emails.send({
+          from: process.env.EMAIL_FROM || 'Auth Service <onboarding@resend.dev>',
           to: toEmail,
           subject,
           html,
         });
-        this.logger.log(`Email verification sent via SMTP to: ${toEmail}`);
+
+        if (result.error) {
+           this.logger.error(`Failed to send email via Resend to ${toEmail}: ${result.error.message}`);
+           return false;
+        }
+
+        this.logger.log(`Email verification sent via Resend to: ${toEmail}`);
         return true;
       } catch (error: any) {
-        this.logger.error(`Failed to send SMTP email to ${toEmail}: ${error.message}`);
+        this.logger.error(`Failed to send Resend email to ${toEmail}: ${error.message}`);
       }
     }
 
-    this.logger.log(` [EMAIL VERIFICATION CODE] To: ${toEmail} | Code: ${code}`);
+    this.logger.log(`📧 [EMAIL VERIFICATION CODE] To: ${toEmail} | Code: ${code}`);
     return false;
   }
 }

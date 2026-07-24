@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, UnauthorizedException, InternalServerErrorException, Logger, Inject } from '@nestjs/common';
 import { OAuth2Client } from 'google-auth-library';
+import { randomUUID } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import sql from '../../db';
 
@@ -53,7 +54,6 @@ export class GoogleAuthService {
         let member;
 
         if (!user) {
-          // Auto-provision user and organization on first Google sign in
           const orgName = `${full_name}'s Org`;
           const [org] = await tx`INSERT INTO public.organizations (name) VALUES (${orgName}) RETURNING id`;
           
@@ -79,12 +79,21 @@ export class GoogleAuthService {
           member = m;
         }
 
-        return { user, member };
+        const sessionId = randomUUID();
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+        
+        await tx`
+          INSERT INTO public.sessions (id, user_id, expires_at)
+          VALUES (${sessionId}, ${user.id}, ${expiresAt})
+        `;
+
+        return { user, member, sessionId };
       });
 
       const payload = {
         sub: result.user.id,
         email: result.user.email,
+        session_id: result.sessionId,
         app_metadata: {
           role: result.member?.role || 'member',
           tenant_id: result.member?.tenant_id || '',
