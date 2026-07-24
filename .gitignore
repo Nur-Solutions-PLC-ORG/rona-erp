@@ -1,7 +1,8 @@
 # directories
-/.turbo
+./.turbo
 /node_modules/
-/.agents 
+/.agents
 .env
 .env.*
 !.env.example
+apps/server/src/db/
