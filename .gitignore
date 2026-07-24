@@ -1,8 +1,14 @@
-# directories
-./.turbo
-/node_modules/
-/.agents
+# Directories & Cache
+.turbo
+apps/*/.turbo
+packages/*/.turbo
+node_modules/
+.agents/
+
+# Environment
 .env
 .env.*
 !.env.example
+
+# Local DB
 apps/server/src/db/
