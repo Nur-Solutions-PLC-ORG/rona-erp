@@ -17,9 +17,9 @@ export class EmailService {
           pass: process.env.SMTP_PASS,
         },
       });
-      this.logger.log(`SMTP transporter initialized with host: ${process.env.SMTP_HOST}`);
+      this.logger.log(`SMTP settings found, sending emails through Google.t: ${process.env.SMTP_HOST}`);
     } else {
-      this.logger.log('SMTP credentials not configured. Verification codes will be output to server logs and API responses in dev mode.');
+      this.logger.log('no smtp settings found.');
     }
   }
 
@@ -51,7 +51,7 @@ export class EmailService {
       }
     }
 
-    this.logger.log(`📧 [EMAIL VERIFICATION CODE] To: ${toEmail} | Code: ${code}`);
+    this.logger.log(` [EMAIL VERIFICATION CODE] To: ${toEmail} | Code: ${code}`);
     return false;
   }
 }
