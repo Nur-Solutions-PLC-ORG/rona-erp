@@ -4,7 +4,9 @@
     "rootDir": "./src",
     "declaration": true,
     "module": "NodeNext",
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "NodeNext",
+    "skipLibCheck": true,
+    "types": ["node"]
   },
   "include": ["src"]
 }
