@@ -3,9 +3,13 @@ import { AppModule } from './app.module';
 import { DEFAULT_PORT } from '@rona/config';
 import helmet from 'helmet';
 import cors from 'cors';
-import * as express from 'express';
+import express from 'express';
+import { Request, Response, NextFunction } from 'express';
+import { PlatformSettingsService } from './platform-settings/platform-settings.service';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
@@ -25,6 +29,22 @@ async function bootstrap() {
     credentials: true, }));
   app.use(express.json({ limit: '100kb' }));
   app.use(express.urlencoded({ extended: true, limit: '100kb' }));
+
+  const platformSettingsService = app.get(PlatformSettingsService);
+  app.use(async (req: Request, res: Response, next: NextFunction) => {
+    const isMaintenance = await platformSettingsService.isMaintenanceMode();
+    if (isMaintenance) {
+      const message = await platformSettingsService.getMaintenanceMessage();
+      res.status(503).json({
+        statusCode: 503,
+        message,
+        data: null,
+      });
+      return;
+    }
+    next();
+  });
+
   if (process.env.NODE_ENV === 'production') {
     app.use((req, res, next) => {
       if (!req.secure && req.headers['x-forwarded-proto'] !== 'https') {

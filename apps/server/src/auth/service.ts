@@ -8,7 +8,7 @@ import { RegisterDto, sanitizeInput } from './dto/register.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { EmailService } from './email/email.service';
 import { db } from '../db';
-import { users, tenantMembers, userRoles, organizations, sessions, verificationCodes, blacklistedTokens, refreshTokens } from '../db/schema';
+import { users, tenantMembers, userRoles, organizations, sessions, verificationCodes, blacklistedTokens, refreshTokens, platforms } from '../db/schema';
 import { eq, and, gt } from 'drizzle-orm';
 
 @Injectable()
@@ -20,6 +20,14 @@ export class AuthService {
     @Inject(JwtService) private readonly jwtService: JwtService,
     @Inject(EmailService) private readonly emailService: EmailService,
   ) {}
+
+  private detectPlatform(userAgent?: string): string {
+    if (!userAgent) return 'unknown';
+    const ua = userAgent.toLowerCase();
+    if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) return 'mobile';
+    if (ua.includes('tablet') || ua.includes('ipad')) return 'tablet';
+    return 'web';
+  }
 
   async login(loginDto: LoginDto, ipAddress?: string, userAgent?: string) {
     const { email, password, eid, tenant_id } = loginDto;
@@ -94,6 +102,14 @@ export class AuthService {
         id: sessionId,
         user_id: user.id,
         expires_at: expiresAt,
+      });
+
+      await db.insert(platforms).values({
+        user_id: user.id,
+        session_id: sessionId,
+        platform: this.detectPlatform(userAgent),
+        user_agent: userAgent,
+        ip_address: ipAddress,
       });
 
       const payload: JwtPayload = {
@@ -491,6 +507,14 @@ export class AuthService {
       expires_at: expiresAt,
     });
 
+    await db.insert(platforms).values({
+      user_id: user.id,
+      session_id: newSessionId,
+      platform: this.detectPlatform(undefined),
+      user_agent: undefined,
+      ip_address: undefined,
+    });
+
     await db.update(refreshTokens).set({ revoked_at: new Date() }).where(eq(refreshTokens.id, token.id));
 
     const newRefreshToken = await this.generateRefreshToken(user.id, newSessionId);
@@ -550,6 +574,14 @@ export class AuthService {
       id: sessionId,
       user_id: user.id,
       expires_at: expiresAt,
+    });
+
+    await db.insert(platforms).values({
+      user_id: user.id,
+      session_id: sessionId,
+      platform: this.detectPlatform(userAgent),
+      user_agent: userAgent,
+      ip_address: ipAddress,
     });
 
     const payload: JwtPayload = {

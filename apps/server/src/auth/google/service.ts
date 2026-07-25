@@ -90,6 +90,11 @@ export class GoogleAuthService {
           VALUES (${sessionId}, ${user.id}, ${expiresAt})
         `;
 
+        await tx`
+          INSERT INTO public.platforms (user_id, session_id, platform, user_agent, ip_address)
+          VALUES (${user.id}, ${sessionId}, 'web', ${googleUser.picture || null}, ${null})
+        `;
+
         return { user, member, sessionId };
       });
 
