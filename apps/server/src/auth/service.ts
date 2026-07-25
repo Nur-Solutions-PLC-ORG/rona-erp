@@ -78,15 +78,15 @@ export class AuthService {
       }).where(eq(users.id, user.id));
       this.logger.log(`User ${user.id} logged in from ${ipAddress}`);
 
-       const roleStr = member?.role || 'staff';
+      const roleStr = member?.role || 'staff';
 
-       if (user.mfa_enabled) {
-          return {
-            mfa_required: true,
-            email: user.email,
-            message: "Enter your authenticator code",
-          };
-        }
+      if (user.mfa_enabled) {
+        return {
+          mfa_required: true,
+          email: user.email,
+          message: "Enter your authenticator code",
+        };
+      }
       const sessionId = randomUUID();
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
@@ -103,7 +103,8 @@ export class AuthService {
         app_metadata: {
           role: roleStr,
           tenant_id: member?.tenant_id || user.tenant_id || ''
-        } };
+        }
+      };
       const accessToken = await this.jwtService.signAsync(payload, { expiresIn: this.ACCESS_TOKEN_TTL });
       const refreshToken = await this.generateRefreshToken(user.id, sessionId);
 
@@ -111,12 +112,12 @@ export class AuthService {
       return {
         accessToken,
         refreshToken,
-        user: { 
-          id: user.id, 
-          email: user.email, 
-          full_name: user.full_name, 
-          role: roleStr, 
-          tenant_id: member?.tenant_id || user.tenant_id || '' 
+        user: {
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          role: roleStr,
+          tenant_id: member?.tenant_id || user.tenant_id || ''
         }
       };
     } catch (err: any) {
@@ -135,7 +136,7 @@ export class AuthService {
       if (!user) return { session: null };
 
       const rolesRows = await db.select().from(userRoles).where(eq(userRoles.user_id, userId));
-      
+
       let rolesList: Array<{ position: string; module: string[] }> = [];
 
       if (rolesRows.length > 0) {
@@ -311,7 +312,7 @@ export class AuthService {
 
     await db.update(refreshTokens).set({ revoked_at: new Date() }).where(eq(refreshTokens.user_id, userId));
 
-    this.logger.log(`Token is no more available ${userId}`);
+    this.logger.log(`Token blacklisted and refresh tokens revoked for user ${userId}`);
 
     return { success: true, message: 'logged out' };
   }
