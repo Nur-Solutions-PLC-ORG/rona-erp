@@ -25,7 +25,7 @@ export class AuthService {
     const { email, password, eid, tenant_id } = loginDto;
 
     if (!email && (!eid || !tenant_id)) {
-      throw new BadRequestException("need email or eid + tenant_id");
+      throw new BadRequestException('need email or eid + tenant_id');
     }
 
     try {
@@ -50,12 +50,12 @@ export class AuthService {
       }
 
       if (!user) {
-        this.logger.warn(`Someone tried logging in with: ${email} from ${ipAddress}`);
-        throw new UnauthorizedException("wrong login");
+        this.logger.warn(`Failed login attempt for email: ${email} [IP: ${ipAddress}]`);
+        throw new UnauthorizedException('wrong login');
       }
 
       if (user.locked_until && new Date(user.locked_until) > new Date()) {
-        this.logger.warn(`Locked account got a visit from ${ipAddress}`);
+        this.logger.warn(`Locked account login attempt for user ${user.id} [IP: ${ipAddress}]`);
         throw new BadRequestException('Account is temporarily locked. Try again later.');
       }
 
@@ -67,8 +67,8 @@ export class AuthService {
           failed_login_attempts: attempts,
           locked_until: lockedUntil,
         }).where(eq(users.id, user.id));
-        this.logger.warn(`Wrong password attempt ${attempts}/5 for ${user.id} from ${ipAddress}`);
-        throw new UnauthorizedException("wrong login");
+        this.logger.warn(`Failed login attempt ${attempts}/5 for user ${user.id} [IP: ${ipAddress}]`);
+        throw new UnauthorizedException('wrong login');
       }
 
       await db.update(users).set({
@@ -76,7 +76,7 @@ export class AuthService {
         locked_until: null,
         last_login_at: new Date(),
       }).where(eq(users.id, user.id));
-      this.logger.log(`User ${user.id} logged in from ${ipAddress}`);
+      this.logger.log(`Successful login for user ${user.id} [IP: ${ipAddress}, Agent: ${userAgent}]`);
 
       const roleStr = member?.role || 'staff';
 
@@ -84,7 +84,7 @@ export class AuthService {
         return {
           mfa_required: true,
           email: user.email,
-          message: "Enter your authenticator code",
+          message: 'Enter your authenticator code',
         };
       }
       const sessionId = randomUUID();
@@ -102,13 +102,13 @@ export class AuthService {
         session_id: sessionId,
         app_metadata: {
           role: roleStr,
-          tenant_id: member?.tenant_id || user.tenant_id || ''
-        }
+          tenant_id: member?.tenant_id || user.tenant_id || '',
+        },
       };
       const accessToken = await this.jwtService.signAsync(payload, { expiresIn: this.ACCESS_TOKEN_TTL });
       const refreshToken = await this.generateRefreshToken(user.id, sessionId);
 
-      this.logger.log(`User ${user.id} logged in from ${ipAddress}`);
+      this.logger.log(`Successful login for user ${user.id} [IP: ${ipAddress}, Agent: ${userAgent}]`);
       return {
         accessToken,
         refreshToken,
@@ -117,15 +117,15 @@ export class AuthService {
           email: user.email,
           full_name: user.full_name,
           role: roleStr,
-          tenant_id: member?.tenant_id || user.tenant_id || ''
-        }
+          tenant_id: member?.tenant_id || user.tenant_id || '',
+        },
       };
     } catch (err: any) {
       if (err instanceof UnauthorizedException || err instanceof BadRequestException) {
         throw err;
       }
-      this.logger.error(`Login blew up: ${err.message}`, err.stack);
-      throw new InternalServerErrorException("login failed, try later");
+      this.logger.error(`Login Error: ${err.message}`, err.stack);
+      throw new InternalServerErrorException('login failed, try later');
     }
   }
 
@@ -142,28 +142,28 @@ export class AuthService {
       if (rolesRows.length > 0) {
         rolesList = rolesRows.map(r => ({
           position: r.position,
-          module: r.module || []
+          module: r.module || [],
         }));
       } else {
         const mResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, userId)).limit(1);
         const member = mResult[0];
         rolesList = [{
-          position: member?.role || "staff",
-          module: ["HR", "Inventory", "Finance"]
+          position: member?.role || 'staff',
+          module: ['HR', 'Inventory', 'Finance'],
         }];
       }
       return {
         session: {
           user: {
             id: user.id,
-            email: user.email
+            email: user.email,
           },
-          roles: rolesList
+          roles: rolesList,
         },
-        expires: exp ? new Date(exp * 1000) : null
+        expires: exp ? new Date(exp * 1000) : null,
       };
     } catch (err: any) {
-      this.logger.error(`Status check failed: ${err.message}`, err.stack);
+      this.logger.error(`Status Error: ${err.message}`, err.stack);
       return { session: null };
     }
   }
@@ -190,7 +190,7 @@ export class AuthService {
       const user = result[0];
 
       if (!user) {
-        throw new BadRequestException("no user");
+        throw new BadRequestException('no user');
       }
 
       return { user };
@@ -198,25 +198,25 @@ export class AuthService {
       if (err instanceof BadRequestException) {
         throw err;
       }
-      this.logger.error(`Couldn't get profile: ${err.message}`, err.stack);
-      throw new InternalServerErrorException("failed to get profile");
+      this.logger.error(`Me Error: ${err.message}`, err.stack);
+      throw new InternalServerErrorException('failed to get profile');
     }
   }
 
   async sendVerificationCode(email: string) {
-    const cleanEmail = email.toLowerCase().trim();
+    const sanitizedEmail = email.toLowerCase().trim();
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const ttlSeconds = 900;
     const codeHash = await bcrypt.hash(code, 10);
     const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
 
     await db.insert(verificationCodes).values({
-      email: cleanEmail,
+      email: sanitizedEmail,
       code_hash: codeHash,
       expires_at: expiresAt,
     });
 
-    this.logger.log(`Saved verification code hash for ${email}`);
+    this.logger.log(`Stored verification code hash in database for ${email}`);
 
     await this.emailService.sendVerificationEmail(email, code);
 
@@ -230,12 +230,12 @@ export class AuthService {
   }
 
   async verifyCode(email: string, code: string) {
-    const cleanEmail = email.toLowerCase().trim();
+    const sanitizedEmail = email.toLowerCase().trim();
     const now = new Date();
     const rows = await db
       .select()
       .from(verificationCodes)
-      .where(and(eq(verificationCodes.email, cleanEmail), gt(verificationCodes.expires_at, now)))
+      .where(and(eq(verificationCodes.email, sanitizedEmail), gt(verificationCodes.expires_at, now)))
       .orderBy(verificationCodes.created_at)
       .limit(1);
 
@@ -249,7 +249,7 @@ export class AuthService {
     try {
       await db.update(users).set({ is_email_verified: true }).where(eq(users.email, email));
     } catch (e: any) {
-      this.logger.error(`Error verifying email: ${e.message}`, e.stack);
+      this.logger.error(`Error verifying email in database: ${e.message}`, e.stack);
     }
 
     return {
@@ -260,11 +260,11 @@ export class AuthService {
 
   async register(registerDto: RegisterDto) {
     const { email, password, name, orgName } = registerDto;
-    const cleanEmail = email.toLowerCase().trim();
-    const cleanName = sanitizeInput(name.trim());
-    const cleanOrgName = sanitizeInput(orgName.trim());
+    const sanitizedEmail = email.toLowerCase().trim();
+    const sanitizedName = sanitizeInput(name.trim());
+    const sanitizedOrgName = sanitizeInput(orgName.trim());
 
-    const existing = await db.select().from(users).where(eq(users.email, cleanEmail)).limit(1);
+    const existing = await db.select().from(users).where(eq(users.email, sanitizedEmail)).limit(1);
     if (existing[0]) {
       throw new BadRequestException('email already registered');
     }
@@ -274,13 +274,13 @@ export class AuthService {
     const userId = randomUUID();
 
     await db.transaction(async (tx) => {
-      await tx.insert(organizations).values({ id: orgId, name: cleanOrgName });
+      await tx.insert(organizations).values({ id: orgId, name: sanitizedOrgName });
 
       await tx.insert(users).values({
         id: userId,
-        email: cleanEmail,
+        email: sanitizedEmail,
         password_hash: passwordHash,
-        full_name: cleanName,
+        full_name: sanitizedName,
         is_email_verified: false,
         tenant_id: orgId,
       });
@@ -292,11 +292,11 @@ export class AuthService {
       });
     });
 
-    this.logger.log(`New user signed up: ${cleanEmail}`);
+    this.logger.log(`New user registered: ${sanitizedEmail}`);
 
     return {
       message: 'registration successful',
-      user: { email: cleanEmail, full_name: cleanName, role: 'admin' },
+      user: { email: sanitizedEmail, full_name: sanitizedName, role: 'admin' },
     };
   }
 
@@ -355,9 +355,9 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
-    const cleanEmail = email.toLowerCase().trim();
+    const sanitizedEmail = email.toLowerCase().trim();
 
-    const result = await db.select().from(users).where(eq(users.email, cleanEmail)).limit(1);
+    const result = await db.select().from(users).where(eq(users.email, sanitizedEmail)).limit(1);
     const user = result[0];
     if (!user) {
       throw new BadRequestException('email not found');
@@ -369,14 +369,14 @@ export class AuthService {
     const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
 
     await db.insert(verificationCodes).values({
-      email: cleanEmail,
+      email: sanitizedEmail,
       code_hash: codeHash,
       expires_at: expiresAt,
     });
 
-    await this.emailService.sendVerificationEmail(cleanEmail, resetCode);
+    await this.emailService.sendVerificationEmail(sanitizedEmail, resetCode);
 
-    this.logger.log(`Password reset code sent to ${cleanEmail}`);
+    this.logger.log(`Password reset code sent to ${sanitizedEmail}`);
 
     return {
       success: true,
@@ -386,13 +386,13 @@ export class AuthService {
   }
 
   async resetPassword(email: string, code: string, newPassword: string) {
-    const cleanEmail = email.toLowerCase().trim();
+    const sanitizedEmail = email.toLowerCase().trim();
 
     const now = new Date();
     const rows = await db
       .select()
       .from(verificationCodes)
-      .where(and(eq(verificationCodes.email, cleanEmail), gt(verificationCodes.expires_at, now)))
+      .where(and(eq(verificationCodes.email, sanitizedEmail), gt(verificationCodes.expires_at, now)))
       .orderBy(verificationCodes.created_at)
       .limit(1);
 
@@ -404,9 +404,9 @@ export class AuthService {
     await db.delete(verificationCodes).where(eq(verificationCodes.id, stored.id));
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
-    await db.update(users).set({ password_hash: passwordHash }).where(eq(users.email, cleanEmail));
+    await db.update(users).set({ password_hash: passwordHash }).where(eq(users.email, sanitizedEmail));
 
-    this.logger.log(`Password reset successful for ${cleanEmail}`);
+    this.logger.log(`Password reset successful for ${sanitizedEmail}`);
 
     return { success: true, message: 'password reset successful' };
   }
@@ -520,17 +520,17 @@ export class AuthService {
   }
 
   async verifyMfaLogin(email: string, code: string, ipAddress?: string, userAgent?: string) {
-    const cleanEmail = email.toLowerCase().trim();
-    const result = await db.select().from(users).where(eq(users.email, cleanEmail)).limit(1);
+    const sanitizedEmail = email.toLowerCase().trim();
+    const result = await db.select().from(users).where(eq(users.email, sanitizedEmail)).limit(1);
     const user = result[0];
     if (!user) {
-      throw new UnauthorizedException("wrong login");
+      throw new UnauthorizedException('wrong login');
     }
 
     const isValid = await this.verifyMfa(user.id, code);
     if (!isValid) {
-      this.logger.warn(`Bad authenticator code for user ${user.id} from ${ipAddress}`);
-      throw new UnauthorizedException("invalid authenticator code");
+      this.logger.warn(`Failed MFA attempt for user ${user.id} [IP: ${ipAddress}]`);
+      throw new UnauthorizedException('invalid authenticator code');
     }
 
     const mResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, user.id)).limit(1);
@@ -558,13 +558,13 @@ export class AuthService {
       session_id: sessionId,
       app_metadata: {
         role: roleStr,
-        tenant_id: member?.tenant_id || user.tenant_id || ''
-      }
+        tenant_id: member?.tenant_id || user.tenant_id || '',
+      },
     };
     const accessToken = await this.jwtService.signAsync(payload, { expiresIn: this.ACCESS_TOKEN_TTL });
     const refreshToken = await this.generateRefreshToken(user.id, sessionId);
 
-    this.logger.log(`MFA login successful for user ${user.id} from ${ipAddress}`);
+    this.logger.log(`Successful MFA login for user ${user.id} [IP: ${ipAddress}, Agent: ${userAgent}]`);
     return {
       accessToken,
       refreshToken,
@@ -573,8 +573,8 @@ export class AuthService {
         email: user.email,
         full_name: user.full_name,
         role: roleStr,
-        tenant_id: member?.tenant_id || user.tenant_id || ''
-      }
+        tenant_id: member?.tenant_id || user.tenant_id || '',
+      },
     };
   }
 }

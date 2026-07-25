@@ -5,8 +5,4 @@ export const serverConfig = {
   apiUrl: process.env.NODE_ENV === 'production'
     ? '/api'
     : 'http://localhost:8502/api',
-  auth: {
-    cookieName: 'token',
-    cookieMaxAge: 7 * 24 * 60 * 60 * 1000,
-  }
 };

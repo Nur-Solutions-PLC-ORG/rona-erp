@@ -7,21 +7,12 @@ import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { db } from '../../db';
 import { users, sessions, blacklistedTokens } from '../../db/schema';
 import { eq } from 'drizzle-orm';
-import { serverConfig } from '@rona/config';
-
-const cookieExtractor = (req: any): string | null => {
-  let token = null;
-  if (req && req.cookies) {
-    token = req.cookies[serverConfig.auth.cookieName];
-  }
-  return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
-};
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      jwtFromRequest: cookieExtractor,
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: jwtConstants.secret,
       passReqToCallback: true,
@@ -29,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(req: any, payload: JwtPayload) {
-    const token = cookieExtractor(req);
+    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
     if (!token) throw new UnauthorizedException();
 
     const tokenHash = await bcrypt.hash(token, 10);

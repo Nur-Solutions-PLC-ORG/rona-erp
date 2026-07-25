@@ -4,11 +4,8 @@ import { DEFAULT_PORT } from '@rona/config';
 import helmet from 'helmet';
 import cors from 'cors';
 import * as express from 'express';
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
-
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
@@ -21,16 +18,6 @@ async function bootstrap() {
         upgradeInsecureRequests: [],
       },
     },
-    crossOriginEmbedderPolicy: true,
-    crossOriginOpenerPolicy: { policy: "same-origin" },
-    crossOriginResourcePolicy: { policy: "same-origin" },
-    originAgentCluster: true,
-    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-    xContentTypeOptions: true,
-    xDnsPrefetchControl: true,
-    xDownloadOptions: true,
-    xFrameOptions: { action: "deny" },
-    xPermittedCrossDomainPolicies: { permittedPolicies: "none" },
   }));
 
   app.use(cors({

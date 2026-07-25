@@ -42,13 +42,7 @@ export class GoogleAuthController {
       const googleUser = await this.googleAuthService.verifyGoogleToken(tokens.id_token!);
       const result = await this.googleAuthService.googleLogin(googleUser);
 
-      res.cookie('token', result.accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-      res.redirect(`${frontendUrl}/login`);
+      res.redirect(`${frontendUrl}/login?token=${result.accessToken}`);
     } catch (err: any) {
       res.redirect(`${frontendUrl}/login?error=auth_failed`);
     }
