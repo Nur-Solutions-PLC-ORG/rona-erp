@@ -35,7 +35,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const tokenHash = await bcrypt.hash(token, 10);
     const blacklisted = await db.select().from(blacklistedTokens).where(eq(blacklistedTokens.token_hash, tokenHash)).limit(1);
     if (blacklisted[0]) {
-      throw new UnauthorizedException('Token has been revoked');
+      throw new UnauthorizedException('Token has been cancled');
     }
 
     const sessionResult = await db.select().from(sessions).where(eq(sessions.id, payload.session_id as string)).limit(1);
