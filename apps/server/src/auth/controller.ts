@@ -5,12 +5,14 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { VerifyEmailDto, ResendVerificationDto, ForgotPasswordDto, ResetPasswordDto } from './dto/verify-email.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { EnableMfaDto, VerifyMfaDto, DisableMfaDto } from './dto/mfa.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { AuthExceptionFilter } from './filters/auth-exception.filter';
 import { serverConfig } from '@rona/config';
 import { randomBytes } from 'crypto';
+
 @Controller('auth')
 @UseFilters(AuthExceptionFilter)
 export class AuthController {
@@ -18,6 +20,7 @@ export class AuthController {
     @Inject(AuthService) private authService: AuthService,
     @Inject(JwtService) private jwtService: JwtService
   ) {}
+
   private setTokenCookie(res: any, token: string) {
     res.cookie(serverConfig.auth.cookieName, token, {
       httpOnly: true,
@@ -44,6 +47,7 @@ export class AuthController {
     this.setCsrfCookie(res, csrfToken);
     return { csrfToken };
   }
+
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('signin')
@@ -51,17 +55,25 @@ export class AuthController {
     this.validateCsrf(req);
     const result = await this.authService.login(body, req.ip, req.headers['user-agent']);
     if (result.mfa_required) {
-      return result;}
+      return result;
+    }
     if (result.accessToken) {
       this.setTokenCookie(res, result.accessToken);
     }
-    if (result.refreshToken) {
-      res.cookie('refresh_token', result.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      });
+    return { user: result.user, accessToken: result.accessToken };
+  }
+
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @Post('signin/mfa')
+  async signinMfa(@Req() req: any, @Res({ passthrough: true }) res: any, @Body() body: LoginDto & { code: string }) {
+    this.validateCsrf(req);
+    if (!body.email) {
+      throw new BadRequestException('email is required for MFA login');
+    }
+    const result = await this.authService.verifyMfaLogin(body.email, body.code, req.ip, req.headers['user-agent']);
+    if (result.accessToken) {
+      this.setTokenCookie(res, result.accessToken);
     }
     return { user: result.user, accessToken: result.accessToken };
   }
@@ -112,7 +124,9 @@ export class AuthController {
       }
     }
     res.clearCookie(serverConfig.auth.cookieName);
-    return { success: true };}
+    return { success: true };
+  }
+
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('forgot-password')
@@ -146,9 +160,34 @@ export class AuthController {
       return { session: null };
     }
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('user')
   async user(@CurrentUser() user: any) {
     return this.authService.me(user.id || user.sub);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Get('mfa/setup')
+  async setupMfa(@CurrentUser() user: any) {
+    const result = await this.authService.generateMfaSecret(user.id || user.sub);
+    return result;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('mfa/enable')
+  async enableMfa(@CurrentUser() user: any, @Body() body: EnableMfaDto) {
+    const result = await this.authService.enableMfa(user.id || user.sub, body.code);
+    return result;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Post('mfa/disable')
+  async disableMfa(@CurrentUser() user: any, @Body() body: DisableMfaDto) {
+    const result = await this.authService.disableMfa(user.id || user.sub, body.code);
+    return result;
   }
 }

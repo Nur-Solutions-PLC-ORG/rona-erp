@@ -1,11 +1,10 @@
 @baseUrl = http://localhost:8502
 @csrf_token = 
-@refresh_token =
 
-### 
+get a csrf token first
 GET {{baseUrl}}/auth/csrf
 
-### Register a new user
+###make a new account
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
 X-CSRF-Token: {{csrf_token}}
@@ -17,7 +16,7 @@ X-CSRF-Token: {{csrf_token}}
   "orgName": "Test Org"
 }
 
-### Login with email and password
+###log in with email
 POST {{baseUrl}}/auth/signin
 Content-Type: application/json
 X-CSRF-Token: {{csrf_token}}
@@ -27,7 +26,7 @@ X-CSRF-Token: {{csrf_token}}
   "password": "SecurePass1!"
 }
 
-### 
+###log in with employee id
 POST {{baseUrl}}/auth/signin
 Content-Type: application/json
 X-CSRF-Token: {{csrf_token}}
@@ -38,7 +37,39 @@ X-CSRF-Token: {{csrf_token}}
   "password": "password123"
 }
 
-### Request password reset code
+###finish mfa login after signin says mfa_required
+POST {{baseUrl}}/auth/signin/mfa
+Content-Type: application/json
+X-CSRF-Token: {{csrf_token}}
+
+{
+  "email": "test@example.com",
+  "code": "123456"
+}
+
+###set up mfa for your account
+GET {{baseUrl}}/auth/mfa/setup
+Authorization: Bearer YOUR_ACCESS_TOKEN
+
+turn on mfa with a code from your phone
+POST {{baseUrl}}/auth/mfa/enable
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN
+
+{
+  "code": "123456"
+}
+
+###turn off mfa with a code from your phone
+POST {{baseUrl}}/auth/mfa/disable
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN
+
+{
+  "code": "123456"
+}
+
+###forgot your password? get a reset code
 POST {{baseUrl}}/auth/forgot-password
 Content-Type: application/json
 X-CSRF-Token: {{csrf_token}}
@@ -47,7 +78,7 @@ X-CSRF-Token: {{csrf_token}}
   "email": "test@example.com"
 }
 
-### Reset password with code
+###reset password with the code you got
 POST {{baseUrl}}/auth/reset-password
 Content-Type: application/json
 X-CSRF-Token: {{csrf_token}}
@@ -58,45 +89,44 @@ X-CSRF-Token: {{csrf_token}}
   "newPassword": "NewSecurePass1!"
 }
 
-### Refresh access token
+###get a fresh access token
 POST {{baseUrl}}/auth/refresh
 Content-Type: application/json
-CSRF-Token: {{csrf_token}}
 
 {
-  "refreshToken": "{{refresh_token}}"
+  "refreshToken": "YOUR_REFRESH_TOKEN"
 }
 
-### Send email verification code
+###send email verification code
 POST {{baseUrl}}/auth/send-verification
 Content-Type: application/json
-CSRF-Token: {{csrf_token}}
+X-CSRF-Token: {{csrf_token}}
 
 {
   "email": "test@example.com"
 }
 
-### Verify email code
+###verify email with the code
 POST {{baseUrl}}/auth/verify-code
 Content-Type: application/json
-CSRF-Token: {{csrf_token}}
+X-CSRF-Token: {{csrf_token}}
 
 {
   "email": "test@example.com",
   "code": "123456"
 }
 
-### 
+###check if you're still logged in
 GET {{baseUrl}}/auth/status
 
-###
+###get your profile info
 GET {{baseUrl}}/auth/user
 
-### 
+###log out
 POST {{baseUrl}}/auth/signout
 
-### 
+###start google login
 GET {{baseUrl}}/auth/google/url
 
-### 
+###google calls you back here
 GET {{baseUrl}}/auth/google/callback

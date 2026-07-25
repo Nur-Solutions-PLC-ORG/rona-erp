@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, BadRequestException, InternalServerE
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
+import { authenticator } from 'otplib';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto, sanitizeInput } from './dto/register.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
@@ -32,8 +33,8 @@ export class AuthService {
       let member;
 
       if (email) {
-        const sanitizedEmail = email.toLowerCase().trim();
-        const result = await db.select().from(users).where(eq(users.email, sanitizedEmail)).limit(1);
+        const cleanEmail = email.toLowerCase().trim();
+        const result = await db.select().from(users).where(eq(users.email, cleanEmail)).limit(1);
         user = result[0];
         if (user) {
           const mResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, user.id)).limit(1);
@@ -49,12 +50,12 @@ export class AuthService {
       }
 
       if (!user) {
-        this.logger.warn(`Failed login attempt for email: ${email} [IP: ${ipAddress}]`);
+        this.logger.warn(`Someone tried logging in with: ${email} from ${ipAddress}`);
         throw new UnauthorizedException("wrong login");
       }
 
       if (user.locked_until && new Date(user.locked_until) > new Date()) {
-        this.logger.warn(`Locked account login attempt for user ${user.id} [IP: ${ipAddress}]`);
+        this.logger.warn(`Locked account got a visit from ${ipAddress}`);
         throw new BadRequestException('Account is temporarily locked. Try again later.');
       }
 
@@ -66,7 +67,7 @@ export class AuthService {
           failed_login_attempts: attempts,
           locked_until: lockedUntil,
         }).where(eq(users.id, user.id));
-        this.logger.warn(`Failed login attempt ${attempts}/5 for user ${user.id} [IP: ${ipAddress}]`);
+        this.logger.warn(`Wrong password attempt ${attempts}/5 for ${user.id} from ${ipAddress}`);
         throw new UnauthorizedException("wrong login");
       }
 
@@ -75,18 +76,17 @@ export class AuthService {
         locked_until: null,
         last_login_at: new Date(),
       }).where(eq(users.id, user.id));
-      this.logger.log(`Successful login for user ${user.id} [IP: ${ipAddress}, Agent: ${userAgent}]`);
+      this.logger.log(`User ${user.id} logged in from ${ipAddress}`);
 
        const roleStr = member?.role || 'staff';
 
-       if (user.mfa_enabled || roleStr === 'admin' || roleStr === 'owner') {
-         await this.sendVerificationCode(user.email);
-         return {
-           mfa_required: true,
-           email: user.email,
-           message: "code sent, wait 60s",
-         };
-       }
+       if (user.mfa_enabled) {
+          return {
+            mfa_required: true,
+            email: user.email,
+            message: "Enter your authenticator code",
+          };
+        }
       const sessionId = randomUUID();
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
@@ -107,7 +107,7 @@ export class AuthService {
       const accessToken = await this.jwtService.signAsync(payload, { expiresIn: this.ACCESS_TOKEN_TTL });
       const refreshToken = await this.generateRefreshToken(user.id, sessionId);
 
-      this.logger.log(`Successful login for user ${user.id} [IP: ${ipAddress}, Agent: ${userAgent}]`);
+      this.logger.log(`User ${user.id} logged in from ${ipAddress}`);
       return {
         accessToken,
         refreshToken,
@@ -123,7 +123,7 @@ export class AuthService {
       if (err instanceof UnauthorizedException || err instanceof BadRequestException) {
         throw err;
       }
-      this.logger.error(`Login Error: ${err.message}`, err.stack);
+      this.logger.error(`Login blew up: ${err.message}`, err.stack);
       throw new InternalServerErrorException("login failed, try later");
     }
   }
@@ -162,7 +162,7 @@ export class AuthService {
         expires: exp ? new Date(exp * 1000) : null
       };
     } catch (err: any) {
-      this.logger.error(`Status Error: ${err.message}`, err.stack);
+      this.logger.error(`Status check failed: ${err.message}`, err.stack);
       return { session: null };
     }
   }
@@ -197,25 +197,25 @@ export class AuthService {
       if (err instanceof BadRequestException) {
         throw err;
       }
-      this.logger.error(`Me Error: ${err.message}`, err.stack);
+      this.logger.error(`Couldn't get profile: ${err.message}`, err.stack);
       throw new InternalServerErrorException("failed to get profile");
     }
   }
 
   async sendVerificationCode(email: string) {
-    const sanitizedEmail = email.toLowerCase().trim();
+    const cleanEmail = email.toLowerCase().trim();
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const ttlSeconds = 900;
     const codeHash = await bcrypt.hash(code, 10);
     const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
 
     await db.insert(verificationCodes).values({
-      email: sanitizedEmail,
+      email: cleanEmail,
       code_hash: codeHash,
       expires_at: expiresAt,
     });
 
-    this.logger.log(`Stored verification code hash in databse for ${email}`);
+    this.logger.log(`Saved verification code hash for ${email}`);
 
     await this.emailService.sendVerificationEmail(email, code);
 
@@ -229,12 +229,12 @@ export class AuthService {
   }
 
   async verifyCode(email: string, code: string) {
-    const sanitizedEmail = email.toLowerCase().trim();
+    const cleanEmail = email.toLowerCase().trim();
     const now = new Date();
     const rows = await db
       .select()
       .from(verificationCodes)
-      .where(and(eq(verificationCodes.email, sanitizedEmail), gt(verificationCodes.expires_at, now)))
+      .where(and(eq(verificationCodes.email, cleanEmail), gt(verificationCodes.expires_at, now)))
       .orderBy(verificationCodes.created_at)
       .limit(1);
 
@@ -248,7 +248,7 @@ export class AuthService {
     try {
       await db.update(users).set({ is_email_verified: true }).where(eq(users.email, email));
     } catch (e: any) {
-      this.logger.error(`Error verifying email in database: ${e.message}`, e.stack);
+      this.logger.error(`Error verifying email: ${e.message}`, e.stack);
     }
 
     return {
@@ -259,11 +259,11 @@ export class AuthService {
 
   async register(registerDto: RegisterDto) {
     const { email, password, name, orgName } = registerDto;
-    const sanitizedEmail = email.toLowerCase().trim();
-    const sanitizedName = sanitizeInput(name.trim());
-    const sanitizedOrgName = sanitizeInput(orgName.trim());
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanName = sanitizeInput(name.trim());
+    const cleanOrgName = sanitizeInput(orgName.trim());
 
-    const existing = await db.select().from(users).where(eq(users.email, sanitizedEmail)).limit(1);
+    const existing = await db.select().from(users).where(eq(users.email, cleanEmail)).limit(1);
     if (existing[0]) {
       throw new BadRequestException('email already registered');
     }
@@ -273,13 +273,13 @@ export class AuthService {
     const userId = randomUUID();
 
     await db.transaction(async (tx) => {
-      await tx.insert(organizations).values({ id: orgId, name: sanitizedOrgName });
+      await tx.insert(organizations).values({ id: orgId, name: cleanOrgName });
 
       await tx.insert(users).values({
         id: userId,
-        email: sanitizedEmail,
+        email: cleanEmail,
         password_hash: passwordHash,
-        full_name: sanitizedName,
+        full_name: cleanName,
         is_email_verified: false,
         tenant_id: orgId,
       });
@@ -291,11 +291,11 @@ export class AuthService {
       });
     });
 
-    this.logger.log(`New user registered: ${sanitizedEmail}`);
+    this.logger.log(`New user signed up: ${cleanEmail}`);
 
     return {
       message: 'registration successful',
-      user: { email: sanitizedEmail, full_name: sanitizedName, role: 'admin' },
+      user: { email: cleanEmail, full_name: cleanName, role: 'admin' },
     };
   }
 
@@ -354,9 +354,9 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
-    const sanitizedEmail = email.toLowerCase().trim();
+    const cleanEmail = email.toLowerCase().trim();
 
-    const result = await db.select().from(users).where(eq(users.email, sanitizedEmail)).limit(1);
+    const result = await db.select().from(users).where(eq(users.email, cleanEmail)).limit(1);
     const user = result[0];
     if (!user) {
       throw new BadRequestException('email not found');
@@ -368,14 +368,14 @@ export class AuthService {
     const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
 
     await db.insert(verificationCodes).values({
-      email: sanitizedEmail,
+      email: cleanEmail,
       code_hash: codeHash,
       expires_at: expiresAt,
     });
 
-    await this.emailService.sendVerificationEmail(sanitizedEmail, resetCode);
+    await this.emailService.sendVerificationEmail(cleanEmail, resetCode);
 
-    this.logger.log(`Password reset code sent to ${sanitizedEmail}`);
+    this.logger.log(`Password reset code sent to ${cleanEmail}`);
 
     return {
       success: true,
@@ -385,13 +385,13 @@ export class AuthService {
   }
 
   async resetPassword(email: string, code: string, newPassword: string) {
-    const sanitizedEmail = email.toLowerCase().trim();
+    const cleanEmail = email.toLowerCase().trim();
 
     const now = new Date();
     const rows = await db
       .select()
       .from(verificationCodes)
-      .where(and(eq(verificationCodes.email, sanitizedEmail), gt(verificationCodes.expires_at, now)))
+      .where(and(eq(verificationCodes.email, cleanEmail), gt(verificationCodes.expires_at, now)))
       .orderBy(verificationCodes.created_at)
       .limit(1);
 
@@ -403,11 +403,69 @@ export class AuthService {
     await db.delete(verificationCodes).where(eq(verificationCodes.id, stored.id));
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
-    await db.update(users).set({ password_hash: passwordHash }).where(eq(users.email, sanitizedEmail));
+    await db.update(users).set({ password_hash: passwordHash }).where(eq(users.email, cleanEmail));
 
-    this.logger.log(`Password reset successful for ${sanitizedEmail}`);
+    this.logger.log(`Password reset successful for ${cleanEmail}`);
 
     return { success: true, message: 'password reset successful' };
+  }
+
+  async generateMfaSecret(userId: string) {
+    const secret = authenticator.generateSecret();
+    const appName = process.env.MFA_APP_NAME || 'Rona ERP';
+    const qrCodeUrl = authenticator.keyuri(userId, appName, secret);
+
+    await db.update(users).set({ mfa_secret_encrypted: secret }).where(eq(users.id, userId));
+
+    this.logger.log(`MFA secret generated for user ${userId}`);
+
+    return { secret, qrCodeUrl };
+  }
+
+  async enableMfa(userId: string, code: string) {
+    const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const user = userResult[0];
+    if (!user || !user.mfa_secret_encrypted) {
+      throw new BadRequestException('MFA setup not initiated');
+    }
+
+    const isValid = authenticator.verify({ token: code, secret: user.mfa_secret_encrypted });
+    if (!isValid) {
+      throw new BadRequestException('Invalid authenticator code');
+    }
+
+    await db.update(users).set({ mfa_enabled: true }).where(eq(users.id, userId));
+
+    this.logger.log(`MFA enabled for user ${userId}`);
+    return { success: true, message: 'MFA enabled successfully' };
+  }
+
+  async verifyMfa(userId: string, code: string): Promise<boolean> {
+    const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const user = userResult[0];
+    if (!user || !user.mfa_enabled || !user.mfa_secret_encrypted) {
+      return false;
+    }
+
+    return authenticator.verify({ token: code, secret: user.mfa_secret_encrypted });
+  }
+
+  async disableMfa(userId: string, code: string) {
+    const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const user = userResult[0];
+    if (!user || !user.mfa_enabled || !user.mfa_secret_encrypted) {
+      throw new BadRequestException('MFA is not enabled');
+    }
+
+    const isValid = authenticator.verify({ token: code, secret: user.mfa_secret_encrypted });
+    if (!isValid) {
+      throw new BadRequestException('Invalid authenticator code');
+    }
+
+    await db.update(users).set({ mfa_enabled: false, mfa_secret_encrypted: null }).where(eq(users.id, userId));
+
+    this.logger.log(`MFA disabled for user ${userId}`);
+    return { success: true, message: 'MFA disabled successfully' };
   }
 
   async refreshToken(refreshToken: string) {
@@ -457,6 +515,65 @@ export class AuthService {
         role: roleStr,
         tenant_id: member?.tenant_id || user.tenant_id || '',
       },
+    };
+  }
+
+  async verifyMfaLogin(email: string, code: string, ipAddress?: string, userAgent?: string) {
+    const cleanEmail = email.toLowerCase().trim();
+    const result = await db.select().from(users).where(eq(users.email, cleanEmail)).limit(1);
+    const user = result[0];
+    if (!user) {
+      throw new UnauthorizedException("wrong login");
+    }
+
+    const isValid = await this.verifyMfa(user.id, code);
+    if (!isValid) {
+      this.logger.warn(`Bad authenticator code for user ${user.id} from ${ipAddress}`);
+      throw new UnauthorizedException("invalid authenticator code");
+    }
+
+    const mResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, user.id)).limit(1);
+    const member = mResult[0];
+    const roleStr = member?.role || 'staff';
+
+    await db.update(users).set({
+      failed_login_attempts: 0,
+      locked_until: null,
+      last_login_at: new Date(),
+    }).where(eq(users.id, user.id));
+
+    const sessionId = randomUUID();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await db.insert(sessions).values({
+      id: sessionId,
+      user_id: user.id,
+      expires_at: expiresAt,
+    });
+
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      session_id: sessionId,
+      app_metadata: {
+        role: roleStr,
+        tenant_id: member?.tenant_id || user.tenant_id || ''
+      }
+    };
+    const accessToken = await this.jwtService.signAsync(payload, { expiresIn: this.ACCESS_TOKEN_TTL });
+    const refreshToken = await this.generateRefreshToken(user.id, sessionId);
+
+    this.logger.log(`MFA login successful for user ${user.id} from ${ipAddress}`);
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: roleStr,
+        tenant_id: member?.tenant_id || user.tenant_id || ''
+      }
     };
   }
 }
