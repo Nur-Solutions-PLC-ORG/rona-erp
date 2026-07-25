@@ -9,7 +9,7 @@ import { EnableMfaDto, VerifyMfaDto, DisableMfaDto } from './dto/mfa.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { AuthExceptionFilter } from './filters/auth-exception.filter';
+import { AuthExceptionFilter } from './filters/error_filtering';
 import { serverConfig } from '@rona/config';
 import { randomBytes } from 'crypto';
 
@@ -21,7 +21,7 @@ export class AuthController {
     @Inject(JwtService) private jwtService: JwtService
   ) {}
 
-  private setTokenCookie(res: any, token: string) {
+  private setTokenCookie( res: any, token: string){
     res.cookie(serverConfig.auth.cookieName, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
