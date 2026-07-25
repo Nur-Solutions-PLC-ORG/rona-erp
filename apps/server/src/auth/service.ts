@@ -311,7 +311,7 @@ export class AuthService {
 
     await db.update(refreshTokens).set({ revoked_at: new Date() }).where(eq(refreshTokens.user_id, userId));
 
-    this.logger.log(`Token blacklisted and refresh tokens revoked for user ${userId}`);
+    this.logger.log(`Token is no more available ${userId}`);
 
     return { success: true, message: 'logged out' };
   }
