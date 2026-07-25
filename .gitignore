@@ -11,4 +11,3 @@ node_modules/
 !.env.example
 
 # Local DB
-apps/server/src/db/
