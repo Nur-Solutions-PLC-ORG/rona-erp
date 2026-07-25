@@ -89,7 +89,7 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('send-verification')
-  async sendVerification(@Req() req: any, @Body() body: ResendVerificationDto) {
+  async sendVerification(@Req() req:any, @Body() body:ResendVerificationDto) {
     this.validateCsrf(req);
     return this.authService.sendVerificationCode(body.email);
   }
@@ -97,7 +97,7 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('verify-code')
-  async verifyCode(@Req() req: any, @Body() body: VerifyEmailDto) {
+  async verifyCode(@Req()req:any, @Body() body:VerifyEmailDto) {
     this.validateCsrf(req);
     return this.authService.verifyCode(body.email, body.code);
   }
