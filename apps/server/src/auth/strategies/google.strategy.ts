@@ -10,7 +10,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const callbackURL = process.env.GOOGLE_CALLBACK_URL || `${process.env.APP_URL || 'http://localhost:8502'}/auth/google/callback`;
 
     if (!clientID || !clientSecret) {
-      throw new Error('GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are required');
+      throw new Error('Google credintials are required');
     }
 
     super({
