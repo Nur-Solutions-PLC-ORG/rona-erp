@@ -9,15 +9,15 @@ export class EmailService {
   constructor() {
     if (process.env.RESEND_API_KEY) {
       this.resend = new Resend(process.env.RESEND_API_KEY);
-      this.logger.log(`Resend initialized`);
+      this.logger.log('resend ready');
     } else {
-      this.logger.log('resend api key not configured.');
+      this.logger.log('resend api key missing');
     }
   }
 
   async sendVerificationEmail(toEmail: string, code: string): Promise<boolean> {
     const sanitizedEmail = toEmail.toLowerCase().trim().replace(/[<>"'&]/g, '');
-    const subject = 'Your Email Verification Code';
+    const subject = 'your verification code';
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
         <h2 style="color: #1a73e8; text-align: center;">Verify Your Email Address</h2>
@@ -39,18 +39,18 @@ export class EmailService {
         });
 
         if (result.error) {
-           this.logger.error(`Failed to send email via Resend to ${toEmail}: ${result.error.message}`);
+           this.logger.error(`resend email failed for ${toEmail}: ${result.error.message}`);
            return false;
         }
 
-        this.logger.log(`Email verification sent via Resend to: ${toEmail}`);
+        this.logger.log(`verification email sent to ${toEmail}`);
         return true;
       } catch (error: any) {
-        this.logger.error(`Failed to send Resend email to ${toEmail}: ${error.message}`);
+        this.logger.error(`resend email error for ${toEmail}: ${error.message}`);
       }
     }
 
-    this.logger.log(`📧 [EMAIL VERIFICATION CODE] To: ${toEmail} | Code: ${code}`);
+    this.logger.log(`verification code for ${toEmail}: ${code}`);
     return false;
   }
 }

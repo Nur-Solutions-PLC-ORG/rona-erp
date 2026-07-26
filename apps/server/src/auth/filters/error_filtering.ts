@@ -1,7 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
 import * as os from 'os';
-
 @Catch()
 export class AuthExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
@@ -11,13 +10,13 @@ export class AuthExceptionFilter implements ExceptionFilter {
     const isProduction = process.env.NODE_ENV === 'production';
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = 'Internal server error';
+    let message = 'something went wrong';
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       message = exception.message;
     } else if (exception instanceof Error) {
-      message = isProduction ? 'Internal server error' : exception.message;
+      message = isProduction ? 'something went wrong' : exception.message;
     }
     const logMsg = `NestJS Exception: ${exception instanceof Error ? exception.stack : JSON.stringify(exception)}\n`;
     console.error(logMsg);
@@ -26,11 +25,9 @@ export class AuthExceptionFilter implements ExceptionFilter {
       const fs = require('fs');
       const MAX_LOG_SIZE = 10 * 1024 * 1024;
       if (fs.existsSync(logPath) && fs.statSync(logPath).size > MAX_LOG_SIZE) {
-        fs.writeFileSync(logPath, '');
-      }
+        fs.writeFileSync(logPath, '');}
       fs.appendFileSync(logPath, logMsg);
     } catch (e) {}
-
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),

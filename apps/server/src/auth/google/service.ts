@@ -2,9 +2,9 @@ import { Injectable, BadRequestException, UnauthorizedException, InternalServerE
 import { OAuth2Client } from 'google-auth-library';
 import { randomUUID } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import sql from '../../db';
 import { sanitizeInput } from '../dto/register.dto';
-
 @Injectable()
 export class GoogleAuthService {
   private readonly logger = new Logger(GoogleAuthService.name);
@@ -15,19 +15,24 @@ export class GoogleAuthService {
   );
 
   constructor(@Inject(JwtService) private readonly jwtService: JwtService) {}
-
   async verifyGoogleToken(idToken: string) {
+    if (!idToken || typeof idToken !== 'string') {
+      throw new BadRequestException('bad google id token');
+    }
     try {
       const ticket = await this.googleClient.verifyIdToken({
         idToken,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
       const payload = ticket.getPayload();
-      
       if (!payload || !payload.email) {
+        this.logger.warn('google token has no email');
         throw new BadRequestException('invalid google token');
       }
-
+      if (!payload.email_verified) {
+        this.logger.warn(`google email not verified for ${payload.email}`);
+        throw new BadRequestException('google email not verified');
+      }
       return {
         email: payload.email,
         firstName: payload.given_name,
@@ -36,26 +41,21 @@ export class GoogleAuthService {
         picture: payload.picture,
       };
     } catch (error: any) {
-      this.logger.error(`Google token verification failed: ${error.message}`);
-      throw new UnauthorizedException('Invalid google id token');
+      this.logger.error(`google token verify failed: ${error.message}`, error.stack);
+      throw new UnauthorizedException('invalid google id token');
     }
   }
-
   async googleLogin(googleUser: { email: string; firstName?: string; lastName?: string; googleId?: string; picture?: string }) {
     if (!googleUser || !googleUser.email) {
-      throw new BadRequestException('Google profile missing required email');
+      throw new BadRequestException('google profile missing email');
     }
-
     try {
       const email = googleUser.email.toLowerCase().trim();
       const full_name = sanitizeInput(
-        `${googleUser.firstName || ''} ${googleUser.lastName || ''}`.trim() || 'Google User'
-      );
-
+        `${googleUser.firstName || ''} ${googleUser.lastName || ''}`.trim() || 'Google User');
       const result = await sql.begin(async (tx) => {
         let [user] = await tx`SELECT id, email, full_name FROM public.users WHERE email = ${email}`;
         let member;
-
         if (!user) {
           const orgName = `${full_name}'s Org`;
           const [org] = await tx`INSERT INTO public.organizations (name) VALUES (${orgName}) RETURNING id`;
@@ -65,7 +65,6 @@ export class GoogleAuthService {
             VALUES (${email}, 'GOOGLE_OAUTH_ACCOUNT', ${full_name}, TRUE) RETURNING id, email, full_name
           `;
           user = newUser;
-
           const [newMember] = await tx`
             INSERT INTO public.tenant_members (user_id, tenant_id, role)
             VALUES (${user.id}, ${org.id}, 'admin')
@@ -81,31 +80,27 @@ export class GoogleAuthService {
           `;
           member = m;
         }
-
         const sessionId = randomUUID();
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-        
         await tx`
           INSERT INTO public.sessions (id, user_id, expires_at)
           VALUES (${sessionId}, ${user.id}, ${expiresAt})
         `;
-
         return { user, member, sessionId };
       });
-
-      const payload = {
+      const position = result.member?.role === 'admin' ? 'admin' : undefined;
+      const payload: JwtPayload = {
         sub: result.user.id,
         email: result.user.email,
         session_id: result.sessionId,
+        position,
         app_metadata: {
           role: result.member?.role || 'member',
           tenant_id: result.member?.tenant_id || '',
         },
       };
-
       const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '7d' });
       this.logger.log(`Successful Google OAuth login for user ${result.user.id}`);
-
       return {
         accessToken,
         user: {
@@ -117,11 +112,10 @@ export class GoogleAuthService {
         },
       };
     } catch (err: any) {
-      this.logger.error(`Google Login Error for ${googleUser.email}: ${err.message}`, err.stack);
-      throw new InternalServerErrorException('Google authentication failed');
+      this.logger.error(`google login error for ${googleUser.email}: ${err.message}`, err.stack);
+      throw new InternalServerErrorException('google auth failed');
     }
   }
-
   getGoogleAuthUrl() {
     return this.googleClient.generateAuthUrl({
       access_type: 'offline',
@@ -132,9 +126,16 @@ export class GoogleAuthService {
       prompt: 'consent'
     });
   }
-
   async getTokensFromCode(code: string) {
-    const { tokens } = await this.googleClient.getToken(code);
-    return tokens;
+    if (!code || typeof code !== 'string') {
+      throw new BadRequestException('bad auth code');
+    }
+    try {
+      const { tokens } = await this.googleClient.getToken(code);
+      return tokens;
+    } catch (error: any) {
+      this.logger.error(`code exchange failed: ${error.message}`, error.stack);
+      throw new UnauthorizedException('code exchange failed');
+    }
   }
 }

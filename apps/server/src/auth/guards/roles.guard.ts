@@ -1,6 +1,13 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
+
+const POSITION_HIERARCHY: Record<string, number> = {
+  owner: 3,
+  admin: 2,
+  managers: 1,
+  staff: 0,
+};
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -15,6 +22,17 @@ export class RolesGuard implements CanActivate {
       return true;
     }
     const { user } = context.switchToHttp().getRequest();
-    return requiredRoles.some((role) => user?.role === role);
+    const userPositionLevel = Math.max(
+      POSITION_HIERARCHY[user?.position] || 0,
+      POSITION_HIERARCHY[user?.role] || 0,
+    );
+    if (userPositionLevel === 0 && !user?.position && !user?.role) {
+      throw new ForbiddenException('no role assigned');
+    }
+    const userLevel = userPositionLevel;
+    return requiredRoles.some((role) => {
+      const requiredLevel = POSITION_HIERARCHY[role] || 0;
+      return userLevel >= requiredLevel;
+    });
   }
 }

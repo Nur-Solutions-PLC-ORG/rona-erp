@@ -1,8 +1,10 @@
 import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { PlatformSettingsService } from './platform-settings.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { Public } from '../auth/decorators/public.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('platform-settings')
 export class PlatformSettingsController {
@@ -16,7 +18,8 @@ export class PlatformSettingsController {
     return { isMaintenance, message };
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post('maintenance')
   async setMaintenance(@CurrentUser() user: any, @Body() body: { enabled: boolean; message?: string }) {
     await this.platformSettingsService.setSetting('maintenance_mode', body.enabled ? 'true' : 'false');

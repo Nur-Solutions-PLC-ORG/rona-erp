@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './service';
 import { AuthController } from './controller';
 import { JWT_SECRET } from './constants/auth.constants';
@@ -34,6 +34,11 @@ import { EmailService } from './email/email.service';
         name: 'mfa',
         ttl: 60000,
         limit: 5,
+      },
+      {
+        name: 'roleManagement',
+        ttl: 60000,
+        limit: 10,
       },
     ]),
     JwtModule.register({

@@ -3,4 +3,4 @@ const secret = process.env.JWT_SECRET;
 if (is_prod && !secret) {
   throw new Error('JWT_SECRET is not configured');
 }
-export const JWT_SECRET = secret || '';
+export const JWT_SECRET = is_prod ? secret! : secret || 'dev-secret-only-for-local';

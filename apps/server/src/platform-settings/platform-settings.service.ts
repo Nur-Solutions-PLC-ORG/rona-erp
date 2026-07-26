@@ -7,9 +7,7 @@ import { eq } from 'drizzle-orm';
 export class PlatformSettingsService {
   async getSetting(key: string): Promise<string | null> {
     const result = await db.select().from(platformSettings).where(eq(platformSettings.key, key)).limit(1);
-    return result[0]?.value || null;
-  }
-
+    return result[0]?.value || null;}
   async setSetting(key: string, value: string) {
     const existing = await db.select().from(platformSettings).where(eq(platformSettings.key, key)).limit(1);
     if (existing[0]) {
@@ -17,16 +15,13 @@ export class PlatformSettingsService {
     } else {
       await db.insert(platformSettings).values({ key, value });
     }
-    return { success: true };
-  }
-
+    return { success: true };}
   async isMaintenanceMode(): Promise<boolean> {
     const value = await this.getSetting('maintenance_mode');
     return value === 'true';
   }
-
   async getMaintenanceMessage(): Promise<string> {
     const value = await this.getSetting('maintenance_message');
-    return value || 'System is under maintenance. Please try again later.';
+    return value || 'System is under maintenance Please try again later.';
   }
 }

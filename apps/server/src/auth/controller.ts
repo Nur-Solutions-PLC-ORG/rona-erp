@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Get, Req, Res, UseGuards, UseFilters, Inject, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Get, Req, Res, UseGuards, UseFilters, Inject, BadRequestException, Param } from '@nestjs/common';
 import { AuthService } from './service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
@@ -7,11 +7,15 @@ import { VerifyEmailDto, ResendVerificationDto, ForgotPasswordDto, ResetPassword
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { EnableMfaDto, VerifyMfaDto, DisableMfaDto } from './dto/mfa.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { Roles } from './decorators/roles.decorator';
 import { AuthExceptionFilter } from './filters/error_filtering';
 import { serverConfig } from '@rona/config';
 import { randomBytes } from 'crypto';
+
 
 @Controller('auth')
 @UseFilters(AuthExceptionFilter)
@@ -71,7 +75,7 @@ export class AuthController {
   async signinMfa(@Req() req: any, @Res({ passthrough: true }) res: any, @Body() body: LoginDto & { code: string }) {
     this.validateCsrf(req);
     if (!body.email) {
-      throw new BadRequestException('email is required for MFA login');
+      throw new BadRequestException('email needed for mfa login');
     }
     const result = await this.authService.verifyMfaLogin(body.email, body.code, req.ip, req.headers['user-agent']);
     if (result.accessToken) {
@@ -103,7 +107,6 @@ export class AuthController {
     this.validateCsrf(req);
     return this.authService.verifyCode(body.email, body.code);
   }
-
   private validateCsrf(req: any) {
     if (process.env.NODE_ENV !== 'production') {
       return;
@@ -111,10 +114,8 @@ export class AuthController {
     const csrfHeader = req.headers['x-csrf-token'];
     const csrfCookie = req.cookies?.csrf_token;
     if (!csrfHeader || !csrfCookie || csrfHeader !== csrfCookie) {
-      throw new BadRequestException('Invalid CSRF token');
-    }
-  }
-
+      throw new BadRequestException('bad csrf token');
+    }}
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('signout')
@@ -192,5 +193,29 @@ export class AuthController {
   async disableMfa(@CurrentUser() user: any, @Body() body: DisableMfaDto) {
     const result = await this.authService.disableMfa(user.id || user.sub, body.code);
     return result;
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard, ThrottlerGuard)
+  @Roles('admin', 'owner')
+  @Throttle({ roleManagement: { ttl: 60000, limit: 10 } })
+  @Get('users')
+  async getUsers(@CurrentUser() user: any) {
+    return this.authService.getTenantUsers(user.tenantId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard, ThrottlerGuard)
+  @Roles('admin', 'owner')
+  @Throttle({ roleManagement: { ttl: 60000, limit: 10 } })
+  @Post('users/:id/position')
+  async setUserPosition(@CurrentUser() user: any, @Param('id') userId: string, @Body() body: { position: string }) {
+    return this.authService.setUserPosition(user.id || user.sub, userId, body.position, user.tenantId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard, ThrottlerGuard)
+  @Roles('admin', 'owner')
+  @Throttle({ roleManagement: { ttl: 60000, limit: 10 } })
+  @Post('users/:id/tenant-role')
+  async setTenantRole(@CurrentUser() user: any, @Param('id') userId: string, @Body() body: { role: string }) {
+    return this.authService.setTenantRole(user.id || user.sub, userId, body.role, user.tenantId);
   }
 }
