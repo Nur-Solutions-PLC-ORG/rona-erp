@@ -1,6 +1,6 @@
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
-import * as fs from 'fs';
+import * as os from 'os';
 
 @Catch()
 export class AuthExceptionFilter implements ExceptionFilter {
@@ -22,7 +22,13 @@ export class AuthExceptionFilter implements ExceptionFilter {
     const logMsg = `NestJS Exception: ${exception instanceof Error ? exception.stack : JSON.stringify(exception)}\n`;
     console.error(logMsg);
     try {
-      fs.appendFileSync('/tmp/nestjs-error.log', logMsg);
+      const logPath = `${os.tmpdir()}/nestjs-error.log`;
+      const fs = require('fs');
+      const MAX_LOG_SIZE = 10 * 1024 * 1024;
+      if (fs.existsSync(logPath) && fs.statSync(logPath).size > MAX_LOG_SIZE) {
+        fs.writeFileSync(logPath, '');
+      }
+      fs.appendFileSync(logPath, logMsg);
     } catch (e) {}
 
     response.status(status).json({

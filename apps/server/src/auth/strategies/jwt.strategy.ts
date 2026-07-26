@@ -2,25 +2,34 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { jwtConstants } from '../constants/auth.constants';
+import { JWT_SECRET } from '../constants/auth.constants';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 import { db } from '../../db';
 import { users, sessions, blacklistedTokens } from '../../db/schema';
 import { eq } from 'drizzle-orm';
+import { serverConfig } from '@rona/config';
+
+const cookieExtractor = (req: any): string | null => {
+  let token = null;
+  if (req && req.cookies) {
+    token = req.cookies[serverConfig.auth.cookieName];
+  }
+  return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+};
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: cookieExtractor,
       ignoreExpiration: false,
-      secretOrKey: jwtConstants.secret,
+      secretOrKey: JWT_SECRET,
       passReqToCallback: true,
     });
   }
 
   async validate(req: any, payload: JwtPayload) {
-    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+    const token = cookieExtractor(req);
     if (!token) throw new UnauthorizedException();
 
     const tokenHash = await bcrypt.hash(token, 10);

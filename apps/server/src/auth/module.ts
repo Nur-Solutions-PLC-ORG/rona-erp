@@ -4,7 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthService } from './service';
 import { AuthController } from './controller';
-import { jwtConstants } from './constants/auth.constants';
+import { JWT_SECRET } from './constants/auth.constants';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { GoogleAuthService } from './google/service';
@@ -30,10 +30,15 @@ import { EmailService } from './email/email.service';
         ttl: 60000,
         limit: 3,
       },
+      {
+        name: 'mfa',
+        ttl: 60000,
+        limit: 5,
+      },
     ]),
     JwtModule.register({
       global: true,
-      secret: jwtConstants.secret,
+      secret: JWT_SECRET,
       signOptions: { expiresIn: '24h' },
     }),
   ],

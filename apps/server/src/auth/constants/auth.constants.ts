@@ -1,13 +1,6 @@
-export const jwtConstants = {
-  get secret(): string {
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      if (process.env.NODE_ENV === 'production') {
-        throw new Error('JWT_SECRET environment variable is required in production');
-      }
-      return 'dev_jwt_secret_key_change_in_production';
-    }
-    return secret;
-  },
-};
-
+const is_prod = process.env.NODE_ENV === 'production';
+const secret = process.env.JWT_SECRET;
+if (is_prod && !secret) {
+  throw new Error('JWT_SECRET is not configured');
+}
+export const JWT_SECRET = secret || '';

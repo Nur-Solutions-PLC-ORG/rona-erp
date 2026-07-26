@@ -1,32 +1,55 @@
 import { Injectable, UnauthorizedException, BadRequestException, InternalServerErrorException, Logger, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { randomUUID } from 'crypto';
+import { randomUUID, createCipheriv, createDecipheriv, randomBytes, scrypt } from 'crypto';
+import { promisify } from 'util';
 import { authenticator } from 'otplib';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto, sanitizeInput } from './dto/register.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { EmailService } from './email/email.service';
 import { db } from '../db';
-import { users, tenantMembers, userRoles, organizations, sessions, verificationCodes, blacklistedTokens, refreshTokens, platforms } from '../db/schema';
+import { users, tenantMembers, userRoles, organizations, sessions, verificationCodes, blacklistedTokens, refreshTokens } from '../db/schema';
 import { eq, and, gt } from 'drizzle-orm';
+const scryptAsync = promisify(scrypt);
 
 @Injectable()
 export class AuthService {
   private readonly ACCESS_TOKEN_TTL = '7d';
   private readonly logger = new Logger(AuthService.name);
+  private mfaEncryptionKey!: Buffer;
 
   constructor(
     @Inject(JwtService) private readonly jwtService: JwtService,
     @Inject(EmailService) private readonly emailService: EmailService,
   ) {}
 
-  private detectPlatform(userAgent?: string): string {
-    if (!userAgent) return 'unknown';
-    const ua = userAgent.toLowerCase();
-    if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) return 'mobile';
-    if (ua.includes('tablet') || ua.includes('ipad')) return 'tablet';
-    return 'web';
+  async onModuleInit() {
+    const key = process.env.MFA_ENCRYPTION_KEY;
+    if (!key) {
+      throw new Error('MFA_ENCRYPTION_KEY must be set');
+    }
+    const salt = Buffer.from('rona-erp-mfa-salt', 'utf-8');
+    this.mfaEncryptionKey = await scryptAsync(key, salt, 32) as Buffer;
+  }
+
+  private async encryptMfaSecret(secret: string): Promise<string> {
+    const iv = randomBytes(12);
+    const cipher = createCipheriv('aes-256-gcm', this.mfaEncryptionKey, iv);
+    const encrypted = Buffer.concat([cipher.update(secret, 'utf8'), cipher.final()]);
+    const authTag = cipher.getAuthTag();
+    return `${iv.toString('hex')}:${authTag.toString('hex')}:${encrypted.toString('hex')}`;
+  }
+
+  private async decryptMfaSecret(encryptedSecret: string): Promise<string> {
+    const parts = encryptedSecret.split(':');
+    const iv = Buffer.from(parts[0], 'hex');
+    const authTag = Buffer.from(parts[1], 'hex');
+    const encrypted = Buffer.from(parts[2], 'hex');
+    const decipher = createDecipheriv('aes-256-gcm', this.mfaEncryptionKey, iv);
+    decipher.setAuthTag(authTag);
+    const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+    return decrypted.toString('utf8');
   }
 
   async login(loginDto: LoginDto, ipAddress?: string, userAgent?: string) {
@@ -56,7 +79,6 @@ export class AuthService {
           member = mResult[0];
         }
       }
-
       if (!user) {
         this.logger.warn(`Failed login attempt for email: ${email} [IP: ${ipAddress}]`);
         throw new UnauthorizedException('wrong login');
@@ -104,14 +126,6 @@ export class AuthService {
         expires_at: expiresAt,
       });
 
-      await db.insert(platforms).values({
-        user_id: user.id,
-        session_id: sessionId,
-        platform: this.detectPlatform(userAgent),
-        user_agent: userAgent,
-        ip_address: ipAddress,
-      });
-
       const payload: JwtPayload = {
         sub: user.id,
         email: user.email,
@@ -146,42 +160,39 @@ export class AuthService {
   }
 
   async getUserStatus(userId: string, exp?: number) {
-    try {
-      const uResult = await db.select({ id: users.id, email: users.email }).from(users).where(eq(users.id, userId)).limit(1);
-      const user = uResult[0];
-      if (!user) return { session: null };
-
-      const rolesRows = await db.select().from(userRoles).where(eq(userRoles.user_id, userId));
-
-      let rolesList: Array<{ position: string; module: string[] }> = [];
-
-      if (rolesRows.length > 0) {
-        rolesList = rolesRows.map(r => ({
-          position: r.position,
-          module: r.module || [],
-        }));
-      } else {
-        const mResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, userId)).limit(1);
-        const member = mResult[0];
-        rolesList = [{
-          position: member?.role || 'staff',
-          module: ['HR', 'Inventory', 'Finance'],
-        }];
-      }
-      return {
-        session: {
-          user: {
-            id: user.id,
-            email: user.email,
-          },
-          roles: rolesList,
-        },
-        expires: exp ? new Date(exp * 1000) : null,
-      };
-    } catch (err: any) {
-      this.logger.error(`Status Error: ${err.message}`, err.stack);
+    const uResult = await db.select({ id: users.id, email: users.email }).from(users).where(eq(users.id, userId)).limit(1);
+    const user = uResult[0];
+    if (!user) {
       return { session: null };
     }
+
+    const rolesRows = await db.select().from(userRoles).where(eq(userRoles.user_id, userId));
+
+    let rolesList: Array<{ position: string; module: string[] }> = [];
+
+    if (rolesRows.length > 0) {
+      rolesList = rolesRows.map(r => ({
+        position: r.position,
+        module: r.module || [],
+      }));
+    } else {
+      const mResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, userId)).limit(1);
+      const member = mResult[0];
+      rolesList = [{
+        position: member?.role || 'staff',
+        module: ['HR', 'Inventory', 'Finance'],
+      }];
+    }
+    return {
+      session: {
+        user: {
+          id: user.id,
+          email: user.email,
+        },
+        roles: rolesList,
+      },
+      expires: exp ? new Date(exp * 1000) : null,
+    };
   }
 
   async me(userId: string) {
@@ -206,7 +217,7 @@ export class AuthService {
       const user = result[0];
 
       if (!user) {
-        throw new BadRequestException('no user');
+        throw new UnauthorizedException('User not found');
       }
 
       return { user };
@@ -218,33 +229,26 @@ export class AuthService {
       throw new InternalServerErrorException('failed to get profile');
     }
   }
-
   async sendVerificationCode(email: string) {
     const sanitizedEmail = email.toLowerCase().trim();
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const ttlSeconds = 900;
     const codeHash = await bcrypt.hash(code, 10);
     const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
-
     await db.insert(verificationCodes).values({
       email: sanitizedEmail,
       code_hash: codeHash,
       expires_at: expiresAt,
     });
-
-    this.logger.log(`Stored verification code hash in database for ${email}`);
-
+    this.logger.log('Stored verification code hash in database');
     await this.emailService.sendVerificationEmail(email, code);
-
     return {
       success: true,
       message: 'code sent',
       email,
       expiresInMinutes: 15,
-      code: process.env.NODE_ENV !== 'production' ? code : undefined,
     };
   }
-
   async verifyCode(email: string, code: string) {
     const sanitizedEmail = email.toLowerCase().trim();
     const now = new Date();
@@ -254,26 +258,21 @@ export class AuthService {
       .where(and(eq(verificationCodes.email, sanitizedEmail), gt(verificationCodes.expires_at, now)))
       .orderBy(verificationCodes.created_at)
       .limit(1);
-
     const stored = rows[0];
     if (!stored || !(await bcrypt.compare(code, stored.code_hash))) {
       throw new BadRequestException('bad code');
     }
-
     await db.delete(verificationCodes).where(eq(verificationCodes.id, stored.id));
-
     try {
-      await db.update(users).set({ is_email_verified: true }).where(eq(users.email, email));
+      await db.update(users).set({ is_email_verified: true }).where(eq(users.email, sanitizedEmail));
     } catch (e: any) {
       this.logger.error(`Error verifying email in database: ${e.message}`, e.stack);
     }
-
     return {
       success: true,
       message: 'email verified',
     };
   }
-
   async register(registerDto: RegisterDto) {
     const { email, password, name, orgName } = registerDto;
     const sanitizedEmail = email.toLowerCase().trim();
@@ -284,14 +283,11 @@ export class AuthService {
     if (existing[0]) {
       throw new BadRequestException('email already registered');
     }
-
     const passwordHash = await bcrypt.hash(password, 12);
     const orgId = randomUUID();
     const userId = randomUUID();
-
     await db.transaction(async (tx) => {
       await tx.insert(organizations).values({ id: orgId, name: sanitizedOrgName });
-
       await tx.insert(users).values({
         id: userId,
         email: sanitizedEmail,
@@ -327,8 +323,9 @@ export class AuthService {
     });
 
     await db.update(refreshTokens).set({ revoked_at: new Date() }).where(eq(refreshTokens.user_id, userId));
+    await db.delete(sessions).where(eq(sessions.user_id, userId));
 
-    this.logger.log(`Token blacklisted and refresh tokens revoked for user ${userId}`);
+    this.logger.log(`Token blacklisted, refresh tokens canceled and sessions cleared for user ${userId}`);
 
     return { success: true, message: 'logged out' };
   }
@@ -366,7 +363,8 @@ export class AuthService {
   }
 
   async rotateRefreshToken(oldToken: string, userId: string, sessionId: string) {
-    await db.update(refreshTokens).set({ revoked_at: new Date() }).where(eq(refreshTokens.user_id, userId));
+    const tokenHash = await bcrypt.hash(oldToken, 10);
+    await db.update(refreshTokens).set({ revoked_at: new Date() }).where(and(eq(refreshTokens.user_id, userId), eq(refreshTokens.token_hash, tokenHash)));
     return this.generateRefreshToken(userId, sessionId);
   }
 
@@ -376,8 +374,11 @@ export class AuthService {
     const result = await db.select().from(users).where(eq(users.email, sanitizedEmail)).limit(1);
     const user = result[0];
     if (!user) {
-      throw new BadRequestException('email not found');
+      this.logger.warn('Password reset requested for an unrecognized email');
+      return { success: true, message: 'reset code sent' };
     }
+
+    await db.delete(verificationCodes).where(eq(verificationCodes.email, sanitizedEmail));
 
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
     const ttlSeconds = 900;
@@ -397,7 +398,6 @@ export class AuthService {
     return {
       success: true,
       message: 'reset code sent',
-      code: process.env.NODE_ENV !== 'production' ? resetCode : undefined,
     };
   }
 
@@ -432,7 +432,8 @@ export class AuthService {
     const appName = process.env.MFA_APP_NAME || 'Rona ERP';
     const qrCodeUrl = authenticator.keyuri(userId, appName, secret);
 
-    await db.update(users).set({ mfa_secret_encrypted: secret }).where(eq(users.id, userId));
+    const encryptedSecret = await this.encryptMfaSecret(secret);
+    await db.update(users).set({ mfa_secret_encrypted: encryptedSecret }).where(eq(users.id, userId));
 
     this.logger.log(`MFA secret generated for user ${userId}`);
 
@@ -446,7 +447,8 @@ export class AuthService {
       throw new BadRequestException('MFA setup not initiated');
     }
 
-    const isValid = authenticator.verify({ token: code, secret: user.mfa_secret_encrypted });
+    const decryptedSecret = await this.decryptMfaSecret(user.mfa_secret_encrypted);
+    const isValid = authenticator.verify({ token: code, secret: decryptedSecret });
     if (!isValid) {
       throw new BadRequestException('Invalid authenticator code');
     }
@@ -464,7 +466,8 @@ export class AuthService {
       return false;
     }
 
-    return authenticator.verify({ token: code, secret: user.mfa_secret_encrypted });
+    const decryptedSecret = await this.decryptMfaSecret(user.mfa_secret_encrypted);
+    return authenticator.verify({ token: code, secret: decryptedSecret });
   }
 
   async disableMfa(userId: string, code: string) {
@@ -474,7 +477,8 @@ export class AuthService {
       throw new BadRequestException('MFA is not enabled');
     }
 
-    const isValid = authenticator.verify({ token: code, secret: user.mfa_secret_encrypted });
+    const decryptedSecret = await this.decryptMfaSecret(user.mfa_secret_encrypted);
+    const isValid = authenticator.verify({ token: code, secret: decryptedSecret });
     if (!isValid) {
       throw new BadRequestException('Invalid authenticator code');
     }
@@ -507,14 +511,6 @@ export class AuthService {
       expires_at: expiresAt,
     });
 
-    await db.insert(platforms).values({
-      user_id: user.id,
-      session_id: newSessionId,
-      platform: this.detectPlatform(undefined),
-      user_agent: undefined,
-      ip_address: undefined,
-    });
-
     await db.update(refreshTokens).set({ revoked_at: new Date() }).where(eq(refreshTokens.id, token.id));
 
     const newRefreshToken = await this.generateRefreshToken(user.id, newSessionId);
@@ -542,7 +538,6 @@ export class AuthService {
       },
     };
   }
-
   async verifyMfaLogin(email: string, code: string, ipAddress?: string, userAgent?: string) {
     const sanitizedEmail = email.toLowerCase().trim();
     const result = await db.select().from(users).where(eq(users.email, sanitizedEmail)).limit(1);
@@ -574,14 +569,6 @@ export class AuthService {
       id: sessionId,
       user_id: user.id,
       expires_at: expiresAt,
-    });
-
-    await db.insert(platforms).values({
-      user_id: user.id,
-      session_id: sessionId,
-      platform: this.detectPlatform(userAgent),
-      user_agent: userAgent,
-      ip_address: ipAddress,
     });
 
     const payload: JwtPayload = {

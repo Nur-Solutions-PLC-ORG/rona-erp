@@ -3,6 +3,8 @@ import { GoogleAuthService } from './service';
 import { GoogleLoginDto } from '../dto/google-login.dto';
 import { Public } from '../decorators/public.decorator';
 import { AuthService } from '../service';
+import { Response } from 'express';
+import { serverConfig } from '@rona/config';
 
 @Controller('auth/google')
 export class GoogleAuthController {
@@ -28,7 +30,7 @@ export class GoogleAuthController {
 
   @Public()
   @Get('callback')
-  async googleAuthCallback(@Req() req: any, @Res() res: any) {
+  async googleAuthCallback(@Req() req: any, @Res({ passthrough: true }) res: any) {
     const code = req.query.code as string;
     const frontendUrl = process.env.FRONTEND_URL || '';
 
@@ -42,7 +44,14 @@ export class GoogleAuthController {
       const googleUser = await this.googleAuthService.verifyGoogleToken(tokens.id_token!);
       const result = await this.googleAuthService.googleLogin(googleUser);
 
-      res.redirect(`${frontendUrl}/login?token=${result.accessToken}`);
+      const isProduction = process.env.NODE_ENV === 'production';
+      res.cookie(serverConfig.auth.cookieName, result.accessToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      res.redirect(`${frontendUrl}/login?success=true`);
     } catch (err: any) {
       res.redirect(`${frontendUrl}/login?error=auth_failed`);
     }

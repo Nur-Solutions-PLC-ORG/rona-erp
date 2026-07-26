@@ -12,12 +12,9 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'modules_enum') THEN
         CREATE TYPE public.modules_enum AS ENUM (
-            'HR & Workforce',
-            'HR Payroll',
+            'HR',
             'Inventory',
-            'Production',
-            'Sales',
-            'Finance & Accounting'
+            'Finance'
         );
     END IF;
 
