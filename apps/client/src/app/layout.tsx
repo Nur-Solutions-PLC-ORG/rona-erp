@@ -1,15 +1,20 @@
+import QueryClientWrapper from "@/components/query-client-wrapper";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Inter, Public_Sans } from "next/font/google";
+import { Poppins, Roboto } from "next/font/google";
 import "./globals.css";
-import QueryClientWrapper from "@/components/query-client-wrapper";
 
-const fontHeading = Public_Sans({
+const fontHeading = Poppins({
   subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+
   variable: "--font-heading",
 });
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const font = Roboto({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -39,7 +44,7 @@ export default function RootLayout({
         "h-full",
         "antialiased",
         "font-sans",
-        inter.variable,
+        font.variable,
         fontHeading.variable,
       )}
     >

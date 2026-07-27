@@ -58,7 +58,7 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }), "gap-3")}
+      className={cn(buttonVariants({ variant, size, className }), "gap-2")}
       {...props}
     />
   );

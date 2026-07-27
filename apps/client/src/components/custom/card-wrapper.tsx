@@ -18,6 +18,7 @@ type Props = {
   description?: string;
   descriptionClassName?: string;
   children?: React.ReactNode;
+  containerClassName?: string;
   headerClassName?: string;
   footer?: React.ReactNode;
   className?: string;
@@ -30,17 +31,19 @@ const CardWrapper = ({
   description,
   descriptionClassName,
   children,
+  containerClassName,
   footer,
   headerClassName,
   className,
   center = false,
 }: Props) => {
   return (
-    <Card className={cn("w-full max-w-92", className)}>
+    <div className={cn("w-full max-w-80 space-y-6 rounded", className)}>
       <CardHeader className={cn(headerClassName)}>
         <CardTitle
           className={cn(
-            center && "text-center font-bold text-xl my-2",
+            "font-medium text-4xl tracking-tight",
+            center && "text-center",
             titleClassName,
           )}
         >
@@ -52,9 +55,22 @@ const CardWrapper = ({
           {description}
         </CardDescription>
       </CardHeader>
-      {children && <CardContent>{children}</CardContent>}
-      {footer && <CardFooter className="flex flex-col">{footer}</CardFooter>}
-    </Card>
+      {children && (
+        <CardContent
+          className={cn(
+            center && "flex flex-col items-center justify-center gap-6",
+            containerClassName,
+          )}
+        >
+          {children}
+        </CardContent>
+      )}
+      {footer && (
+        <CardFooter className="flex flex-col relative">
+          <div className="w-full flex flex-col z-10">{footer}</div>
+        </CardFooter>
+      )}
+    </div>
   );
 };
 
@@ -64,6 +80,7 @@ interface CardWrapperParentProps {
   includeLogo?: boolean;
   includeLegals?: boolean;
   isLoading?: boolean;
+  centered?: boolean;
 }
 
 export const CardWrapperParent = ({
@@ -72,11 +89,38 @@ export const CardWrapperParent = ({
   includeLogo = true,
   includeLegals = true,
   isLoading = false,
+  centered = true,
 }: CardWrapperParentProps) => {
+  const LINKS = (
+    <div className="flex items-center justify-center gap-3">
+      <Button
+        variant={"link"}
+        asChild
+        className="text-muted-foreground font-normal h-7"
+      >
+        <Link href={"/help"}>Help</Link>
+      </Button>
+      <Button
+        variant={"link"}
+        asChild
+        className="text-muted-foreground font-normal h-7"
+      >
+        <Link href={"/terms-of-services"}>Terms</Link>
+      </Button>
+      <Button
+        variant={"link"}
+        asChild
+        className="text-muted-foreground font-normal h-7"
+      >
+        <Link href={"/privacy-policy"}>Privacy</Link>
+      </Button>
+    </div>
+  );
+
   return (
     <main
       className={cn(
-        "flex flex-col flex-1 items-center justify-center bg-muted gap-2",
+        "flex flex-col flex-1 items-center justify-center gap-10",
         className,
       )}
     >
@@ -84,29 +128,18 @@ export const CardWrapperParent = ({
         <>
           <Logo black className="animate-pulse opacity-5" />
         </>
-      ) : (
+      ) : centered ? (
         <>
-          {includeLogo && <Logo className="mb-4" />}
+          {includeLogo && <Logo />}
           {children}
           {includeLegals && (
-            <div className="flex items-center justify-center gap-6">
-              <Button
-                variant={"link"}
-                asChild
-                className="text-muted-foreground font-normal"
-              >
-                <Link href={"/terms-of-services"}>Terms of Services</Link>
-              </Button>
-              <Button
-                variant={"link"}
-                asChild
-                className="text-muted-foreground font-normal"
-              >
-                <Link href={"/privacy-policy"}>Privacy Policy</Link>
-              </Button>
+            <div className="flex items-center justify-between border-t pt-4">
+              {LINKS}
             </div>
           )}
         </>
+      ) : (
+        <></>
       )}
     </main>
   );
