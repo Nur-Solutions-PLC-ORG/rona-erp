@@ -1,3 +1,4 @@
 # directories
 /.turbo
 /dist/
+/node_modules

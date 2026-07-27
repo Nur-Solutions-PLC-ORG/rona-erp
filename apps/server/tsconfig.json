@@ -4,7 +4,6 @@
     "moduleResolution": "node",
     "target": "ES2023",
     "outDir": "./dist",
-    "baseUrl": "./",
     "sourceMap": true,
     "declaration": true,
     "removeComments": true,

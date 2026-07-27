@@ -9,23 +9,20 @@ const Client = () => {
   const params = useSearchParams();
   const errorMessage =
     params.get("message") ||
-    "An error occurred while trying to sign in. Please try again later.";
+    "An Error occurred while trying to sign in to your account. Please try again later.";
 
   return (
     <CardWrapper
-      footer={
-        <>
-          <Button asChild className="w-full" variant={"outline"}>
-            <Link href={"/sign-in"}>Back to sign in</Link>
-          </Button>
-        </>
-      }
-      title="Sign in error occurred"
-      titleClassName="text-red-800"
+      center
+      title="Sign in Error"
+      titleClassName="text-red-900"
       description={errorMessage}
       descriptionClassName="sr-only"
     >
-      <p>{errorMessage}</p>
+      <p className="text-center">{errorMessage}</p>
+      <Button asChild className="w-full" variant={"outline"}>
+        <Link href={"/sign-in"}>Back to sign in</Link>
+      </Button>
     </CardWrapper>
   );
 };

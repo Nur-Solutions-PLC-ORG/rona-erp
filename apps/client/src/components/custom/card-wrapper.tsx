@@ -18,9 +18,11 @@ type Props = {
   description?: string;
   descriptionClassName?: string;
   children?: React.ReactNode;
+  containerClassName?: string;
   headerClassName?: string;
   footer?: React.ReactNode;
   className?: string;
+  center?: boolean;
 };
 
 const CardWrapper = ({
@@ -29,21 +31,46 @@ const CardWrapper = ({
   description,
   descriptionClassName,
   children,
+  containerClassName,
   footer,
   headerClassName,
   className,
+  center = false,
 }: Props) => {
   return (
-    <Card className={cn("min-w-100 max-w-110", className)}>
+    <div className={cn("w-full max-w-80 space-y-6 rounded", className)}>
       <CardHeader className={cn(headerClassName)}>
-        <CardTitle className={cn(titleClassName)}>{title}</CardTitle>
-        <CardDescription className={cn(descriptionClassName)}>
+        <CardTitle
+          className={cn(
+            "font-medium text-4xl tracking-tight",
+            center && "text-center",
+            titleClassName,
+          )}
+        >
+          {title}
+        </CardTitle>
+        <CardDescription
+          className={cn(center && "text-center", descriptionClassName)}
+        >
           {description}
         </CardDescription>
       </CardHeader>
-      {children && <CardContent>{children}</CardContent>}
-      {footer && <CardFooter className="flex flex-col">{footer}</CardFooter>}
-    </Card>
+      {children && (
+        <CardContent
+          className={cn(
+            center && "flex flex-col items-center justify-center gap-6",
+            containerClassName,
+          )}
+        >
+          {children}
+        </CardContent>
+      )}
+      {footer && (
+        <CardFooter className="flex flex-col relative">
+          <div className="w-full flex flex-col z-10">{footer}</div>
+        </CardFooter>
+      )}
+    </div>
   );
 };
 
@@ -52,6 +79,8 @@ interface CardWrapperParentProps {
   className?: string;
   includeLogo?: boolean;
   includeLegals?: boolean;
+  isLoading?: boolean;
+  centered?: boolean;
 }
 
 export const CardWrapperParent = ({
@@ -59,33 +88,58 @@ export const CardWrapperParent = ({
   className,
   includeLogo = true,
   includeLegals = true,
+  isLoading = false,
+  centered = true,
 }: CardWrapperParentProps) => {
+  const LINKS = (
+    <div className="flex items-center justify-center gap-3">
+      <Button
+        variant={"link"}
+        asChild
+        className="text-muted-foreground font-normal h-7"
+      >
+        <Link href={"/help"}>Help</Link>
+      </Button>
+      <Button
+        variant={"link"}
+        asChild
+        className="text-muted-foreground font-normal h-7"
+      >
+        <Link href={"/terms-of-services"}>Terms</Link>
+      </Button>
+      <Button
+        variant={"link"}
+        asChild
+        className="text-muted-foreground font-normal h-7"
+      >
+        <Link href={"/privacy-policy"}>Privacy</Link>
+      </Button>
+    </div>
+  );
+
   return (
     <main
       className={cn(
-        "flex flex-col flex-1 items-center justify-center bg-muted gap-2",
+        "flex flex-col flex-1 items-center justify-center gap-10",
         className,
       )}
     >
-      {includeLogo && <Logo className="mb-4" />}
-      {children}
-      {includeLegals && (
-        <div className="flex items-center justify-center gap-6">
-          <Button
-            variant={"link"}
-            asChild
-            className="text-muted-foreground font-normal"
-          >
-            <Link href={"/terms-of-services"}>Terms of Services</Link>
-          </Button>
-          <Button
-            variant={"link"}
-            asChild
-            className="text-muted-foreground font-normal"
-          >
-            <Link href={"/privacy-policy"}>Privacy Policy</Link>
-          </Button>
-        </div>
+      {isLoading ? (
+        <>
+          <Logo black className="animate-pulse opacity-5" />
+        </>
+      ) : centered ? (
+        <>
+          {includeLogo && <Logo />}
+          {children}
+          {includeLegals && (
+            <div className="flex items-center justify-between border-t pt-4">
+              {LINKS}
+            </div>
+          )}
+        </>
+      ) : (
+        <></>
       )}
     </main>
   );
