@@ -1,6 +1,6 @@
 import { pgTable, uuid, text, boolean, integer, timestamp, pgEnum, primaryKey } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { organizations } from "./organizations";
+import { organizations } from "../organizations";
 
 export const userStatusEnum = pgEnum("user_status", ["active", "inactive", "suspended", "pending_onboarding"]);
 export const positionsEnum = pgEnum("positions_enum", ["admin", "owner", "managers", "staff"]);
@@ -16,12 +16,12 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   password_hash: text("password_hash"),
   eid: text("eid"),
-  is_email_verified: boolean("is_email_verified").default(false),
-  mfa_enabled: boolean("mfa_enabled").default(false),
+  is_email_verified: boolean("is_email_verified").notNull().default(false),
+  mfa_enabled: boolean("mfa_enabled").notNull().default(false),
   mfa_secret_encrypted: text("mfa_secret_encrypted"),
-  status: userStatusEnum("status").default("pending_onboarding"),
+  status: userStatusEnum("status").notNull().default("pending_onboarding"),
   tenant_id: uuid("tenant_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
-  failed_login_attempts: integer("failed_login_attempts").default(0),
+  failed_login_attempts: integer("failed_login_attempts").notNull().default(0),
   locked_until: timestamp("locked_until", { withTimezone: true }),
   last_login_at: timestamp("last_login_at", { withTimezone: true }),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -63,13 +63,6 @@ export const insertTenantMemberSchema = createInsertSchema(tenantMembers);
 export const insertUserRoleSchema = createInsertSchema(userRoles);
 export const insertVerificationCodeSchema = createInsertSchema(verificationCodes);
 
-export const sessions = pgTable("sessions", {
-  id: text("id").primaryKey(),
-  user_id: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  expires_at: timestamp("expires_at", { withTimezone: true }).notNull(),
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-});
-
 export const blacklistedTokens = pgTable("blacklisted_tokens", {
   id: uuid("id").defaultRandom().primaryKey(),
   token_hash: text("token_hash").notNull().unique(),
@@ -82,7 +75,6 @@ export const refreshTokens = pgTable("refresh_tokens", {
   id: uuid("id").defaultRandom().primaryKey(),
   token_hash: text("token_hash").notNull().unique(),
   user_id: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  session_id: text("session_id").notNull(),
   expires_at: timestamp("expires_at", { withTimezone: true }).notNull(),
   created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
   revoked_at: timestamp("revoked_at", { withTimezone: true }),
@@ -107,7 +99,6 @@ export const platformSettings = pgTable("platform_settings", {
   updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
-export const insertSessionSchema = createInsertSchema(sessions);
 export const insertBlacklistedTokenSchema = createInsertSchema(blacklistedTokens);
 export const insertRefreshTokenSchema = createInsertSchema(refreshTokens);
 export const insertPlatformSchema = createInsertSchema(platforms);

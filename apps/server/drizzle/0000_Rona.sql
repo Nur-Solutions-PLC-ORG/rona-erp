@@ -48,13 +48,6 @@ CREATE TABLE "user_roles" (
 	"updated_at" timestamp with time zone DEFAULT now()
 );
 
-CREATE TABLE "sessions" (
-	"id" text PRIMARY KEY NOT NULL,
-	"user_id" uuid NOT NULL,
-	"expires_at" timestamp with time zone NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now()
-);
-
 CREATE TABLE "refresh_tokens" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"token_hash" text NOT NULL,
@@ -121,7 +114,6 @@ CREATE TABLE "finance_placeholder" (
 
 ALTER TABLE "blacklisted_tokens" ADD CONSTRAINT "blacklisted_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "refresh_tokens" ADD CONSTRAINT "refresh_tokens_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "tenant_members" ADD CONSTRAINT "tenant_members_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "tenant_members" ADD CONSTRAINT "tenant_members_tenant_id_organizations_id_fk" FOREIGN KEY ("tenant_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "user_roles" ADD CONSTRAINT "user_roles_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;
@@ -132,7 +124,6 @@ CREATE INDEX IF NOT EXISTS "idx_users_email" ON "users" ("email");
 CREATE INDEX IF NOT EXISTS "idx_tenant_members_tenant_id" ON "tenant_members" ("tenant_id");
 CREATE INDEX IF NOT EXISTS "idx_tenant_members_user_id" ON "tenant_members" ("user_id");
 CREATE INDEX IF NOT EXISTS "idx_user_roles_user_id" ON "user_roles" ("user_id");
-CREATE INDEX IF NOT EXISTS "idx_sessions_user_id" ON "sessions" ("user_id");
 CREATE INDEX IF NOT EXISTS "idx_refresh_tokens_user_id" ON "refresh_tokens" ("user_id");
 CREATE INDEX IF NOT EXISTS "idx_blacklisted_tokens_user_id" ON "blacklisted_tokens" ("user_id");
 CREATE INDEX IF NOT EXISTS "idx_platforms_user_id" ON "platforms" ("user_id");
@@ -141,7 +132,6 @@ CREATE INDEX IF NOT EXISTS "idx_verification_codes_email" ON "verification_codes
 ALTER TABLE "users" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "tenant_members" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "user_roles" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE "sessions" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "refresh_tokens" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "blacklisted_tokens" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "platforms" ENABLE ROW LEVEL SECURITY;
@@ -160,11 +150,6 @@ CREATE POLICY "tenant_isolation_tenant_members" ON "tenant_members"
   WITH CHECK (tenant_id = current_setting('app.current_tenant_id', true)::uuid);
 
 CREATE POLICY "tenant_isolation_user_roles" ON "user_roles"
-  FOR ALL
-  USING (user_id IN (SELECT id FROM users WHERE tenant_id = current_setting('app.current_tenant_id', true)::uuid))
-  WITH CHECK (user_id IN (SELECT id FROM users WHERE tenant_id = current_setting('app.current_tenant_id', true)::uuid));
-
-CREATE POLICY "tenant_isolation_sessions" ON "sessions"
   FOR ALL
   USING (user_id IN (SELECT id FROM users WHERE tenant_id = current_setting('app.current_tenant_id', true)::uuid))
   WITH CHECK (user_id IN (SELECT id FROM users WHERE tenant_id = current_setting('app.current_tenant_id', true)::uuid));
@@ -202,7 +187,6 @@ CREATE POLICY "tenant_isolation_finance" ON "finance_placeholder"
 ALTER TABLE "users" FORCE ROW LEVEL SECURITY;
 ALTER TABLE "tenant_members" FORCE ROW LEVEL SECURITY;
 ALTER TABLE "user_roles" FORCE ROW LEVEL SECURITY;
-ALTER TABLE "sessions" FORCE ROW LEVEL SECURITY;
 ALTER TABLE "refresh_tokens" FORCE ROW LEVEL SECURITY;
 ALTER TABLE "blacklisted_tokens" FORCE ROW LEVEL SECURITY;
 ALTER TABLE "platforms" FORCE ROW LEVEL SECURITY;
@@ -234,21 +218,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 
-CREATE OR REPLACE FUNCTION cleanup_expired_sessions()
-RETURNS void AS $$
-BEGIN
-  DELETE FROM sessions WHERE expires_at < now();
-  DELETE FROM refresh_tokens WHERE expires_at < now();
-  DELETE FROM blacklisted_tokens WHERE expires_at < now();
-  DELETE FROM verification_codes WHERE expires_at < now();
-END;
-$$ LANGUAGE plpgsql;
-
 INSERT INTO "platform_settings" ("key", "value") VALUES
   ('platform_name', 'Rona ERP'),
   ('maintenance_mode', 'false'),
   ('max_login_attempts', '5'),
   ('lockout_duration_minutes', '15'),
-  ('session_timeout_hours', '168'),
   ('mfa_required', 'false')
 ON CONFLICT ("key") DO NOTHING;

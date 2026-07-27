@@ -1,8 +1,7 @@
 import { Injectable, BadRequestException, UnauthorizedException, InternalServerErrorException, Logger, Inject } from '@nestjs/common';
 import { OAuth2Client } from 'google-auth-library';
-import { randomUUID } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { JwtPayload } from '@rona/types';
 import sql from '../../db';
 import { sanitizeInput } from '../dto/register.dto';
 @Injectable()
@@ -58,7 +57,7 @@ export class GoogleAuthService {
         let member;
         if (!user) {
           const orgName = `${full_name}'s Org`;
-          const [org] = await tx`INSERT INTO public.organizations (name) VALUES (${orgName}) RETURNING id`;
+           const [insertedOrg] = await tx`INSERT INTO public.organizations (name) VALUES (${orgName}) RETURNING id`;
           
           const [newUser] = await tx`
             INSERT INTO public.users (email, password_hash, full_name, is_email_verified)
@@ -67,32 +66,25 @@ export class GoogleAuthService {
           user = newUser;
           const [newMember] = await tx`
             INSERT INTO public.tenant_members (user_id, tenant_id, role)
-            VALUES (${user.id}, ${org.id}, 'admin')
+             VALUES (${user.id}, ${insertedOrg.id}, 'admin')
             RETURNING tenant_id, role
           `;
           member = newMember;
         } else {
-          const [m] = await tx`
-            SELECT tenant_id, role 
-            FROM public.tenant_members 
-            WHERE user_id = ${user.id} 
-            LIMIT 1
-          `;
-          member = m;
+           const [memberRow] = await tx`
+             SELECT tenant_id, role 
+             FROM public.tenant_members 
+             WHERE user_id = ${user.id} 
+             LIMIT 1
+           `;
+           member = memberRow;
         }
-        const sessionId = randomUUID();
-        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-        await tx`
-          INSERT INTO public.sessions (id, user_id, expires_at)
-          VALUES (${sessionId}, ${user.id}, ${expiresAt})
-        `;
-        return { user, member, sessionId };
+        return { user, member };
       });
       const position = result.member?.role === 'admin' ? 'admin' : undefined;
       const payload: JwtPayload = {
         sub: result.user.id,
         email: result.user.email,
-        session_id: result.sessionId,
         position,
         app_metadata: {
           role: result.member?.role || 'member',

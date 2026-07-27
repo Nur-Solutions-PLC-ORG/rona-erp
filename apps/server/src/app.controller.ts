@@ -13,7 +13,7 @@ export class AppController {
   }
 
   @Get('status')
-  getStatus(): ServerStatus {
+  getStatus() {
     const statusData: ServerStatus = {
       ok: true,
       message: 'Operational',
@@ -21,6 +21,10 @@ export class AppController {
 
     const parsedStatusData = ServerStatusSchema.parse(statusData);
 
-    return parsedStatusData;
+    return {
+      success: true,
+      data: {},
+      message: '',
+    };
   }
 }

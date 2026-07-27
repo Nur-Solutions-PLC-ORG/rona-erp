@@ -3,17 +3,16 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JWT_SECRET } from '../constants/auth.constants';
-import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { JwtPayload } from '@rona/types';
 import { db } from '../../db';
-import { users, sessions, blacklistedTokens, userRoles } from '../../db/schema';
+import { users, blacklistedTokens, userRoles } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 import { serverConfig } from '@rona/config';
 const cookieExtractor = (req: any): string | null => {
-  let token = null;
   if (req && req.cookies) {
-    token = req.cookies[serverConfig.auth.cookieName];
+    return req.cookies[serverConfig.auth.cookieName];
   }
-  return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+  return null;
 };
 
 @Injectable()
@@ -37,11 +36,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('token canceled');
     }
 
-    const sessionResult = await db.select().from(sessions).where(eq(sessions.id, payload.session_id as string)).limit(1);
-    const session = sessionResult[0];
-    if (!session || new Date(session.expires_at) < new Date()) {
-      throw new UnauthorizedException('session expired');
-    }
     const result = await db.select({ id: users.id, email: users.email, full_name: users.full_name }).from(users).where(eq(users.id, payload.sub as string)).limit(1);
     const user = result[0];
     if (!user) {

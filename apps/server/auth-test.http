@@ -27,17 +27,6 @@ X-CSRF-Token: {{csrf_token}}
 }
 
 ###
-POST {{baseUrl}}/auth/signin
-Content-Type: application/json
-X-CSRF-Token: {{csrf_token}}
-
-{
-  "eid": "EMP123",
-  "tenant_id": "YOUR-TENANT-UUID-HERE",
-  "password": "password123"
-}
-
-###
 POST {{baseUrl}}/auth/signin/mfa
 Content-Type: application/json
 X-CSRF-Token: {{csrf_token}}
@@ -97,7 +86,7 @@ Content-Type: application/json
   "refreshToken": "YOUR_REFRESH_TOKEN"
 }
 
-###
+### for the server side only 
 POST {{baseUrl}}/auth/send-verification
 Content-Type: application/json
 X-CSRF-Token: {{csrf_token}}

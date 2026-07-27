@@ -41,7 +41,7 @@ export class AuthController {
       httpOnly: false,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax',
-      maxAge: 60 * 60 * 1000,
+      maxAge: serverConfig.auth.csrfMaxAge,
     });
   }
 
@@ -120,7 +120,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('signout')
   async signout(@Req() req: any, @Res({ passthrough: true }) res: any) {
-    const token = req.cookies?.[serverConfig.auth.cookieName] || req.headers.authorization?.split(' ')[1];
+    const token = req.cookies?.[serverConfig.auth.cookieName];
     if (token) {
       const decoded = await this.jwtService.decode(token) as any;
       if (decoded?.sub) {
@@ -155,13 +155,13 @@ export class AuthController {
   @Public()
   @Get('status')
   async status(@Req() req: any) {
-    const token = req.cookies?.[serverConfig.auth.cookieName] || req.headers.authorization?.split(' ')[1];
-    if (!token) return { session: null };
+    const token = req.cookies?.[serverConfig.auth.cookieName];
+    if (!token) return null;
     try {
       const decoded = await this.jwtService.verifyAsync(token);
       return this.authService.getUserStatus(decoded.sub, decoded.exp);
     } catch {
-      return { session: null };
+      return null;
     }
   }
 

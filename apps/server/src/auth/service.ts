@@ -3,13 +3,12 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { randomUUID, createCipheriv, createDecipheriv, randomBytes, scrypt } from 'crypto';
 import { promisify } from 'util';
-import { authenticator } from 'otplib';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto, sanitizeInput } from './dto/register.dto';
-import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { JwtPayload } from '@rona/types';
 import { EmailService } from './email/email.service';
 import { db } from '../db';
-import { users, tenantMembers, userRoles, organizations, sessions, verificationCodes, blacklistedTokens, refreshTokens } from '../db/schema';
+import { users, tenantMembers, userRoles, organizations, verificationCodes, blacklistedTokens, refreshTokens } from '../db/schema';
 import { eq, and, gt } from 'drizzle-orm';
 const scryptAsync = promisify(scrypt);
 
@@ -91,31 +90,29 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto, ipAddress?: string, userAgent?: string) {
-    const { email, password, eid, tenant_id } = loginDto;
+    const { email, password } = loginDto;
 
-    if (!email && (!eid || !tenant_id)) {
-      throw new BadRequestException('need email or eid and tenant id');
+    if (!email || !email.trim()) {
+      throw new BadRequestException('email is required');
+    }
+    if (!password) {
+      throw new BadRequestException('password is required');
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new BadRequestException('invalid email format');
     }
 
     try {
       let user;
       let member;
 
-      if (email) {
-        const cleanEmail = email.toLowerCase().trim();
-        const result = await db.select().from(users).where(eq(users.email, cleanEmail)).limit(1);
-        user = result[0];
-        if (user) {
-          const mResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, user.id)).limit(1);
-          member = mResult[0];
-        }
-      } else {
-        const result = await db.select().from(users).where(and(eq(users.tenant_id, tenant_id as string), eq(users.eid, eid as string))).limit(1);
-        user = result[0];
-        if (user) {
-          const mResult = await db.select().from(tenantMembers).where(and(eq(tenantMembers.user_id, user.id), eq(tenantMembers.tenant_id, tenant_id as string))).limit(1);
-          member = mResult[0];
-        }
+      const cleanEmail = email.toLowerCase().trim();
+      const result = await db.select().from(users).where(eq(users.email, cleanEmail)).limit(1);
+      user = result[0];
+      if (user) {
+       const memberResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, user.id)).limit(1);
+         member = memberResult[0];
       }
       if (!user) {
         this.logger.warn(`login failed for ${email} from ${ipAddress}`);
@@ -127,8 +124,8 @@ export class AuthService {
         throw new BadRequestException('account locked try again later');
       }
 
-      const valid = await bcrypt.compare(password, user.password_hash || '');
-      if (!valid) {
+       const isValidPassword = await bcrypt.compare(password, user.password_hash || '');
+       if (!isValidPassword) {
         const attempts = (user.failed_login_attempts || 0) + 1;
         const lockedUntil = attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null;
         await db.update(users).set({
@@ -142,47 +139,39 @@ export class AuthService {
         locked_until: null,
         last_login_at: new Date(),
       }).where(eq(users.id, user.id));
-      this.logger.log(`user ${user.id} logged in from ${ipAddress}`);
-      const roleStr = member?.role || 'staff';
-      if (user.mfa_enabled) {
+       this.logger.log(`user ${user.id} logged in from ${ipAddress}`);
+       const tenantRole = member?.role || 'staff';
+       if (user.mfa_enabled) {
         return {
           mfa_required: true,
           email: user.email,
-          message: 'enter your authenticator code',
+          message: 'enter the code sent to your email',
         };
       }
-      const sessionId = randomUUID();
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      await db.insert(sessions).values({
-        id: sessionId,
-        user_id: user.id,
-        expires_at: expiresAt,
-      });
       const position = await this.getUserPosition(user.id);
       const payload: JwtPayload = {
         sub: user.id,
         email: user.email,
-        session_id: sessionId,
         position,
-        app_metadata: {
-          role: roleStr,
-          tenant_id: member?.tenant_id || user.tenant_id || '',
-        },
-      };
-      const accessToken = await this.jwtService.signAsync(payload, { expiresIn: this.ACCESS_TOKEN_TTL });
-      const refreshToken = await this.generateRefreshToken(user.id, sessionId);
-      this.logger.log(`user ${user.id} logged in from ${ipAddress}`);
-      return {
-        accessToken,
-        refreshToken,
-        user: {
-          id: user.id,
-          email: user.email,
-          full_name: user.full_name,
-          role: roleStr,
-          tenant_id: member?.tenant_id || user.tenant_id || '',
-        },
-      };
+         app_metadata: {
+           role: tenantRole,
+           tenant_id: member?.tenant_id || user.tenant_id || '',
+         },
+       };
+       const accessToken = await this.jwtService.signAsync(payload, { expiresIn: this.ACCESS_TOKEN_TTL });
+       const refreshToken = await this.generateRefreshToken(user.id);
+       this.logger.log(`user ${user.id} logged in from ${ipAddress}`);
+       return {
+         accessToken,
+         refreshToken,
+         user: {
+           id: user.id,
+           email: user.email,
+           full_name: user.full_name,
+           role: tenantRole,
+           tenant_id: member?.tenant_id || user.tenant_id || '',
+         },
+       };
     } catch (err: any) {
       if (err instanceof UnauthorizedException || err instanceof BadRequestException) {
         throw err;
@@ -192,11 +181,11 @@ export class AuthService {
     }
   }
 
-  async getUserStatus(userId: string, exp?: number) {
-    const uResult = await db.select({ id: users.id, email: users.email }).from(users).where(eq(users.id, userId)).limit(1);
-    const user = uResult[0];
+   async getUserStatus(userId: string, exp?: number) {
+     const userResult = await db.select({ id: users.id, email: users.email }).from(users).where(eq(users.id, userId)).limit(1);
+     const user = userResult[0];
     if (!user) {
-      return { session: null };
+      return null;
     }
 
     const rolesRows = await db.select().from(userRoles).where(eq(userRoles.user_id, userId));
@@ -204,26 +193,24 @@ export class AuthService {
     let rolesList: Array<{ position: string; module: string[] }> = [];
 
     if (rolesRows.length > 0) {
-      rolesList = rolesRows.map(r => ({
-        position: r.position,
-        module: r.module || [],
-      }));
+       rolesList = rolesRows.map(roleRow => ({
+         position: roleRow.position,
+         module: roleRow.module || [],
+       }));
     } else {
-      const mResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, userId)).limit(1);
-      const member = mResult[0];
+       const memberResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, userId)).limit(1);
+       const member = memberResult[0];
       rolesList = [{
         position: member?.role || 'staff',
         module: ['HR', 'Inventory', 'Finance'],
       }];
     }
     return {
-      session: {
-        user: {
-          id: user.id,
-          email: user.email,
-        },
-        roles: rolesList,
+      user: {
+        id: user.id,
+        email: user.email,
       },
+      roles: rolesList,
       expires: exp ? new Date(exp * 1000) : null,
     };
   }
@@ -298,9 +285,9 @@ export class AuthService {
     await db.delete(verificationCodes).where(eq(verificationCodes.id, stored.id));
     try {
       await db.update(users).set({ is_email_verified: true }).where(eq(users.email, sanitizedEmail));
-    } catch (e: any) {
-      this.logger.error(`email verify db error: ${e.message}`, e.stack);
-    }
+     } catch (err: any) {
+       this.logger.error(`email verify db error: ${err.message}`, err.stack);
+     }
     return {
       success: true,
       message: 'email verified',
@@ -356,14 +343,13 @@ export class AuthService {
     });
 
     await db.update(refreshTokens).set({ revoked_at: new Date() }).where(eq(refreshTokens.user_id, userId));
-    await db.delete(sessions).where(eq(sessions.user_id, userId));
 
-    this.logger.log(`token blacklisted and sessions cleared for user ${userId}`);
+    this.logger.log(`token blacklisted for user ${userId}`);
 
     return { success: true, message: 'logged out' };
   }
 
-  async generateRefreshToken(userId: string, sessionId: string) {
+  async generateRefreshToken(userId: string) {
     const refreshToken = randomUUID();
     const tokenHash = await bcrypt.hash(refreshToken, 10);
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
@@ -371,7 +357,6 @@ export class AuthService {
     await db.insert(refreshTokens).values({
       token_hash: tokenHash,
       user_id: userId,
-      session_id: sessionId,
       expires_at: expiresAt,
     });
 
@@ -395,10 +380,10 @@ export class AuthService {
     return token;
   }
 
-  async rotateRefreshToken(oldToken: string, userId: string, sessionId: string) {
+  async rotateRefreshToken(oldToken: string, userId: string) {
     const tokenHash = await bcrypt.hash(oldToken, 10);
     await db.update(refreshTokens).set({ revoked_at: new Date() }).where(and(eq(refreshTokens.user_id, userId), eq(refreshTokens.token_hash, tokenHash)));
-    return this.generateRefreshToken(userId, sessionId);
+    return this.generateRefreshToken(userId);
   }
 
   async forgotPassword(email: string) {
@@ -463,16 +448,20 @@ export class AuthService {
     if (!this.mfaEncryptionKey) {
       throw new BadRequestException('mfa encryption key not set');
     }
-    const secret = authenticator.generateSecret();
-    const appName = process.env.MFA_APP_NAME || 'Rona ERP';
-    const qrCodeUrl = authenticator.keyuri(userId, appName, secret);
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const encryptedSecret = await this.encryptMfaSecret(secret);
-    await db.update(users).set({ mfa_secret_encrypted: encryptedSecret }).where(eq(users.id, userId));
+    const encryptedCode = await this.encryptMfaSecret(code);
+    await db.update(users).set({ mfa_secret_encrypted: encryptedCode }).where(eq(users.id, userId));
 
-    this.logger.log(`mfa secret made for user ${userId}`);
+    const userResult = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const user = userResult[0];
+    if (user) {
+      await this.emailService.sendVerificationEmail(user.email, code);
+    }
 
-    return { secret, qrCodeUrl };
+    this.logger.log(`mfa code sent to user ${userId}`);
+
+    return { success: true, message: 'code sent to your email' };
   }
 
   async enableMfa(userId: string, code: string) {
@@ -485,10 +474,9 @@ export class AuthService {
       throw new BadRequestException('mfa setup not started');
     }
 
-    const decryptedSecret = await this.decryptMfaSecret(user.mfa_secret_encrypted);
-    const isValid = authenticator.verify({ token: code, secret: decryptedSecret });
-    if (!isValid) {
-      throw new BadRequestException('bad authenticator code');
+    const decryptedCode = await this.decryptMfaSecret(user.mfa_secret_encrypted);
+    if (decryptedCode !== code) {
+      throw new BadRequestException('bad code');
     }
 
     await db.update(users).set({ mfa_enabled: true }).where(eq(users.id, userId));
@@ -507,8 +495,8 @@ export class AuthService {
       return false;
     }
 
-    const decryptedSecret = await this.decryptMfaSecret(user.mfa_secret_encrypted);
-    return authenticator.verify({ token: code, secret: decryptedSecret });
+    const decryptedCode = await this.decryptMfaSecret(user.mfa_secret_encrypted);
+    return decryptedCode === code;
   }
 
   async disableMfa(userId: string, code: string) {
@@ -521,10 +509,9 @@ export class AuthService {
       throw new BadRequestException('mfa not turned on');
     }
 
-    const decryptedSecret = await this.decryptMfaSecret(user.mfa_secret_encrypted);
-    const isValid = authenticator.verify({ token: code, secret: decryptedSecret });
-    if (!isValid) {
-      throw new BadRequestException('bad authenticator code');
+    const decryptedCode = await this.decryptMfaSecret(user.mfa_secret_encrypted);
+    if (decryptedCode !== code) {
+      throw new BadRequestException('bad code');
     }
 
     await db.update(users).set({ mfa_enabled: false, mfa_secret_encrypted: null }).where(eq(users.id, userId));
@@ -541,47 +528,38 @@ export class AuthService {
       throw new UnauthorizedException('user not found');
     }
 
-    const memberResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, user.id)).limit(1);
-    const member = memberResult[0];
-
-    const roleStr = member?.role || 'staff';
-    const newSessionId = randomUUID();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-    await db.insert(sessions).values({
-      id: newSessionId,
-      user_id: user.id,
-      expires_at: expiresAt,
-    });
-
-    await db.update(refreshTokens).set({ revoked_at: new Date() }).where(eq(refreshTokens.id, token.id));
-
-    const newRefreshToken = await this.generateRefreshToken(user.id, newSessionId);
-
-    const position = await this.getUserPosition(user.id);
-    const payload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-      session_id: newSessionId,
-      position,
-      app_metadata: {
-        role: roleStr,
-        tenant_id: member?.tenant_id || user.tenant_id || '',
-      },
-    };
-
-    const accessToken = await this.jwtService.signAsync(payload, { expiresIn: this.ACCESS_TOKEN_TTL });
-    return {
-      accessToken,
-      refreshToken: newRefreshToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name,
-        role: roleStr,
-        tenant_id: member?.tenant_id || user.tenant_id || '',
-      },
-    };
+     const memberResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, user.id)).limit(1);
+     const member = memberResult[0];
+ 
+     const tenantRole = member?.role || 'staff';
+ 
+     await db.update(refreshTokens).set({ revoked_at: new Date() }).where(eq(refreshTokens.id, token.id));
+ 
+     const newRefreshToken = await this.generateRefreshToken(user.id);
+ 
+     const position = await this.getUserPosition(user.id);
+     const payload: JwtPayload = {
+       sub: user.id,
+       email: user.email,
+       position,
+       app_metadata: {
+         role: tenantRole,
+         tenant_id: member?.tenant_id || user.tenant_id || '',
+       },
+     };
+ 
+     const accessToken = await this.jwtService.signAsync(payload, { expiresIn: this.ACCESS_TOKEN_TTL });
+     return {
+       accessToken,
+       refreshToken: newRefreshToken,
+       user: {
+         id: user.id,
+         email: user.email,
+         full_name: user.full_name,
+         role: tenantRole,
+         tenant_id: member?.tenant_id || user.tenant_id || '',
+       },
+     };
   }
   async verifyMfaLogin(email: string, code: string, ipAddress?: string, userAgent?: string) {
     const sanitizedEmail = email.toLowerCase().trim();
@@ -594,54 +572,44 @@ export class AuthService {
     const isValid = await this.verifyMfa(user.id, code);
     if (!isValid) {
       this.logger.warn(`bad mfa try for user ${user.id} from ${ipAddress}`);
-      throw new UnauthorizedException('bad authenticator code');
+      throw new UnauthorizedException('bad code');
     }
 
-    const mResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, user.id)).limit(1);
-    const member = mResult[0];
-    const roleStr = member?.role || 'staff';
-
-    await db.update(users).set({
-      failed_login_attempts: 0,
-      locked_until: null,
-      last_login_at: new Date(),
-    }).where(eq(users.id, user.id));
-
-    const sessionId = randomUUID();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-    await db.insert(sessions).values({
-      id: sessionId,
-      user_id: user.id,
-      expires_at: expiresAt,
-    });
-
-    const position = await this.getUserPosition(user.id);
-    const payload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-      session_id: sessionId,
-      position,
-      app_metadata: {
-        role: roleStr,
-        tenant_id: member?.tenant_id || user.tenant_id || '',
-      },
-    };
-    const accessToken = await this.jwtService.signAsync(payload, { expiresIn: this.ACCESS_TOKEN_TTL });
-    const refreshToken = await this.generateRefreshToken(user.id, sessionId);
-
-    this.logger.log(`mfa login worked for user ${user.id} from ${ipAddress}`);
-    return {
-      accessToken,
-      refreshToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name,
-        role: roleStr,
-        tenant_id: member?.tenant_id || user.tenant_id || '',
-      },
-    };
+     const memberResult = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, user.id)).limit(1);
+     const member = memberResult[0];
+     const tenantRole = member?.role || 'staff';
+ 
+     await db.update(users).set({
+       failed_login_attempts: 0,
+       locked_until: null,
+       last_login_at: new Date(),
+     }).where(eq(users.id, user.id));
+ 
+     const position = await this.getUserPosition(user.id);
+     const payload: JwtPayload = {
+       sub: user.id,
+       email: user.email,
+       position,
+       app_metadata: {
+         role: tenantRole,
+         tenant_id: member?.tenant_id || user.tenant_id || '',
+       },
+     };
+     const accessToken = await this.jwtService.signAsync(payload, { expiresIn: this.ACCESS_TOKEN_TTL });
+     const refreshToken = await this.generateRefreshToken(user.id);
+ 
+     this.logger.log(`mfa login worked for user ${user.id} from ${ipAddress}`);
+     return {
+       accessToken,
+       refreshToken,
+       user: {
+         id: user.id,
+         email: user.email,
+         full_name: user.full_name,
+         role: tenantRole,
+         tenant_id: member?.tenant_id || user.tenant_id || '',
+       },
+     };
   }
 
   async getTenantUsers(tenantId: string) {
@@ -658,12 +626,12 @@ export class AuthService {
       .leftJoin(userRoles, eq(users.id, userRoles.user_id))
       .where(eq(users.tenant_id, tenantId));
 
-    const seen = new Set<string>();
-    return result.filter((u) => {
-      if (seen.has(u.id)) return false;
-      seen.add(u.id);
-      return true;
-    });
+     const seen = new Set<string>();
+     return result.filter((user) => {
+       if (seen.has(user.id)) return false;
+       seen.add(user.id);
+       return true;
+     });
   }
 
   async setUserPosition(actorId: string, targetId: string, position: string, tenantId: string) {
@@ -696,7 +664,7 @@ export class AuthService {
 
     const targetMember = await db.select().from(tenantMembers).where(eq(tenantMembers.user_id, targetId)).limit(1);
     if (!targetMember[0] || targetMember[0].tenant_id !== tenantId) {
-      throw new BadRequestException('user not in your tenant');
+      throw new BadRequestException('user not in your role');
     }
 
     const existing = await db.select().from(userRoles).where(eq(userRoles.user_id, targetId)).limit(1);

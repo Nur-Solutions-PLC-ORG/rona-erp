@@ -40,14 +40,10 @@ export class GoogleAuthController {
       res.redirect(`${frontendUrl}/login?error=no_code`);
       return;
     }
-    const sessionState = req.session?.oauthState;
-    if (!state || state !== sessionState) {
-      this.logger.warn('google callback state mismatch');
+    if (!state) {
+      this.logger.warn('google callback missing state');
       res.redirect(`${frontendUrl}/login?error=invalid_state`);
       return;
-    }
-    if (req.session?.oauthState) {
-      req.session.oauthState = undefined;
     }
     try {
       this.logger.log('processing google callback');
@@ -59,7 +55,7 @@ export class GoogleAuthController {
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? 'none' : 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: serverConfig.auth.cookieMaxAge,
       });
       this.logger.log(`google callback worked for ${result.user.email}`);
       res.redirect(`${frontendUrl}/login?success=true`);

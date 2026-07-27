@@ -17,6 +17,6 @@ export class DisableMfaDto {
   code!: string;
 }
 export class MfaSetupResponse {
-  secret!: string;
-  qrCodeUrl!: string;
+  success!: boolean;
+  message!: string;
 }

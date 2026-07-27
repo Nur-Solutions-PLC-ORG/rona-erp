@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, timestamp } from "drizzle-orm/pg-core";
-import { organizations } from "./organizations";
+import { organizations } from "../organizations";
 
 export const financePlaceholder = pgTable("finance_placeholder", {
   id: uuid("id").primaryKey(),

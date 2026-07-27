@@ -7,6 +7,7 @@ import express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import { PlatformSettingsService } from './platform-settings/platform-settings.service';
 
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
