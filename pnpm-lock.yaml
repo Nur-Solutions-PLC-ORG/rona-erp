@@ -226,6 +226,9 @@ importers:
       '@rona/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@rona/routes':
+        specifier: workspace:*
+        version: link:../../packages/routes
       '@rona/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -335,6 +338,9 @@ importers:
       '@rona/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@rona/routes':
+        specifier: workspace:*
+        version: link:../../packages/routes
       '@rona/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -427,11 +433,7 @@ importers:
         specifier: ^8.20.0
         version: 8.64.0(eslint@9.39.5(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3)
 
-  packages/config:
-    devDependencies:
-      '@types/node':
-        specifier: ^26.1.1
-        version: 26.1.1
+  packages/config: {}
 
   packages/db:
     dependencies:
@@ -451,6 +453,8 @@ importers:
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10
+
+  packages/routes: {}
 
   packages/types:
     dependencies:
@@ -7684,7 +7688,7 @@ snapshots:
 
   '@jest/pattern@30.4.0':
     dependencies:
-      '@types/node': 26.1.1
+      '@types/node': 24.13.3
       jest-regex-util: 30.4.0
 
   '@jest/reporters@30.4.1(supports-color@8.1.1)':
@@ -7771,7 +7775,7 @@ snapshots:
       '@jest/schemas': 30.4.1
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 26.1.1
+      '@types/node': 24.13.3
       '@types/yargs': 17.0.35
       chalk: 4.1.2
 
@@ -11281,7 +11285,7 @@ snapshots:
   jest-haste-map@30.4.1:
     dependencies:
       '@jest/types': 30.4.1
-      '@types/node': 26.1.1
+      '@types/node': 24.13.3
       anymatch: 3.1.3
       fb-watchman: 2.0.2
       graceful-fs: 4.2.11
@@ -11431,7 +11435,7 @@ snapshots:
   jest-util@30.4.1:
     dependencies:
       '@jest/types': 30.4.1
-      '@types/node': 26.1.1
+      '@types/node': 24.13.3
       chalk: 4.1.2
       ci-info: 4.4.0
       graceful-fs: 4.2.11
@@ -11459,13 +11463,13 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 26.1.1
+      '@types/node': 24.13.3
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
   jest-worker@30.4.1:
     dependencies:
-      '@types/node': 26.1.1
+      '@types/node': 24.13.3
       '@ungap/structured-clone': 1.3.3
       jest-util: 30.4.1
       merge-stream: 2.0.0
