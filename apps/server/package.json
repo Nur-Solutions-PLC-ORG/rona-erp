@@ -27,6 +27,7 @@
     "@rona/config": "workspace:*",
     "@rona/types": "workspace:*",
     "@rona/validation": "workspace:*",
+    "@rona/db": "workspace:*",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "reflect-metadata": "^0.2.2",

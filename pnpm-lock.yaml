@@ -332,6 +332,9 @@ importers:
       '@rona/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@rona/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@rona/types':
         specifier: workspace:*
         version: link:../../packages/types

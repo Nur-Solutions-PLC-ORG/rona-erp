@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app/app.module';
+import { AppModule } from './modules/app/module';
 import { DEFAULT_PORT } from '@rona/config/server';
 
 async function bootstrap() {
