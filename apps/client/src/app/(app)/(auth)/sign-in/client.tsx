@@ -11,6 +11,7 @@ const Client = () => {
 
   return (
     <CardWrapper
+      center
       title="Sign in to Rona"
       description="Use your login credentials to login to your account"
       footer={
