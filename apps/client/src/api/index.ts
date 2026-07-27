@@ -7,5 +7,5 @@ export const apiClient = axios.create({
 });
 
 export * from "./utils";
-export * from "@/modules/authentication/api";
+export * from "@/modules/auth/api";
 export * from "@/modules/platform/api";
