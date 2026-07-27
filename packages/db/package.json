@@ -1,0 +1,27 @@
+{
+  "name": "@rona/db",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./schemas/auth": {
+      "types": "./dist/schemas/auth.d.ts",
+      "default": "./dist/schemas/auth.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "db:push": "drizzle-kit generate && drizzle-kit push"
+  },
+  "dependencies": {
+    "@rona/config": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.10",
+    "@types/node": "^24.13.3"
+  }
+}

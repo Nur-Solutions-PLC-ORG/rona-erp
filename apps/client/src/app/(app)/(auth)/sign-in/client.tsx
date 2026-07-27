@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/input-otp";
 import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { OPT_RESEND_DELAY_DURATION_S } from "@rona/config";
+import { OPT_RESEND_DELAY_DURATION_S } from "@rona/config/server";
 
 const Client = () => {
   const router = useRouter();
