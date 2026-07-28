@@ -7,6 +7,10 @@ export const signInSchema = z.object({
   code: z.string().length(6, "Code must be 6 characters").optional(),
 });
 
+export const resendVerificationCodeSchema = z.object({
+  email: z.email("Invalid email address"),
+});
+
 export const registerSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters long"),
   email: z.email("Invalid email address"),

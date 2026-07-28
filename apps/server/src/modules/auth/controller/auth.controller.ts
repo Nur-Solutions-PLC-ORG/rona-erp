@@ -18,8 +18,16 @@ import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../guards/roles.decorator';
 
 import { ZodValidationPipe } from '@/modules/app/pipes/zod-validation.pipe';
-import { signInSchema, registerSchema } from '@rona/validation/auth';
-import { SignInSchema, RegisterSchema } from '@rona/types/auth';
+import {
+  registerSchema,
+  resendVerificationCodeSchema,
+  signInSchema,
+} from '@rona/validation/auth';
+import {
+  RegisterSchema,
+  ResendVerificationCodeSchema,
+  SignInSchema,
+} from '@rona/types/auth';
 import { COOKIE_NAME, COOKIE_MAX_AGE } from '@rona/config/auth';
 
 import { ApiResponse } from '@rona/types/api';
@@ -46,17 +54,17 @@ export class AuthController {
 
     if (user.tfaEnabled) {
       if (!body.code) {
-        await this.authService.sendVerificationCode(user.email);
+        await this.authService.sendVerificationCode(body.email);
 
         return {
           success: true,
-          message: 'A verification code has been sent successfully.',
+          message: 'Please enter the verification code to continue.',
           statusCode: HttpStatus.OK,
           data: { tfaEnabled: true },
         };
-      } else {
-        await this.authService.verifyCode(user.email, body.code);
       }
+
+      await this.authService.verifyCode(user.email, body.code);
     }
 
     const token = this.authService.createSession(user);
@@ -73,6 +81,20 @@ export class AuthController {
       success: true,
       statusCode: HttpStatus.OK,
       message: 'You have signed in successfully.',
+    };
+  }
+
+  @Post('resend-verification-code')
+  @UsePipes(new ZodValidationPipe(resendVerificationCodeSchema))
+  async resendVerificationCode(
+    @Body() body: ResendVerificationCodeSchema,
+  ): Promise<ApiResponse<never>> {
+    await this.authService.resendVerificationCode(body.email);
+
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'A verification code has been sent successfully.',
     };
   }
 

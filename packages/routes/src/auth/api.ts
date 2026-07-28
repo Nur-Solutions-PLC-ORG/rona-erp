@@ -6,6 +6,14 @@ export const API_AUTH_SIGN_IN_URL = "/api/auth/sign-in";
  */
 
 // HTTP Method: "POST"
+export const API_AUTH_RESEND_VERIFICATION_CODE_URL =
+  "/api/auth/resend-verification-code";
+/**
+ * Request body: ResendVerificationCodeSchema
+ * Response: ApiResponse<never>
+ */
+
+// HTTP Method: "POST"
 export const API_AUTH_REGISTER_URL = "/api/auth/register";
 /**
  * Request body: RegisterSchema

@@ -3,7 +3,12 @@ import {
   MODULE_LIST,
   USER_STATUS_LIST,
 } from "@rona/config/auth";
-import { registerSchema, signInSchema, userDto } from "@rona/validation/auth";
+import {
+  registerSchema,
+  resendVerificationCodeSchema,
+  signInSchema,
+  userDto,
+} from "@rona/validation/auth";
 import z from "zod";
 
 // Roles types
@@ -35,5 +40,8 @@ export interface SignInResponseData {
 
 // Zod schema types
 export type SignInSchema = z.infer<typeof signInSchema>;
+export type ResendVerificationCodeSchema = z.infer<
+  typeof resendVerificationCodeSchema
+>;
 export type RegisterSchema = z.infer<typeof registerSchema>;
 export type UserDto = z.infer<typeof userDto>;

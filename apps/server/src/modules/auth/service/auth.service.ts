@@ -82,6 +82,11 @@ export class AuthService {
     await sendVerificationEmail(email, code);
   }
 
+  async resendVerificationCode(email: string) {
+    await this.validateUserByEmail(email);
+    await this.sendVerificationCode(email);
+  }
+
   // Verifies code
   async verifyCode(email: string, code: string) {
     const codeKey = `auth:code:${email}`;

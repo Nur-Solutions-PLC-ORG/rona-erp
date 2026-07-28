@@ -1,6 +1,10 @@
 "use client";
 
-import { ApiGetGoogleUrl, ApiPostSignIn } from "@/api";
+import {
+  ApiGetGoogleUrl,
+  ApiPostResendVerificationCode,
+  ApiPostSignIn,
+} from "@/api";
 import CardWrapper, {
   CardWrapperParent,
 } from "@/components/custom/card-wrapper";
@@ -23,7 +27,7 @@ import { useCreateMutation } from "@/hooks/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { OPT_RESEND_DELAY_DURATION_MS } from "@rona/config/auth";
 import { CLIENT_APP_DASHBOARD_PAGE } from "@rona/routes/app";
-import { SignInSchema } from "@rona/types/auth";
+import { ResendVerificationCodeSchema, SignInSchema } from "@rona/types/auth";
 import { signInSchema } from "@rona/validation/auth";
 import { RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -71,11 +75,22 @@ const Client = () => {
 
       if (data.data && data.data.tfaEnabled) {
         setTFAEnabled(true);
-        setResendIn(OPT_RESEND_DELAY_DURATION_MS / 1000);
+        setResendIn(60);
       } else {
         location.reload();
         router.push(CLIENT_APP_DASHBOARD_PAGE);
       }
+    },
+    (data) => {
+      toast.error(data.message);
+    },
+  );
+
+  const resendVerificationCodeMutation = useCreateMutation(
+    ApiPostResendVerificationCode,
+    (data) => {
+      toast.success(data.message);
+      setResendIn(OPT_RESEND_DELAY_DURATION_MS / 1000);
     },
     (data) => {
       toast.error(data.message);
@@ -204,13 +219,17 @@ const Client = () => {
                         <FieldLabel htmlFor="code-input">OTP Code</FieldLabel>
                         {resendIn <= 0 ? (
                           <Button
-                            disabled={!!resendIn}
+                            disabled={
+                              !!resendIn ||
+                              resendVerificationCodeMutation.isPending
+                            }
                             onClick={() => {
                               if (resendIn <= 0) {
-                                setResendIn(
-                                  OPT_RESEND_DELAY_DURATION_MS / 1000,
-                                );
-                                form.handleSubmit(onSubmit)();
+                                const body: ResendVerificationCodeSchema = {
+                                  email: emailValue,
+                                };
+
+                                resendVerificationCodeMutation.mutate(body);
                               }
                             }}
                             size={"sm"}
