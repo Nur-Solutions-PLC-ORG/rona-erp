@@ -3,8 +3,8 @@ import Client from "./client";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Error occurred",
-  description: "An error occurred during authentication",
+  title: "Error Occurred",
+  description: "An Error occurred during the use of this application",
 };
 
 const Page = () => {

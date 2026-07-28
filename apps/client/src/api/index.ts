@@ -2,7 +2,7 @@ import axios from "axios";
 import { DEFAULT_API_URL } from "@rona/config/server";
 
 export const apiClient = axios.create({
-  baseURL: process.env.API_URL || DEFAULT_API_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL,
   withCredentials: true,
 });
 

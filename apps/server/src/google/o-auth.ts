@@ -1,0 +1,47 @@
+import { OAuth2Client } from 'google-auth-library';
+import { DEFAULT_API_URL } from '@rona/config/server';
+import { API_AUTH_GOOGLE_CALLBACK_URL } from '@rona/routes/auth';
+
+// The call back redirect function
+const getRedirectUri = () => {
+  const apiUrl = process.env.API_URL || DEFAULT_API_URL;
+  return `${apiUrl}${API_AUTH_GOOGLE_CALLBACK_URL}`;
+};
+
+// O-Auth Client
+const client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  getRedirectUri(),
+);
+
+export const getGoogleAuthUrl = () => {
+  return client.generateAuthUrl({
+    access_type: 'offline',
+    scope: [
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/userinfo.email',
+    ],
+    prompt: 'consent',
+  });
+};
+
+export const getGoogleUserProfile = async (code: string) => {
+  const { tokens } = await client.getToken(code);
+  client.setCredentials(tokens);
+
+  const res = await client.request({
+    url: 'https://www.googleapis.com/oauth2/v2/userinfo',
+  });
+
+  return res.data as {
+    id: string;
+    email: string;
+    verified_email: boolean;
+    name: string;
+    given_name: string;
+    family_name: string;
+    picture: string;
+    locale: string;
+  };
+};

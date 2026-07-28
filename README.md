@@ -14,7 +14,7 @@ apps:
 packages:
 
 - @rona/config: All data
-- @rona/db: All database schema and migrations with drizzle
+- @rona/database: All database schema and migrations with drizzle
 - @rona/types: All types
 - @rona/validation: All zod schema validations
 - @rona/routes: All routes data

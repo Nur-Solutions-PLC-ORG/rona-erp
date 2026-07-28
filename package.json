@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "build:packages": "pnpm i && turbo run build --filter=@rona/config --filter=@rona/types --filter=@rona/validation --filter=@rona/db --filter=@rona/routes",
+    "build:packages": "pnpm i && turbo run build --filter=@rona/config --filter=@rona/types --filter=@rona/validation --filter=@rona/database --filter=@rona/routes && pnpm i",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "format": "prettier --write ."

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/input-otp";
 import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { OPT_RESEND_DELAY_DURATION_S } from "@rona/config/server";
+import { OPT_RESEND_DELAY_DURATION_MS } from "@rona/config/server";
 
 const Client = () => {
   const router = useRouter();
@@ -151,7 +151,7 @@ const Client = () => {
                         <Button
                           disabled={!!resendIn}
                           onClick={() =>
-                            setResendIn(OPT_RESEND_DELAY_DURATION_S)
+                            setResendIn(OPT_RESEND_DELAY_DURATION_MS)
                           }
                           size={"sm"}
                           variant={"link"}

@@ -49,19 +49,3 @@ export const userRoles = pgTable("user_roles", {
     .notNull()
     .$onUpdate(() => new Date()),
 });
-
-export const verificationCodes = pgTable("verification_codes", {
-  id: uuid("id").primaryKey().defaultRandom(),
-
-  email: text("email").notNull(),
-  code: text("code").notNull(),
-
-  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-});

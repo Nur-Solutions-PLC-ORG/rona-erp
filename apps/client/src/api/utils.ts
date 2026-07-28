@@ -1,4 +1,4 @@
-import type { ApiResponse } from "@rona/types";
+import type { ApiResponse } from "@rona/types/api";
 import { apiClient } from ".";
 
 export function Request<T>(
