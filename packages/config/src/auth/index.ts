@@ -1,4 +1,5 @@
 // Data types
+
 export const POSITIONS_LIST = ["admin", "owner", "manager", "staff"] as const;
 
 export const MODULE_LIST = [
@@ -9,6 +10,15 @@ export const MODULE_LIST = [
   "sales",
   "accounting",
 ] as const;
+
+export const USER_STATUS_LIST = [
+  "active",
+  "inactive",
+  "suspended",
+  "pending_onboarding",
+] as const;
+
+// Values
 
 export const OPT_RESEND_DELAY_DURATION_MS = 60 * 1000;
 

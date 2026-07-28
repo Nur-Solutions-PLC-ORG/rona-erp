@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { AuthService } from '@/modules/auth/service';
+import { AuthService } from '@/modules/auth/service/auth.service';
 import { COOKIE_NAME } from '@rona/config/auth';
 import { Request } from 'express';
 

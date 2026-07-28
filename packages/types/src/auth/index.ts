@@ -1,10 +1,15 @@
-import { POSITIONS_LIST, MODULE_LIST } from "@rona/config/auth";
-import { registerSchema, signInSchema } from "@rona/validation/auth";
+import {
+  POSITIONS_LIST,
+  MODULE_LIST,
+  USER_STATUS_LIST,
+} from "@rona/config/auth";
+import { registerSchema, signInSchema, userDto } from "@rona/validation/auth";
 import z from "zod";
 
 // Roles types
 export type Position = (typeof POSITIONS_LIST)[number];
 export type Module = (typeof MODULE_LIST)[number];
+export type UserStatus = (typeof USER_STATUS_LIST)[number];
 
 // Sessions
 export interface UserRole {
@@ -31,3 +36,4 @@ export interface SignInResponseData {
 // Zod schema types
 export type SignInSchema = z.infer<typeof signInSchema>;
 export type RegisterSchema = z.infer<typeof registerSchema>;
+export type UserDto = z.infer<typeof userDto>;

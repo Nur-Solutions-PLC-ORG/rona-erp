@@ -1,12 +1,19 @@
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from '../services/app.service';
+import { ApiResponse } from '@rona/types/api';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello() {
-    return this.appService.getWelcome();
+  getHello(): ApiResponse<string> {
+    const message = this.appService.getWelcome();
+
+    return {
+      success: true,
+      statusCode: 200,
+      message,
+    };
   }
 }

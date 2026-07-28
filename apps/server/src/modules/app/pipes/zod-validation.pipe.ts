@@ -14,7 +14,8 @@ export class ZodValidationPipe<T> implements PipeTransform {
 
       const response: ApiResponse<never> = {
         success: false,
-        message: 'Validation failed! Please use the correct format.',
+        statusCode: 400,
+        message: 'Validation failed! Please submit the proper data.',
         errors: errors.fieldErrors,
       };
 

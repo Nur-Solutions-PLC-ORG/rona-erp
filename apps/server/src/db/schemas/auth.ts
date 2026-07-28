@@ -6,11 +6,16 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { MODULE_LIST, POSITIONS_LIST } from '@rona/config/auth';
+import {
+  MODULE_LIST,
+  POSITIONS_LIST,
+  USER_STATUS_LIST,
+} from '@rona/config/auth';
 
 // ENUMS
 export const modulesList = pgEnum('modules_list', MODULE_LIST);
 export const positionsList = pgEnum('positions_list', POSITIONS_LIST);
+export const statusesList = pgEnum('statuses_list', USER_STATUS_LIST);
 
 // TABLES
 export const users = pgTable('users', {
@@ -22,6 +27,8 @@ export const users = pgTable('users', {
 
   isEmailVerified: boolean('is_email_verified').default(false).notNull(),
   tfaEnabled: boolean('tfa_enabled').default(false).notNull(),
+
+  status: statusesList('status').default('active').notNull(),
 
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()

@@ -1,53 +1,62 @@
+import { db } from '@/db';
+import { userRoles, users } from '@/db/schema';
+import { sendVerificationEmail } from '@/emails/resend';
+import { getGoogleAuthUrl, getGoogleUserProfile } from '@/google/o-auth';
+import { redisClient } from '@/redis';
 import {
+  BadRequestException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
-  ForbiddenException,
-  BadRequestException,
 } from '@nestjs/common';
-import { db } from '../../../db';
-import { users, userRoles } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import { redisClient } from '../../../redis';
-import { sendVerificationEmail } from '../../../emails/resend';
-import { getGoogleAuthUrl, getGoogleUserProfile } from '../../../google/o-auth';
-import * as bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
-import { Session, SessionUser, UserRole } from '@rona/types/auth';
-import type { RegisterSchema } from '@rona/types/auth';
 import {
-  VERIFICATION_CODE_LENGTH,
-  VERIFICATION_CODE_EXPIRY_MS,
   OPT_RESEND_DELAY_DURATION_MS,
+  VERIFICATION_CODE_EXPIRY_MS,
+  VERIFICATION_CODE_LENGTH,
 } from '@rona/config/auth';
+import type { RegisterSchema } from '@rona/types/auth';
+import { Session, SessionUser, UserRole } from '@rona/types/auth';
+import * as bcrypt from 'bcrypt';
+import { eq } from 'drizzle-orm';
+import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
+  // gets user by email
   async validateUserByEmail(email: string) {
     const userRecords = await db
       .select()
       .from(users)
       .where(eq(users.email, email));
+
     if (userRecords.length === 0) {
       throw new UnauthorizedException({
         success: false,
         message: 'Invalid credentials',
       });
     }
-    return userRecords[0];
+
+    const userRecord = userRecords[0];
+
+    return userRecord;
   }
 
-  async validateCredentials(email: string, pass: string) {
+  // get user with matching email and password
+  async validateCredentials(email: string, password: string) {
     const user = await this.validateUserByEmail(email);
-    const isMatch = await bcrypt.compare(pass, user.passwordHash);
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+
     if (!isMatch) {
       throw new UnauthorizedException({
         success: false,
         message: 'Invalid credentials',
       });
     }
+
     return user;
   }
 
+  // Random verification code generator
   generateRandomCode(): string {
     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let code = '';
@@ -57,6 +66,7 @@ export class AuthService {
     return code;
   }
 
+  // Sends verification code
   async sendVerificationCode(email: string) {
     const lastSendKey = `auth:last_send:${email}`;
     const lastSend = await redisClient.get<number>(lastSendKey);
@@ -82,6 +92,7 @@ export class AuthService {
     await sendVerificationEmail(email, code);
   }
 
+  // Verifies code
   async verifyCode(email: string, code: string) {
     const codeKey = `auth:code:${email}`;
     const storedCode = await redisClient.get<string>(codeKey);
@@ -96,6 +107,7 @@ export class AuthService {
     await redisClient.del(codeKey);
   }
 
+  // get users roles
   async getRoles(userId: string): Promise<UserRole> {
     const rolesKey = `auth:roles:${userId}`;
     const cachedRoles = await redisClient.get<UserRole>(rolesKey);
@@ -122,12 +134,23 @@ export class AuthService {
     return userRole;
   }
 
-  async createSession(user: { id: string; email: string }): Promise<string> {
-    const sessionUser: SessionUser = { id: user.id, email: user.email };
-    const payload = { user: sessionUser };
-    return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '7d' });
+  // encoding a jwt session token
+  createSession(user: SessionUser): string {
+    try {
+      const sessionUser: SessionUser = { id: user.id, email: user.email };
+      const payload = { user: sessionUser };
+
+      return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '7d' });
+    } catch (e) {
+      console.log('session ecoding error: ', e);
+      throw new UnauthorizedException({
+        success: false,
+        message: 'Error encoding token',
+      });
+    }
   }
 
+  // decoding a jwt session token
   async decodeSession(token: string): Promise<Session> {
     try {
       const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
@@ -135,12 +158,14 @@ export class AuthService {
         exp: number;
       };
       const roles = await this.getRoles(payload.user.id);
+
       return {
         user: payload.user,
         roles,
         expires: new Date(payload.exp * 1000).toISOString(),
       };
     } catch (e) {
+      console.log('session decoding error: ', e);
       throw new UnauthorizedException({
         success: false,
         message: 'Invalid session token',
@@ -148,6 +173,7 @@ export class AuthService {
     }
   }
 
+  // registers a platform user
   async registerUser(data: RegisterSchema) {
     const existing = await db
       .select()
@@ -169,7 +195,7 @@ export class AuthService {
         email: data.email,
         passwordHash,
         tfaEnabled: data.tfaEnabled,
-        isEmailVerified: true, // Manual admin registration means trusted
+        isEmailVerified: true,
       })
       .returning();
 
@@ -182,15 +208,17 @@ export class AuthService {
     });
   }
 
+  // generates google auth url
   getGoogleAuthUrl() {
     return getGoogleAuthUrl();
   }
 
+  // handles google callback
   async handleGoogleCallback(code: string) {
     const profile = await getGoogleUserProfile(code);
     const user = await this.validateUserByEmail(profile.email);
 
-    const token = await this.createSession(user);
+    const token = this.createSession(user);
     return { token };
   }
 }

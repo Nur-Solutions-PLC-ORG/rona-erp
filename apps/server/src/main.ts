@@ -1,9 +1,9 @@
-import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './modules/app/modules/app.module';
-import { DEFAULT_PORT } from '@rona/config/server';
 import { DEFAULT_CLIENT_URL } from '@rona/config/client';
+import { DEFAULT_PORT } from '@rona/config/server';
 import cookieParser from 'cookie-parser';
+import 'dotenv/config';
+import { AppModule } from './modules/app/modules/app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

@@ -9,15 +9,18 @@ import {
   UsePipes,
   Query,
 } from '@nestjs/common';
+
 import { Response, Request } from 'express';
-import { AuthService } from '../service';
+import { AuthService } from '../service/auth.service';
 import { AuthGuard } from '../guards/auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../guards/roles.decorator';
-import { ZodValidationPipe } from '../../app/pipes/zod-validation.pipe';
+
+import { ZodValidationPipe } from '@/modules/app/pipes/zod-validation.pipe';
 import { signInSchema, registerSchema } from '@rona/validation/auth';
 import { SignInSchema, RegisterSchema } from '@rona/types/auth';
 import { COOKIE_NAME, COOKIE_MAX_AGE } from '@rona/config/auth';
+
 import { ApiResponse } from '@rona/types/api';
 import { Session, SignInResponseData } from '@rona/types/auth';
 import {
@@ -26,6 +29,7 @@ import {
 } from '@rona/routes/auth';
 import { DEFAULT_CLIENT_URL } from '@rona/config/client';
 
+// ROUTE: api/auth
 @Controller('api/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -44,9 +48,11 @@ export class AuthController {
     if (user.tfaEnabled) {
       if (!body.code) {
         await this.authService.sendVerificationCode(user.email);
+
         return {
           success: true,
           message: 'Verification code sent',
+          statusCode: 201,
           data: { tfaEnabled: true },
         };
       } else {
@@ -54,7 +60,7 @@ export class AuthController {
       }
     }
 
-    const token = await this.authService.createSession(user);
+    const token = this.authService.createSession(user);
     const isProduction = process.env.NODE_ENV === 'production';
 
     res.cookie(COOKIE_NAME, token, {
@@ -66,8 +72,8 @@ export class AuthController {
 
     return {
       success: true,
+      statusCode: 200,
       message: 'Signed in successfully',
-      data: { tfaEnabled: user.tfaEnabled },
     };
   }
 
@@ -75,31 +81,48 @@ export class AuthController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles('admin')
   @UsePipes(new ZodValidationPipe(registerSchema))
-  async register(@Body() body: RegisterSchema): Promise<ApiResponse<void>> {
+  async register(@Body() body: RegisterSchema): Promise<ApiResponse<never>> {
     await this.authService.registerUser(body);
-    return { success: true, message: 'User registered successfully' };
+
+    return {
+      success: true,
+      statusCode: 201,
+      message: 'User registered successfully',
+    };
   }
 
   @Post('sign-out')
-  async signOut(
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<void>> {
+  @UseGuards(AuthGuard)
+  signOut(@Res({ passthrough: true }) res: Response): ApiResponse<never> {
     res.clearCookie(COOKIE_NAME);
-    return { success: true, message: 'Signed out successfully' };
+
+    return {
+      success: true,
+      statusCode: 200,
+      message: 'Signed out successfully',
+    };
   }
 
   @Get('session')
   @UseGuards(AuthGuard)
-  async getSession(
-    @Req() req: Request & { session: Session },
-  ): Promise<ApiResponse<Session>> {
-    return { success: true, message: 'Session active', data: req.session };
+  getSession(@Req() req: Request & { session: Session }): ApiResponse<Session> {
+    return {
+      success: true,
+      message: 'Session active',
+      data: req.session,
+      statusCode: 200,
+    };
   }
 
   @Get('google/url')
   getGoogleUrl(): ApiResponse<string> {
     const url = this.authService.getGoogleAuthUrl();
-    return { success: true, message: 'URL generated', data: url };
+    return {
+      success: true,
+      statusCode: 201,
+      message: 'URL generated',
+      data: url,
+    };
   }
 
   @Get('google/callback')
@@ -119,9 +142,13 @@ export class AuthController {
 
       res.redirect(`${clientUrl}${CLIENT_AUTH_GOOGLE_CALLBACK_PAGE}`);
     } catch (e: any) {
-      res.redirect(
-        `${clientUrl}${CLIENT_ERROR_PAGE}?message=${encodeURIComponent(e.message || 'Google Auth Failed')}`,
-      );
+      if (e instanceof Error && e.message) {
+        res.redirect(
+          `${clientUrl}${CLIENT_ERROR_PAGE}?message=${encodeURIComponent(e.message)}`,
+        );
+      } else {
+        res.redirect(`${clientUrl}${CLIENT_ERROR_PAGE}`);
+      }
     }
   }
 }

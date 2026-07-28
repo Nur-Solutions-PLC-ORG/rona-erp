@@ -3,6 +3,9 @@ export interface ApiResponse<T> {
   success: boolean;
   message: string;
 
+  // response status codes
+  statusCode: number;
+
   // Essential for success type 'true'
   data?: T;
 

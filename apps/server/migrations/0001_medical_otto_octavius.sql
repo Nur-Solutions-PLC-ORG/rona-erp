@@ -1,0 +1,2 @@
+CREATE TYPE "public"."statuses_list" AS ENUM('active', 'inactive', 'suspended', 'pending_onboarding');--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN "status" "statuses_list" DEFAULT 'active' NOT NULL;
