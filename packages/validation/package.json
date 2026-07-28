@@ -14,12 +14,14 @@
   "scripts": {
     "build": "tsc"
   },
+  "dependencies": {
+    "@rona/config": "workspace:*"
+  },
+  "peerDependencies": {
+    "zod": "^4.4.3"
+  },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "express": "^5.2.1"
-  },
-  "dependencies": {
-    "@rona/config": "workspace:*",
-    "zod": "^4.4.3"
   }
 }

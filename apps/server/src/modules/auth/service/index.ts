@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { db } from '../../../db';
-import { users, userRoles } from '@rona/database';
+import { users, userRoles } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { redisClient } from '../../../redis';
 import { sendVerificationEmail } from '../../../emails/resend';

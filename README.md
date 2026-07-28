@@ -8,13 +8,12 @@ apps:
 
 - client: The client-side font-end web-app and size of the project
   contains: Next.js, Shadcn-ui, @tanstack, ...
-- server: The primary server back-end api of the project
+- server: The primary server back-end api of the project including database
   contains: Nest.js, drizzle(postgres), ...
 
 packages:
 
 - @rona/config: All data
-- @rona/database: All database schema and migrations with drizzle
 - @rona/types: All types
 - @rona/validation: All zod schema validations
 - @rona/routes: All routes data
