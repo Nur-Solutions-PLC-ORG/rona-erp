@@ -14,6 +14,7 @@ export default function PasswordInput({
     <div className={cn("w-fit flex relative", className)}>
       <Input type={iType} className={className} {...props} />
       <Button
+        type="button"
         onClick={() => setIType(iType == "password" ? "text" : "password")}
         size={"icon-sm"}
         variant={"ghost"}

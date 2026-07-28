@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { SessionNotFoundException } from '@/exceptions/auth/auth.exception';
 import { AuthService } from '@/modules/auth/service/auth.service';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { COOKIE_NAME } from '@rona/config/auth';
 import { Request } from 'express';
 
@@ -17,20 +13,15 @@ export class AuthGuard implements CanActivate {
     const token: unknown = request.cookies[COOKIE_NAME];
 
     if (!token || typeof token !== 'string') {
-      throw new UnauthorizedException({
-        success: false,
-        message: 'Session token missing',
-      });
+      throw new SessionNotFoundException();
     }
 
     try {
       const session = await this.authService.decodeSession(token);
+
       request['session'] = session;
     } catch {
-      throw new UnauthorizedException({
-        success: false,
-        message: 'Invalid session token',
-      });
+      throw new SessionNotFoundException();
     }
 
     return true;

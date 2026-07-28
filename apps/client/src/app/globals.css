@@ -123,6 +123,6 @@
   }
 
   body {
-    @apply flex flex-col min-h-screen bg-background text-foreground;
+    @apply flex flex-col min-h-screen bg-background text-foreground text-base;
   }
 }

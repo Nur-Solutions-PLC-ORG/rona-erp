@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, HttpStatus } from '@nestjs/common';
 import { AppService } from '../services/app.service';
 import { ApiResponse } from '@rona/types/api';
 
@@ -12,7 +12,7 @@ export class AppController {
 
     return {
       success: true,
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       message,
     };
   }

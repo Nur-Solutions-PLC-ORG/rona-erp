@@ -1,16 +1,16 @@
+import { cn } from "@/lib/utils";
+import Link from "next/link";
 import React from "react";
+import { Button } from "../ui/button";
 import {
-  Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { cn } from "@/lib/utils";
 import Logo from "./logo";
-import { Button } from "../ui/button";
-import Link from "next/link";
+import LoaderPage from "./loader-page";
 
 type Props = {
   title: string;
@@ -39,7 +39,7 @@ const CardWrapper = ({
 }: Props) => {
   return (
     <div className={cn("w-full max-w-80 space-y-6 rounded", className)}>
-      <CardHeader className={cn(headerClassName)}>
+      <CardHeader className={cn("gap-3", headerClassName)}>
         <CardTitle
           className={cn(
             "font-medium text-4xl tracking-tight",
@@ -117,6 +117,10 @@ export const CardWrapperParent = ({
     </div>
   );
 
+  if (isLoading) {
+    return <LoaderPage />;
+  }
+
   return (
     <main
       className={cn(
@@ -124,11 +128,7 @@ export const CardWrapperParent = ({
         className,
       )}
     >
-      {isLoading ? (
-        <>
-          <Logo black className="animate-pulse opacity-5" />
-        </>
-      ) : centered ? (
+      {centered ? (
         <>
           {includeLogo && <Logo />}
           {children}

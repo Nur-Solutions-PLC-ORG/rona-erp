@@ -26,14 +26,14 @@ export class RolesGuard implements CanActivate {
       .switchToHttp()
       .getRequest<Request & { session: Session }>();
 
-    if (!session || !session.roles) {
+    if (!session || !session.role) {
       throw new ForbiddenException({
         success: false,
         message: 'Access denied',
       });
     }
 
-    if (!requiredRoles.includes(session.roles.position)) {
+    if (!requiredRoles.includes(session.role.position)) {
       throw new ForbiddenException({
         success: false,
         message: 'Insufficient permissions',

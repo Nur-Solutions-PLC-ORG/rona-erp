@@ -1,14 +1,16 @@
 import { db } from '@/db';
 import { userRoles, users } from '@/db/schema';
 import { sendVerificationEmail } from '@/emails/resend';
+import {
+  InvalidCodeException,
+  InvalidCredentialsException,
+  SessionException,
+  UserRoleNotFoundException,
+  WaitForResendException,
+} from '@/exceptions/auth/auth.exception';
 import { getGoogleAuthUrl, getGoogleUserProfile } from '@/google/o-auth';
 import { redisClient } from '@/redis';
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   OPT_RESEND_DELAY_DURATION_MS,
   VERIFICATION_CODE_EXPIRY_MS,
@@ -30,10 +32,7 @@ export class AuthService {
       .where(eq(users.email, email));
 
     if (userRecords.length === 0) {
-      throw new UnauthorizedException({
-        success: false,
-        message: 'Invalid credentials',
-      });
+      throw new InvalidCredentialsException();
     }
 
     const userRecord = userRecords[0];
@@ -47,10 +46,7 @@ export class AuthService {
     const isMatch = await bcrypt.compare(password, user.passwordHash);
 
     if (!isMatch) {
-      throw new UnauthorizedException({
-        success: false,
-        message: 'Invalid credentials',
-      });
+      throw new InvalidCredentialsException();
     }
 
     return user;
@@ -72,13 +68,7 @@ export class AuthService {
     const lastSend = await redisClient.get<number>(lastSendKey);
 
     if (lastSend && Date.now() - lastSend < OPT_RESEND_DELAY_DURATION_MS) {
-      const remaining = Math.ceil(
-        (OPT_RESEND_DELAY_DURATION_MS - (Date.now() - lastSend)) / 1000,
-      );
-      throw new BadRequestException({
-        success: false,
-        message: `Please wait ${remaining}s before requesting a new code`,
-      });
+      throw new WaitForResendException();
     }
 
     const code = this.generateRandomCode();
@@ -98,39 +88,34 @@ export class AuthService {
     const storedCode = await redisClient.get<string>(codeKey);
 
     if (!storedCode || storedCode !== code) {
-      throw new UnauthorizedException({
-        success: false,
-        message: 'Invalid or expired verification code',
-      });
+      throw new InvalidCodeException();
     }
 
     await redisClient.del(codeKey);
   }
 
-  // get users roles
+  // get users role
   async getRoles(userId: string): Promise<UserRole> {
-    const rolesKey = `auth:roles:${userId}`;
-    const cachedRoles = await redisClient.get<UserRole>(rolesKey);
+    const roleKey = `auth:role:${userId}`;
+    const cachedRoles = await redisClient.get<UserRole>(roleKey);
     if (cachedRoles) return cachedRoles;
 
-    const rolesRecords = await db
+    const roleRecords = await db
       .select()
       .from(userRoles)
       .where(eq(userRoles.userId, userId));
-    if (rolesRecords.length === 0) {
-      throw new ForbiddenException({
-        success: false,
-        message: 'No roles found for user',
-      });
+
+    if (roleRecords.length === 0) {
+      throw new UserRoleNotFoundException();
     }
 
-    const role = rolesRecords[0];
+    const role = roleRecords[0];
     const userRole: UserRole = {
       position: role.position,
       modules: role.module,
     };
 
-    await redisClient.set(rolesKey, userRole, { ex: 30 }); // cache for 30s
+    await redisClient.set(roleKey, userRole, { ex: 30 }); // cache for 30s
     return userRole;
   }
 
@@ -142,11 +127,8 @@ export class AuthService {
 
       return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '7d' });
     } catch (e) {
-      console.log('session ecoding error: ', e);
-      throw new UnauthorizedException({
-        success: false,
-        message: 'Error encoding token',
-      });
+      console.log('session encoding error: ', e);
+      throw new SessionException();
     }
   }
 
@@ -157,19 +139,16 @@ export class AuthService {
         user: SessionUser;
         exp: number;
       };
-      const roles = await this.getRoles(payload.user.id);
+      const role = await this.getRoles(payload.user.id);
 
       return {
         user: payload.user,
-        roles,
+        role,
         expires: new Date(payload.exp * 1000).toISOString(),
       };
     } catch (e) {
       console.log('session decoding error: ', e);
-      throw new UnauthorizedException({
-        success: false,
-        message: 'Invalid session token',
-      });
+      throw new SessionException();
     }
   }
 

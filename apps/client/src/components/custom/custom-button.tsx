@@ -29,12 +29,10 @@ const CustomButton = ({
       disabled={isPending || disabled}
       {...props}
     >
-      {Icon ? (
-        isPending ? (
-          <FiLoader className="animate-spin" />
-        ) : (
-          <Icon />
-        )
+      {isPending ? (
+        <FiLoader className="animate-spin" />
+      ) : Icon ? (
+        <Icon />
       ) : null}
       {children}
     </Button>

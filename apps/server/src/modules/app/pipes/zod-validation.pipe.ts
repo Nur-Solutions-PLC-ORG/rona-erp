@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  PipeTransform,
+} from '@nestjs/common';
 import { ApiResponse } from '@rona/types/api';
 import z, { ZodType } from 'zod';
 
@@ -14,8 +19,8 @@ export class ZodValidationPipe<T> implements PipeTransform {
 
       const response: ApiResponse<never> = {
         success: false,
-        statusCode: 400,
-        message: 'Validation failed! Please submit the proper data.',
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'Validation failed. Please provide valid data.',
         errors: errors.fieldErrors,
       };
 

@@ -8,6 +8,7 @@ import {
   UseGuards,
   UsePipes,
   Query,
+  HttpStatus,
 } from '@nestjs/common';
 
 import { Response, Request } from 'express';
@@ -23,10 +24,8 @@ import { COOKIE_NAME, COOKIE_MAX_AGE } from '@rona/config/auth';
 
 import { ApiResponse } from '@rona/types/api';
 import { Session, SignInResponseData } from '@rona/types/auth';
-import {
-  CLIENT_AUTH_GOOGLE_CALLBACK_PAGE,
-  CLIENT_ERROR_PAGE,
-} from '@rona/routes/auth';
+import { CLIENT_AUTH_GOOGLE_CALLBACK_PAGE } from '@rona/routes/auth';
+import { CLIENT_APP_ERROR_PAGE } from '@rona/routes/app';
 import { DEFAULT_CLIENT_URL } from '@rona/config/client';
 
 // ROUTE: api/auth
@@ -51,8 +50,8 @@ export class AuthController {
 
         return {
           success: true,
-          message: 'Verification code sent',
-          statusCode: 201,
+          message: 'A verification code has been sent successfully.',
+          statusCode: HttpStatus.OK,
           data: { tfaEnabled: true },
         };
       } else {
@@ -72,8 +71,8 @@ export class AuthController {
 
     return {
       success: true,
-      statusCode: 200,
-      message: 'Signed in successfully',
+      statusCode: HttpStatus.OK,
+      message: 'You have signed in successfully.',
     };
   }
 
@@ -82,12 +81,13 @@ export class AuthController {
   @Roles('admin')
   @UsePipes(new ZodValidationPipe(registerSchema))
   async register(@Body() body: RegisterSchema): Promise<ApiResponse<never>> {
+    console.log('sjd');
     await this.authService.registerUser(body);
 
     return {
       success: true,
-      statusCode: 201,
-      message: 'User registered successfully',
+      statusCode: HttpStatus.CREATED,
+      message: 'The user has been registered successfully.',
     };
   }
 
@@ -98,8 +98,8 @@ export class AuthController {
 
     return {
       success: true,
-      statusCode: 200,
-      message: 'Signed out successfully',
+      statusCode: HttpStatus.OK,
+      message: 'You have signed out successfully.',
     };
   }
 
@@ -108,9 +108,9 @@ export class AuthController {
   getSession(@Req() req: Request & { session: Session }): ApiResponse<Session> {
     return {
       success: true,
-      message: 'Session active',
+      message: 'The session is active.',
       data: req.session,
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
     };
   }
 
@@ -119,8 +119,8 @@ export class AuthController {
     const url = this.authService.getGoogleAuthUrl();
     return {
       success: true,
-      statusCode: 201,
-      message: 'URL generated',
+      statusCode: HttpStatus.OK,
+      message: 'The Google authentication URL has been generated successfully.',
       data: url,
     };
   }
@@ -144,10 +144,10 @@ export class AuthController {
     } catch (e: any) {
       if (e instanceof Error && e.message) {
         res.redirect(
-          `${clientUrl}${CLIENT_ERROR_PAGE}?message=${encodeURIComponent(e.message)}`,
+          `${clientUrl}${CLIENT_APP_ERROR_PAGE}?message=${encodeURIComponent(e.message)}`,
         );
       } else {
-        res.redirect(`${clientUrl}${CLIENT_ERROR_PAGE}`);
+        res.redirect(`${clientUrl}${CLIENT_APP_ERROR_PAGE}`);
       }
     }
   }

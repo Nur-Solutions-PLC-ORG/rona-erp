@@ -24,7 +24,7 @@ export interface SessionUser {
 
 export interface Session {
   user: SessionUser;
-  roles: UserRole;
+  role: UserRole;
   expires: string;
 }
 

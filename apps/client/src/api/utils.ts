@@ -2,27 +2,50 @@ import type { ApiResponse } from "@rona/types/api";
 import { apiClient } from ".";
 
 export function Request<T>(
-  type: "get" | "post" | "put",
+  type: "get",
   route: string,
-): () => Promise<ApiResponse<T>> {
+): () => Promise<ApiResponse<T>>;
+
+export function Request<T>(
+  type: "post",
+  route: string,
+): () => Promise<ApiResponse<T>>;
+
+export function Request<T, TBody>(
+  type: "post",
+  route: string,
+): (data: TBody) => Promise<ApiResponse<T>>;
+
+export function Request<T, TBody>(type: "get" | "post", route: string) {
   switch (type) {
-    default:
-      return async function () {
-        const response = await apiClient.get<ApiResponse<T>>(route);
-        const responseData = response.data;
+    case "post":
+      return async (data: TBody): Promise<ApiResponse<T>> => {
+        const { data: responseData } = await apiClient.post<ApiResponse<T>>(
+          route,
+          data,
+        );
+
         return responseData;
       };
-    // case "get":
-    // case "post":
-    //   return;
-    // case "put":
-    //   return;
+
+    case "get":
+    default:
+      return async (): Promise<ApiResponse<T>> => {
+        const { data: responseData } =
+          await apiClient.get<ApiResponse<T>>(route);
+
+        return responseData;
+      };
   }
 }
 
-// export function useApiQuery<T>(key: readonly unknown[], url: string) {
-//   return useQuery({
-//     queryKey: key,
-//     queryFn: Request<T>("get", url),
-//   });
-// }
+export function TryCatchNullWrap<T>(func: () => Promise<ApiResponse<T>>) {
+  return async function () {
+    try {
+      const funcRes = await func();
+      return funcRes;
+    } catch {
+      return null;
+    }
+  };
+}
