@@ -118,6 +118,11 @@ const Client = () => {
       ...(tFAEnabled ? { code: values.code } : {}),
     };
 
+    if (tFAEnabled && !values.code) {
+      toast.info("Please enter the verification code sent to your email.");
+      return;
+    }
+
     signInMutation.mutate(body);
   };
 

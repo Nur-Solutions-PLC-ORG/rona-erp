@@ -14,6 +14,6 @@ apps:
 packages:
 
 - @rona/config: All data
-- @rona/types: All types
-- @rona/validation: All zod schema validations
+- @rona/types: All types including schema and dto types
+- @rona/validation: All zod schema and dto validations and
 - @rona/routes: All routes data
