@@ -1,5 +1,3 @@
-
-
 // HTTP Method: "POST"
 export const API_AUTH_SIGN_IN_URL = "/api/auth/sign-in";
 /**
@@ -49,13 +47,13 @@ export const API_AUTH_GOOGLE_URL = "/api/auth/google/url";
 // HTTP Method: "POST"
 export const API_AUTH_FORGOT_PASSWORD_URL = "/api/auth/forgot-password";
 /**
- * Request body: ForgotPasswordRequest
- * Response: ApiResponse<ForgotPasswordResponse>
+ * Request body: ForgotPasswordSchema
+ * Response: ApiResponse<never>
  */
 
 // HTTP Method: "POST"
 export const API_AUTH_RESET_PASSWORD_URL = "/api/auth/reset-password";
 /**
- * Request body: ResetPasswordRequest
- * Response: ApiResponse<ResetPasswordResponse>
+ * Request body: ResetPasswordSchema
+ * Response: ApiResponse<never>
  */

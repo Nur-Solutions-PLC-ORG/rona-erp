@@ -1,55 +1,50 @@
 import {
-  Controller,
-  Post,
-  Get,
   Body,
-  Res,
+  Controller,
+  Get,
+  HttpStatus,
+  Post,
+  Query,
   Req,
+  Res,
   UseGuards,
   UsePipes,
-  Query,
-  HttpStatus,
 } from '@nestjs/common';
 
-import { Response, Request } from 'express';
-import { AuthService } from '../service/auth.service';
+import { Request, Response } from 'express';
 import { AuthGuard } from '../guards/auth.guard';
-import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../guards/roles.decorator';
+import { RolesGuard } from '../guards/roles.guard';
+import { AuthService } from '../service/auth.service';
 
 import { ZodValidationPipe } from '@/modules/app/pipes/zod-validation.pipe';
+import { COOKIE_MAX_AGE, COOKIE_NAME } from '@rona/config/auth';
 import {
-  registerSchema,
-  resendVerificationCodeSchema,
-  signInSchema,
-  forgotPasswordSchema,
-  resetPasswordSchema,
-} from '@rona/validation/auth';
-import {
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
   RegisterSchema,
   ResendVerificationCodeSchema,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
   SignInSchema,
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ForgotPasswordResponse,
   ResetPasswordResponse,
 } from '@rona/types/auth';
-import { COOKIE_NAME, COOKIE_MAX_AGE } from '@rona/config/auth';
+import {
+  forgotPasswordSchema,
+  registerSchema,
+  resendVerificationCodeSchema,
+  resetPasswordSchema,
+  signInSchema,
+} from '@rona/validation/auth';
 
-import { ApiResponse } from '@rona/types/api';
-import {
-  Session,
-  SignInResponseData,
-  ForgotPasswordResponse,
-  ResetPasswordResponse,
-} from '@rona/types/auth';
-import { CLIENT_AUTH_GOOGLE_CALLBACK_PAGE } from '@rona/routes/auth';
-import { CLIENT_APP_ERROR_PAGE } from '@rona/routes/app';
 import { DEFAULT_CLIENT_URL } from '@rona/config/client';
-import {
-  API_AUTH_FORGOT_PASSWORD_URL,
-  API_AUTH_RESET_PASSWORD_URL,
-} from '@rona/routes/auth';
+import { CLIENT_APP_ERROR_PAGE } from '@rona/routes/app';
+import { CLIENT_AUTH_GOOGLE_CALLBACK_PAGE } from '@rona/routes/auth';
+import { ApiResponse } from '@rona/types/api';
+import { Session, SignInResponseData } from '@rona/types/auth';
 
 // ROUTE: api/auth
 @Controller('api/auth')
@@ -180,7 +175,7 @@ export class AuthController {
       res.redirect(`${clientUrl}${CLIENT_AUTH_GOOGLE_CALLBACK_PAGE}`);
     } catch (e: any) {
       if (e instanceof Error && e.message) {
-      res.redirect(
+        res.redirect(
           `${clientUrl}${CLIENT_APP_ERROR_PAGE}?message=${encodeURIComponent(e.message)}`,
         );
       } else {
@@ -195,14 +190,15 @@ export class AuthController {
   async forgotPassword(
     @Body() body: ForgotPasswordRequest,
   ): Promise<ApiResponse<ForgotPasswordResponse>> {
-    await this.authService.forgotPassword(body.email); 
+    await this.authService.forgotPassword(body.email);
     return {
       success: true,
       statusCode: HttpStatus.OK,
-      message: 'If an account with that email exists, a reset link has been sent.',
-     };
-  }  
-   // POST /api/auth/reset-password — completes the password reset flow
+      message:
+        'If an account with that email exists, a reset link has been sent.',
+    };
+  }
+  // POST /api/auth/reset-password — completes the password reset flow
   @Post('reset-password')
   @UsePipes(new ZodValidationPipe(resetPasswordSchema))
   async resetPassword(
@@ -214,6 +210,6 @@ export class AuthController {
       success: true,
       statusCode: HttpStatus.OK,
       message: 'Your password has been reset successfully.',
-     };
-   }
- }
+    };
+  }
+}

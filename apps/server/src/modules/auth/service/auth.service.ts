@@ -1,10 +1,12 @@
 import { db } from '@/db';
 import { userRoles, users } from '@/db/schema';
-import { sendVerificationEmail } from '@/emails/resend';
+import { sendPasswordResetEmail, sendVerificationEmail } from '@/emails/resend';
 import {
   InvalidCodeException,
   InvalidCredentialsException,
+  InvalidResetTokenException,
   SessionException,
+  UserNotFoundException,
   UserRoleNotFoundException,
   WaitForResendException,
 } from '@/exceptions/auth/auth.exception';
@@ -208,38 +210,27 @@ export class AuthService {
 
   // forgot-password: validates email, generates a secure one-time token, stores it in Redis, and sends a reset email
   async forgotPassword(email: string) {
-    // Check if a user with the given email exists
     const userRecords = await db
       .select()
       .from(users)
       .where(eq(users.email, email));
 
-    // If no user is found, throw an exception
     if (userRecords.length === 0) {
       throw new UserNotFoundException();
     }
 
     const user = userRecords[0];
 
-    // Generate a cryptographically secure one-time reset token
-    const token = crypto.randomBytes(32).toString('hex');
+    const token = this.generateRandomCode();
 
-    // Store the token in Redis with a 15-minute expiration (900000 ms)
-    // The Redis key includes the user ID for easy lookup and cleanup
     const resetTokenKey = `auth:reset-token:${user.id}`;
     await redisClient.set(resetTokenKey, token, { px: 15 * 60 * 1000 });
 
-    // Build the password reset URL that will be embedded in the email
-    const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
-
-    // Send the password reset email containing the link with the token
-    await sendPasswordResetEmail(email, resetUrl);
+    await sendPasswordResetEmail(email, token);
   }
 
   // reset-password: validates the token against Redis, checks expiration, hashes the new password, and updates the user
   async resetPassword(token: string, password: string) {
-    // Scan Redis for a matching token key
-    // redisClient.scan returns [cursor, keys[]]
     const resetTokenKey = `auth:reset-token:*`;
     const [, keys] = await redisClient.scan(0, {
       match: resetTokenKey,
@@ -256,24 +247,16 @@ export class AuthService {
       }
     }
 
-    // If no matching token is found in Redis, the token is invalid
     if (!foundKey) {
       throw new InvalidResetTokenException();
     }
 
-    // Extract the user ID from the Redis key
     const userId = foundKey.replace('auth:reset-token:', '');
 
-    // Hash the new password using bcrypt with the same salt rounds as the rest of the project
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Update the user's password in the database
-    await db
-      .update(users)
-      .set({ passwordHash })
-      .where(eq(users.id, userId));
+    await db.update(users).set({ passwordHash }).where(eq(users.id, userId));
 
-    // Delete the token from Redis to invalidate it 
     await redisClient.del(foundKey);
   }
 }
