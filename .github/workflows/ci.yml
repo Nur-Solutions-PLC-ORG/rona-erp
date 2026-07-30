@@ -10,18 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
 
       - uses: pnpm/action-setup@v4
         with:
           version: 10
+          cache: true
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
 
-      - run: pnpm install
-      - run: pnpm turbo lint
-      - run: pnpm turbo typecheck
-      - run: pnpm turbo build
+      - run: pnpm exec turbo lint
+      - run: pnpm exec turbo typecheck
+      - run: pnpm exec turbo build

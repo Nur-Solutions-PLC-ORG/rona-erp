@@ -17,11 +17,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
 import { useCreateMutation } from "@/hooks/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CODE_LENGTH, OPT_RESEND_DELAY_DURATION_MS } from "@rona/config/auth";

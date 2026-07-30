@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-import Logo from "@/components/custom/logo";
 import { Toaster } from "@/components/ui/sonner";
 import { useSession } from "@/modules/auth/hooks";
 
+import LoaderPage from "@/components/custom/loader-page";
 import { CLIENT_APP_DASHBOARD_PAGE } from "@rona/routes/app";
 import {
   CLIENT_AUTH_FORGOT_PASSWORD_PAGE,
@@ -14,7 +14,6 @@ import {
   CLIENT_AUTH_RESET_PASSWORD_PAGE,
   CLIENT_AUTH_SIGNIN_PAGE,
 } from "@rona/routes/auth";
-import LoaderPage from "@/components/custom/loader-page";
 
 interface Props {
   children?: React.ReactNode;

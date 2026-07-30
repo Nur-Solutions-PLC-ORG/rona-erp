@@ -6,13 +6,12 @@ import { Button } from "../ui/button";
 
 export default function PasswordInput({
   className,
-  type: _,
   ...props
 }: React.ComponentProps<"input">) {
   const [iType, setIType] = useState<"password" | "text">("password");
   return (
     <div className={cn("w-fit flex relative", className)}>
-      <Input type={iType} className={className} {...props} />
+      <Input className={className} {...props} type={iType} />
       <Button
         type="button"
         onClick={() => setIType(iType == "password" ? "text" : "password")}
