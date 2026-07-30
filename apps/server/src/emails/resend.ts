@@ -35,3 +35,39 @@ export const sendVerificationEmail = async (email: string, code: string) => {
     return { success: false, error };
   }
 };
+
+// Password reset email template
+const getPasswordResetEmailTemplate = (resetUrl: string) => `
+  <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 32px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #f9fafb;">
+    <h2 style="text-align: center; color: #111827;">Password Reset Request</h2>
+    <p style="text-align: center; color: #6b7280; font-size: 14px;">
+      You requested a password reset. Click the button below to set a new password.
+    </p>
+    <div style="text-align: center; margin: 24px 0;">
+      <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">
+        Reset Password
+      </a>
+    </div>
+    <p style="text-align: center; color: #9ca3af; font-size: 12px;">
+      This link expires in 15 minutes. If you didn't request this, you can safely ignore this email.
+    </p>
+  </div>
+`;
+
+export const sendPasswordResetEmail = async (
+  email: string,
+  resetUrl: string,
+) => {
+  try {
+    const data = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: email,
+      subject: 'Password Reset Request',
+      html: getPasswordResetEmailTemplate(resetUrl),
+    });
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    return { success: false, error };
+  }
+};

@@ -45,3 +45,20 @@ export class SessionException extends ApiException {
     );
   }
 }
+
+// Thrown when a user is not found by email during forgot-password
+export class UserNotFoundException extends ApiException {
+  constructor() {
+    super(HttpStatus.NOT_FOUND, 'No account found with this email address.');
+  }
+}
+
+// Thrown when a password reset token is invalid or has expired
+export class InvalidResetTokenException extends ApiException {
+  constructor() {
+    super(
+      HttpStatus.BAD_REQUEST,
+      'The password reset token is invalid or expired.',
+    );
+  }
+}

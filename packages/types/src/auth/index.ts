@@ -45,3 +45,32 @@ export type ResendVerificationCodeSchema = z.infer<
 >;
 export type RegisterSchema = z.infer<typeof registerSchema>;
 export type UserDto = z.infer<typeof userDto>;
+
+// Forgot-password request
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+// Reset-password request
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
+// Password reset token record
+export interface PasswordResetToken {
+  id: string;
+  userId: string;
+  token: string;
+  used: boolean;
+  expiresAt: string;
+  createdAt: string;
+}
