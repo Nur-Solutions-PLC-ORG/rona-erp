@@ -23,6 +23,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - run: pnpm exec turbo build
+
       - run: pnpm exec turbo lint
       - run: pnpm exec turbo typecheck
-      - run: pnpm exec turbo build
