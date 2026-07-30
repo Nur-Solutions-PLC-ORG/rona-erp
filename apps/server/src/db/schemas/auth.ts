@@ -56,19 +56,3 @@ export const userRoles = pgTable('user_roles', {
      .notNull()
      .$onUpdate(() => new Date()),
  );
-
- // Password reset tokens table — stores one-time tokens for forgot-password flow
-export const passwordResetTokens = pgTable('password_reset_tokens', {
- id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .references(() => users.id, { onDelete: 'cascade' })
-    .notNull(),
-
-  token: text('token').notNull().unique(),
-  used: boolean('used').default(false).notNull(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
