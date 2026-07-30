@@ -4,6 +4,7 @@ apps/*/.turbo
 packages/*/.turbo
 node_modules/
 .agents/
+.vscode
 
 # Environment
 .env
@@ -11,3 +12,5 @@ node_modules/
 !.env.example
 
 # Local DB
+.env
+.env.local

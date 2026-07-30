@@ -18,7 +18,7 @@ export default function PasswordInput({
         onClick={() => setIType(iType == "password" ? "text" : "password")}
         size={"icon-sm"}
         variant={"ghost"}
-        className="absolute top-1/2 -translate-y-1/2 right-1"
+        className="absolute top-1/2 -translate-y-1/2 right-1 z-10"
       >
         {iType == "password" ? <Eye /> : <EyeClosed />}
       </Button>

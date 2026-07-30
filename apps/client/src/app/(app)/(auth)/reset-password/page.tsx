@@ -2,8 +2,7 @@ import { Metadata } from "next";
 import Client from "./client";
 
 export const metadata: Metadata = {
-  title: "Status",
-  description: "The server and system status",
+  title: "Reset password",
 };
 
 const Page = () => {

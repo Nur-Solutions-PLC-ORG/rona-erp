@@ -25,8 +25,8 @@ const UserButton = () => {
   const signOutMutation = useCreateMutation(
     ApiPostSignOut,
     () => {
-      location.reload();
       router.push(CLIENT_AUTH_SIGNIN_PAGE);
+      location.reload();
     },
     (data) => {
       toast.error(data.message);

@@ -2,7 +2,7 @@
 export const API_AUTH_SIGN_IN_URL = "/api/auth/sign-in";
 /**
  * Request body: SignInSchema
- * Response: ApiResponse<SignInResponseData | never>
+ * Response: ApiResponseType<SignInResponseData | never>
  */
 
 // HTTP Method: "POST"
@@ -42,4 +42,18 @@ export const API_AUTH_GOOGLE_CALLBACK_URL = "/api/auth/google/callback";
 export const API_AUTH_GOOGLE_URL = "/api/auth/google/url";
 /**
  * Response: ApiResponse<string>
+ */
+
+// HTTP Method: "POST"
+export const API_AUTH_FORGOT_PASSWORD_URL = "/api/auth/forgot-password";
+/**
+ * Request body: ForgotPasswordSchema
+ * Response: ApiResponse<never>
+ */
+
+// HTTP Method: "POST"
+export const API_AUTH_RESET_PASSWORD_URL = "/api/auth/reset-password";
+/**
+ * Request body: ResetPasswordSchema
+ * Response: ApiResponse<never>
  */

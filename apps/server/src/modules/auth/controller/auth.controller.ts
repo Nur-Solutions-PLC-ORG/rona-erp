@@ -1,40 +1,44 @@
 import {
-  Controller,
-  Post,
-  Get,
   Body,
-  Res,
+  Controller,
+  Get,
+  HttpStatus,
+  Post,
+  Query,
   Req,
+  Res,
   UseGuards,
   UsePipes,
-  Query,
-  HttpStatus,
 } from '@nestjs/common';
 
-import { Response, Request } from 'express';
-import { AuthService } from '../service/auth.service';
+import { Request, Response } from 'express';
 import { AuthGuard } from '../guards/auth.guard';
-import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../guards/roles.decorator';
+import { RolesGuard } from '../guards/roles.guard';
+import { AuthService } from '../service/auth.service';
 
 import { ZodValidationPipe } from '@/modules/app/pipes/zod-validation.pipe';
+import { COOKIE_MAX_AGE, COOKIE_NAME } from '@rona/config/auth';
 import {
-  registerSchema,
-  resendVerificationCodeSchema,
-  signInSchema,
-} from '@rona/validation/auth';
-import {
+  ForgotPasswordSchema,
   RegisterSchema,
   ResendVerificationCodeSchema,
+  ResetPasswordSchema,
   SignInSchema,
 } from '@rona/types/auth';
-import { COOKIE_NAME, COOKIE_MAX_AGE } from '@rona/config/auth';
+import {
+  forgotPasswordSchema,
+  registerSchema,
+  resendVerificationCodeSchema,
+  resetPasswordSchema,
+  signInSchema,
+} from '@rona/validation/auth';
 
+import { DEFAULT_CLIENT_URL } from '@rona/config/client';
+import { CLIENT_APP_ERROR_PAGE } from '@rona/routes/app';
+import { CLIENT_AUTH_GOOGLE_CALLBACK_PAGE } from '@rona/routes/auth';
 import { ApiResponse } from '@rona/types/api';
 import { Session, SignInResponseData } from '@rona/types/auth';
-import { CLIENT_AUTH_GOOGLE_CALLBACK_PAGE } from '@rona/routes/auth';
-import { CLIENT_APP_ERROR_PAGE } from '@rona/routes/app';
-import { DEFAULT_CLIENT_URL } from '@rona/config/client';
 
 // ROUTE: api/auth
 @Controller('api/auth')
@@ -172,5 +176,33 @@ export class AuthController {
         res.redirect(`${clientUrl}${CLIENT_APP_ERROR_PAGE}`);
       }
     }
+  }
+
+  /// POST /api/auth/forgot-password — initiates the password reset flow
+  @Post('forgot-password')
+  @UsePipes(new ZodValidationPipe(forgotPasswordSchema))
+  async forgotPassword(
+    @Body() body: ForgotPasswordSchema,
+  ): Promise<ApiResponse<ForgotPasswordSchema>> {
+    await this.authService.forgotPassword(body.email);
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'Your password reset token has been sent successfully.',
+    };
+  }
+  // POST /api/auth/reset-password — completes the password reset flow
+  @Post('reset-password')
+  @UsePipes(new ZodValidationPipe(resetPasswordSchema))
+  async resetPassword(
+    @Body() body: ResetPasswordSchema,
+  ): Promise<ApiResponse<ResetPasswordSchema>> {
+    await this.authService.resetPassword(body.token, body.password);
+
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'Your password has been reset successfully.',
+    };
   }
 }

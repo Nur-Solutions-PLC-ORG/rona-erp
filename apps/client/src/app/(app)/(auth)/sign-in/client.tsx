@@ -5,10 +5,9 @@ import {
   ApiPostResendVerificationCode,
   ApiPostSignIn,
 } from "@/api";
-import CardWrapper, {
-  CardWrapperParent,
-} from "@/components/custom/card-wrapper";
+import CardWrapper from "@/components/custom/card-wrapper";
 import CustomButton from "@/components/custom/custom-button";
+import OTP from "@/components/custom/otp";
 import PasswordInput from "@/components/custom/password-input";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,11 +24,13 @@ import {
 } from "@/components/ui/input-otp";
 import { useCreateMutation } from "@/hooks/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { OPT_RESEND_DELAY_DURATION_MS } from "@rona/config/auth";
+import { CODE_LENGTH, OPT_RESEND_DELAY_DURATION_MS } from "@rona/config/auth";
 import { CLIENT_APP_DASHBOARD_PAGE } from "@rona/routes/app";
+import { CLIENT_AUTH_FORGOT_PASSWORD_PAGE } from "@rona/routes/auth";
 import { ResendVerificationCodeSchema, SignInSchema } from "@rona/types/auth";
 import { signInSchema } from "@rona/validation/auth";
 import { RefreshCw } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -77,8 +78,8 @@ const Client = () => {
         setTFAEnabled(true);
         setResendIn(60);
       } else {
-        location.reload();
         router.push(CLIENT_APP_DASHBOARD_PAGE);
+        location.reload();
       }
     },
     (data) => {
@@ -127,158 +128,157 @@ const Client = () => {
   };
 
   return (
-    <CardWrapperParent>
-      <CardWrapper
-        center
-        title={tFAEnabled ? "Verify your Sign in" : "Sign in to Rona"}
-      >
-        {!tFAEnabled ? (
-          <>
+    <CardWrapper
+      center
+      title={tFAEnabled ? "Verify your Sign in" : "Sign in to Rona"}
+    >
+      {!tFAEnabled ? (
+        <>
+          <CustomButton
+            onClick={() => handleContinueWithGoogleClick()}
+            isPending={googleMutation.isPending}
+            variant={"outline"}
+            icon={FcGoogle}
+            size={"lg"}
+            className="w-full"
+          >
+            Continue with Google
+          </CustomButton>
+          <div className="flex items-center w-full gap-4">
+            <span className="border-b border-border w-full flex-1" />
+            <span className="text-sm text-border tracking-widest font-light">
+              OR
+            </span>
+            <span className="border-b border-border w-full flex-1" />
+          </div>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-5 w-full flex flex-col"
+          >
+            <FieldGroup className="gap-5">
+              <Controller
+                control={form.control}
+                name="email"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="email-input">Email</FieldLabel>
+                    <Input
+                      {...field}
+                      id="email-input"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="email@gmail.com"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="password"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="password-input">Password</FieldLabel>
+                    <PasswordInput
+                      {...field}
+                      id="password-input"
+                      aria-invalid={fieldState.invalid}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+            <div className="flex items-center mb-3 -mt-2">
+              <Button
+                asChild
+                variant={"link"}
+                className="px-0 h-6 brightness-50 font-normal"
+              >
+                <Link href={CLIENT_AUTH_FORGOT_PASSWORD_PAGE}>
+                  Forgot password
+                </Link>
+              </Button>
+            </div>
             <CustomButton
-              onClick={() => handleContinueWithGoogleClick()}
-              isPending={googleMutation.isPending}
-              variant={"outline"}
-              icon={FcGoogle}
+              isPending={signInMutation.isPending}
               size={"lg"}
               className="w-full"
             >
-              Continue with Google
+              Sign in
             </CustomButton>
-            <div className="flex items-center w-full gap-4">
-              <span className="border-b border-border w-full flex-1" />
-              <span className="text-sm text-border tracking-widest font-light">
-                OR
-              </span>
-              <span className="border-b border-border w-full flex-1" />
-            </div>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-5 w-full flex flex-col"
-            >
-              <FieldGroup className="gap-5">
-                <Controller
-                  control={form.control}
-                  name="email"
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="email-input">Email</FieldLabel>
-                      <Input
-                        {...field}
-                        id="email-input"
-                        aria-invalid={fieldState.invalid}
-                        placeholder="email@gmail.com"
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-                <Controller
-                  control={form.control}
-                  name="password"
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="password-input">Password</FieldLabel>
-                      <PasswordInput
-                        {...field}
-                        id="password-input"
-                        aria-invalid={fieldState.invalid}
-                      />
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
-              </FieldGroup>
-              <CustomButton
-                isPending={signInMutation.isPending}
-                size={"lg"}
-                className="w-full"
-              >
-                Sign in
-              </CustomButton>
-            </form>
-          </>
-        ) : (
-          <>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-5 w-full flex flex-col"
-            >
-              <FieldGroup className="gap-5">
-                <p className="text-muted-foreground">
-                  Enter the verification code we sent to your email address:
-                  {"  "}
-                  <span className="text-primary brightness-50">
-                    {emailValue}
-                  </span>
-                </p>
-                <Controller
-                  control={form.control}
-                  name="code"
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <div className="flex items-center justify-between">
-                        <FieldLabel htmlFor="code-input">OTP Code</FieldLabel>
-                        {resendIn <= 0 ? (
-                          <Button
-                            disabled={
-                              !!resendIn ||
-                              resendVerificationCodeMutation.isPending
-                            }
-                            onClick={() => {
-                              if (resendIn <= 0) {
-                                const body: ResendVerificationCodeSchema = {
-                                  email: emailValue,
-                                };
+          </form>
+        </>
+      ) : (
+        <>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-5 w-full flex flex-col"
+          >
+            <FieldGroup className="gap-5">
+              <p className="text-muted-foreground">
+                Enter the verification code we sent to your email address:
+                {"  "}
+                <span className="text-primary brightness-50">{emailValue}</span>
+              </p>
+              <Controller
+                control={form.control}
+                name="code"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <div className="flex items-center justify-between">
+                      <FieldLabel htmlFor="code-input">OTP Code</FieldLabel>
+                      {resendIn <= 0 ? (
+                        <Button
+                          disabled={
+                            !!resendIn ||
+                            resendVerificationCodeMutation.isPending
+                          }
+                          onClick={() => {
+                            if (resendIn <= 0) {
+                              const body: ResendVerificationCodeSchema = {
+                                email: emailValue,
+                              };
 
-                                resendVerificationCodeMutation.mutate(body);
-                              }
-                            }}
-                            size={"sm"}
-                            variant={"link"}
-                            type="button"
-                          >
-                            <RefreshCw />
-                            Resend
-                          </Button>
-                        ) : (
-                          <p className="text-muted-foreground text-sm">
-                            Resend in {resendIn}s
-                          </p>
-                        )}
-                      </div>
-                      <InputOTP {...field} maxLength={6}>
-                        <InputOTPGroup className="flex w-full">
-                          <InputOTPSlot className="flex-1" index={0} />
-                          <InputOTPSlot className="flex-1" index={1} />
-                          <InputOTPSlot className="flex-1" index={2} />
-                          <InputOTPSlot className="flex-1" index={3} />
-                          <InputOTPSlot className="flex-1" index={4} />
-                          <InputOTPSlot className="flex-1" index={5} />
-                        </InputOTPGroup>
-                      </InputOTP>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
+                              resendVerificationCodeMutation.mutate(body);
+                            }
+                          }}
+                          size={"sm"}
+                          variant={"link"}
+                          type="button"
+                        >
+                          <RefreshCw />
+                          Resend
+                        </Button>
+                      ) : (
+                        <p className="text-muted-foreground text-sm">
+                          Resend in {resendIn}s
+                        </p>
                       )}
-                    </Field>
-                  )}
-                />
-              </FieldGroup>
-              <CustomButton
-                isPending={signInMutation.isPending}
-                size={"lg"}
-                className="w-full"
-              >
-                Continue
-              </CustomButton>
-            </form>
-          </>
-        )}
-      </CardWrapper>
-    </CardWrapperParent>
+                    </div>
+                    <OTP {...field} length={CODE_LENGTH} />
+
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+            <CustomButton
+              isPending={signInMutation.isPending}
+              size={"lg"}
+              className="w-full"
+            >
+              Continue
+            </CustomButton>
+          </form>
+        </>
+      )}
+    </CardWrapper>
   );
 };
 
