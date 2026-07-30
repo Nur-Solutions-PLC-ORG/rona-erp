@@ -4,6 +4,7 @@ export const API_ADMIN_USER_BY_ID_URL = "/api/admin/users/:id";
 
 // Companies
 export const API_ADMIN_COMPANIES_URL = "/api/admin/companies";
+export const API_ADMIN_COMPANIES_SEARCH_URL = "/api/admin/companies?search=";
 export const API_ADMIN_COMPANY_BY_ID_URL = "/api/admin/companies/:id";
 export const API_ADMIN_COMPANY_SETTINGS_URL = "/api/admin/company-settings";
 export const API_ADMIN_COMPANY_SETTINGS_BY_ID_URL =
