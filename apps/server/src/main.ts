@@ -19,4 +19,4 @@ async function bootstrap() {
 }
 
 // starts server
-bootstrap();
+void bootstrap();

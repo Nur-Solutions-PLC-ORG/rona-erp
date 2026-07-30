@@ -10,5 +10,5 @@ export interface ApiResponse<T> {
   data?: T;
 
   // Optional for success type 'false'
-  errors?: Record<string, string[] | undefined | string>;
+  errors?: undefined | Record<string, string[] | undefined | string>;
 }

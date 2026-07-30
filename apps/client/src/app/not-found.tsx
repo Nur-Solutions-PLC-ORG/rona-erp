@@ -17,14 +17,11 @@ const Page = () => {
         center
         title="404: Page not Found"
         description="The Page your are looking for doesn't exist"
-        footer={
-          <>
-            <Button asChild className="w-full" variant={"outline"}>
-              <Link href={"/"}>Back to home</Link>
-            </Button>
-          </>
-        }
-      ></CardWrapper>
+      >
+        <Button asChild className="w-full" variant={"outline"}>
+          <Link href={"/"}>Back to home</Link>
+        </Button>
+      </CardWrapper>
     </CardWrapperParent>
   );
 };

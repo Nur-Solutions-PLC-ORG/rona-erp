@@ -1,10 +1,12 @@
 import { db } from '@/db';
 import { userRoles, users } from '@/db/schema';
-import { sendVerificationEmail } from '@/emails/resend';
+import { sendPasswordResetEmail, sendVerificationEmail } from '@/emails/resend';
 import {
   InvalidCodeException,
   InvalidCredentialsException,
+  InvalidResetTokenException,
   SessionException,
+  UserNotFoundException,
   UserRoleNotFoundException,
   WaitForResendException,
 } from '@/exceptions/auth/auth.exception';
@@ -13,8 +15,8 @@ import { redisClient } from '@/redis';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   OPT_RESEND_DELAY_DURATION_MS,
-  VERIFICATION_CODE_EXPIRY_MS,
-  VERIFICATION_CODE_LENGTH,
+  CODE_EXPIRY_MS,
+  CODE_LENGTH,
 } from '@rona/config/auth';
 import type { RegisterSchema } from '@rona/types/auth';
 import { Session, SessionUser, UserRole } from '@rona/types/auth';
@@ -56,7 +58,7 @@ export class AuthService {
   generateRandomCode(): string {
     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let code = '';
-    for (let i = 0; i < VERIFICATION_CODE_LENGTH; i++) {
+    for (let i = 0; i < CODE_LENGTH; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return code;
@@ -74,7 +76,7 @@ export class AuthService {
     const code = this.generateRandomCode();
     const codeKey = `auth:code:${email}`;
 
-    await redisClient.set(codeKey, code, { px: VERIFICATION_CODE_EXPIRY_MS });
+    await redisClient.set(codeKey, code, { px: CODE_EXPIRY_MS });
     await redisClient.set(lastSendKey, Date.now(), {
       px: OPT_RESEND_DELAY_DURATION_MS,
     });
@@ -203,6 +205,59 @@ export class AuthService {
     const user = await this.validateUserByEmail(profile.email);
 
     const token = this.createSession(user);
+
     return { token };
+  }
+
+  // forgot-password: validates email, generates a secure one-time token, stores it in Redis, and sends a reset email
+  async forgotPassword(email: string) {
+    const userRecords = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email));
+
+    if (userRecords.length === 0) {
+      throw new UserNotFoundException();
+    }
+
+    const user = userRecords[0];
+
+    const token = this.generateRandomCode();
+
+    const resetTokenKey = `auth:reset-token:${user.id}`;
+    await redisClient.set(resetTokenKey, token, { px: CODE_EXPIRY_MS });
+
+    await sendPasswordResetEmail(email, token);
+  }
+
+  // reset-password: validates the token against Redis, checks expiration, hashes the new password, and updates the user
+  async resetPassword(token: string, password: string) {
+    const resetTokenKey = `auth:reset-token:*`;
+    const [, keys] = await redisClient.scan(0, {
+      match: resetTokenKey,
+      count: 100,
+    });
+
+    let foundKey: string | null = null;
+
+    for (const key of keys) {
+      const storedToken = await redisClient.get<string>(key);
+      if (storedToken === token) {
+        foundKey = key;
+        break;
+      }
+    }
+
+    if (!foundKey) {
+      throw new InvalidResetTokenException();
+    }
+
+    const userId = foundKey.replace('auth:reset-token:', '');
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    await db.update(users).set({ passwordHash }).where(eq(users.id, userId));
+
+    await redisClient.del(foundKey);
   }
 }

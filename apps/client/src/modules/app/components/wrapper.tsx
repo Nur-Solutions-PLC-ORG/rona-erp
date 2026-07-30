@@ -1,15 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-import Logo from "@/components/custom/logo";
 import { Toaster } from "@/components/ui/sonner";
 import { useSession } from "@/modules/auth/hooks";
 
-import { CLIENT_APP_DASHBOARD_PAGE } from "@rona/routes/app";
-import { CLIENT_AUTH_SIGNIN_PAGE } from "@rona/routes/auth";
 import LoaderPage from "@/components/custom/loader-page";
+import { CLIENT_APP_DASHBOARD_PAGE } from "@rona/routes/app";
+import {
+  CLIENT_AUTH_FORGOT_PASSWORD_PAGE,
+  CLIENT_AUTH_GOOGLE_CALLBACK_PAGE,
+  CLIENT_AUTH_RESET_PASSWORD_PAGE,
+  CLIENT_AUTH_SIGNIN_PAGE,
+} from "@rona/routes/auth";
 
 interface Props {
   children?: React.ReactNode;
@@ -24,8 +28,15 @@ export default function AppWrapper({ children }: Props) {
   useEffect(() => {
     if (isLoading) return;
 
+    const authPages = [
+      CLIENT_AUTH_SIGNIN_PAGE,
+      CLIENT_AUTH_RESET_PASSWORD_PAGE,
+      CLIENT_AUTH_FORGOT_PASSWORD_PAGE,
+      CLIENT_AUTH_GOOGLE_CALLBACK_PAGE,
+    ];
+
     if (!session) {
-      if (pathname !== CLIENT_AUTH_SIGNIN_PAGE) {
+      if (!authPages.includes(pathname)) {
         router.replace(CLIENT_AUTH_SIGNIN_PAGE);
       }
       return;
