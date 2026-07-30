@@ -25,7 +25,6 @@ import {
   platformConfigSchema,
   userListSearchParamsSchema,
   userSchema,
-  userSummaryDto,
 } from "@rona/validation/admin";
 import z from "zod";
 
@@ -63,7 +62,6 @@ export type EmployeeSchema = z.infer<typeof employeeSchema>;
 export type PlatformConfigSchema = z.infer<typeof platformConfigSchema>;
 
 // DTOs
-export type UserSummaryDto = z.infer<typeof userSummaryDto>;
 export type CompanyDto = z.infer<typeof companyDto>;
 export type CompanySettingsDto = z.infer<typeof companySettingsDto>;
 export type DepartmentDto = z.infer<typeof departmentDto>;

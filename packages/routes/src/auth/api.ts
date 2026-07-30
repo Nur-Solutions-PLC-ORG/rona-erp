@@ -1,59 +1,59 @@
-// HTTP Method: "POST"
 export const API_AUTH_SIGN_IN_URL = "/api/auth/sign-in";
 /**
- * Request body: SignInSchema
+ * Method: "POST"
+ * RequestBody: SignInSchema
  * Response: ApiResponseType<SignInResponseData | never>
  */
 
-// HTTP Method: "POST"
 export const API_AUTH_RESEND_VERIFICATION_CODE_URL =
   "/api/auth/resend-verification-code";
 /**
- * Request body: ResendVerificationCodeSchema
+ * Method: "POST"
+ * RequestBody: ResendVerificationCodeSchema
  * Response: ApiResponse<never>
  */
 
-// HTTP Method: "POST"
 export const API_AUTH_REGISTER_URL = "/api/auth/register";
 /**
- * Request body: RegisterSchema
+ * Method: "POST"
+ * RequestBody: RegisterSchema
  * Response: ApiResponse<never>
  */
 
-// HTTP Method: "POST"
 export const API_AUTH_SIGN_OUT_URL = "/api/auth/sign-out";
 /**
+ * Method: "POST"
  * Response: ApiResponse<never>
  */
 
-// HTTP Method: "GET"
 export const API_AUTH_SESSION_URL = "/api/auth/session";
 /**
+ * Method: "GET"
  * Response: ApiResponse<Session>
  */
 
-// HTTP Method: "GET"
 export const API_AUTH_GOOGLE_CALLBACK_URL = "/api/auth/google/callback";
 /**
+ * Method: "GET"
  * Note: Redirects to client dashboard or error page
  */
 
-// HTTP Method: "GET"
 export const API_AUTH_GOOGLE_URL = "/api/auth/google/url";
 /**
+ * Method: "GET"
  * Response: ApiResponse<string>
  */
 
-// HTTP Method: "POST"
 export const API_AUTH_FORGOT_PASSWORD_URL = "/api/auth/forgot-password";
 /**
- * Request body: ForgotPasswordSchema
+ * Method: "POST"
+ * RequestBody: ForgotPasswordSchema
  * Response: ApiResponse<never>
  */
 
-// HTTP Method: "POST"
 export const API_AUTH_RESET_PASSWORD_URL = "/api/auth/reset-password";
 /**
- * Request body: ResetPasswordSchema
+ * Method: "POST"
+ * RequestBody: ResetPasswordSchema
  * Response: ApiResponse<never>
  */
