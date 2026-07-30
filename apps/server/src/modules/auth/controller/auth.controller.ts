@@ -179,43 +179,41 @@ export class AuthController {
 
       res.redirect(`${clientUrl}${CLIENT_AUTH_GOOGLE_CALLBACK_PAGE}`);
     } catch (e: any) {
-       if (e instanceof Error && e.message) {
-         res.redirect(
-           `${clientUrl}${CLIENT_APP_ERROR_PAGE}?message=${encodeURIComponent(e.message)}`,
-         );
-       } else {
-         res.redirect(`${clientUrl}${CLIENT_APP_ERROR_PAGE}`);
-       }
-     }
-   }
+      if (e instanceof Error && e.message) {
+      res.redirect(
+          `${clientUrl}${CLIENT_APP_ERROR_PAGE}?message=${encodeURIComponent(e.message)}`,
+        );
+      } else {
+        res.redirect(`${clientUrl}${CLIENT_APP_ERROR_PAGE}`);
+      }
+    }
+  }
 
-   // POST /api/auth/forgot-password — initiates the password reset flow
-   @Post('forgot-password')
-   @UsePipes(new ZodValidationPipe(forgotPasswordSchema))
-   async forgotPassword(
-     @Body() body: ForgotPasswordRequest,
-   ): Promise<ApiResponse<ForgotPasswordResponse>> {
-     await this.authService.forgotPassword(body.email);
-
-     return {
-       success: true,
-       statusCode: HttpStatus.OK,
-       message: 'If an account with that email exists, a reset link has been sent.',
+  /// POST /api/auth/forgot-password — initiates the password reset flow
+  @Post('forgot-password')
+  @UsePipes(new ZodValidationPipe(forgotPasswordSchema))
+  async forgotPassword(
+    @Body() body: ForgotPasswordRequest,
+  ): Promise<ApiResponse<ForgotPasswordResponse>> {
+    await this.authService.forgotPassword(body.email); 
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'If an account with that email exists, a reset link has been sent.',
      };
-   }
-
+  }  
    // POST /api/auth/reset-password — completes the password reset flow
-   @Post('reset-password')
-   @UsePipes(new ZodValidationPipe(resetPasswordSchema))
-   async resetPassword(
-     @Body() body: ResetPasswordRequest,
-   ): Promise<ApiResponse<ResetPasswordResponse>> {
-     await this.authService.resetPassword(body.token, body.password);
+  @Post('reset-password')
+  @UsePipes(new ZodValidationPipe(resetPasswordSchema))
+  async resetPassword(
+    @Body() body: ResetPasswordRequest,
+  ): Promise<ApiResponse<ResetPasswordResponse>> {
+    await this.authService.resetPassword(body.token, body.password);
 
-     return {
-       success: true,
-       statusCode: HttpStatus.OK,
-       message: 'Your password has been reset successfully.',
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'Your password has been reset successfully.',
      };
    }
  }
