@@ -27,7 +27,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
     const data = await resend.emails.send({
       from: EMAIL_FROM,
       to: email,
-      subject: 'Password Reset Request',
+      subject: 'Your Password Reset Token',
       html: getPasswordResetEmailTemplate(token),
     });
     return { success: true, data };

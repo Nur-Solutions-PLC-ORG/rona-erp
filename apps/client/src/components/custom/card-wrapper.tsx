@@ -65,11 +65,7 @@ const CardWrapper = ({
           {children}
         </CardContent>
       )}
-      {footer && (
-        <CardFooter className="flex flex-col relative">
-          <div className="w-full flex flex-col z-10">{footer}</div>
-        </CardFooter>
-      )}
+      {footer && <CardFooter className="flex flex-col">{footer}</CardFooter>}
     </div>
   );
 };
