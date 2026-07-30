@@ -15,8 +15,8 @@ import { redisClient } from '@/redis';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   OPT_RESEND_DELAY_DURATION_MS,
-  VERIFICATION_CODE_EXPIRY_MS,
-  VERIFICATION_CODE_LENGTH,
+  CODE_EXPIRY_MS,
+  CODE_LENGTH,
 } from '@rona/config/auth';
 import type { RegisterSchema } from '@rona/types/auth';
 import { Session, SessionUser, UserRole } from '@rona/types/auth';
@@ -58,7 +58,7 @@ export class AuthService {
   generateRandomCode(): string {
     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     let code = '';
-    for (let i = 0; i < VERIFICATION_CODE_LENGTH; i++) {
+    for (let i = 0; i < CODE_LENGTH; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return code;
@@ -76,7 +76,7 @@ export class AuthService {
     const code = this.generateRandomCode();
     const codeKey = `auth:code:${email}`;
 
-    await redisClient.set(codeKey, code, { px: VERIFICATION_CODE_EXPIRY_MS });
+    await redisClient.set(codeKey, code, { px: CODE_EXPIRY_MS });
     await redisClient.set(lastSendKey, Date.now(), {
       px: OPT_RESEND_DELAY_DURATION_MS,
     });
@@ -224,7 +224,7 @@ export class AuthService {
     const token = this.generateRandomCode();
 
     const resetTokenKey = `auth:reset-token:${user.id}`;
-    await redisClient.set(resetTokenKey, token, { px: 15 * 60 * 1000 });
+    await redisClient.set(resetTokenKey, token, { px: CODE_EXPIRY_MS });
 
     await sendPasswordResetEmail(email, token);
   }

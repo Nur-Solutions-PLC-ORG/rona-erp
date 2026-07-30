@@ -20,17 +20,11 @@ import { AuthService } from '../service/auth.service';
 import { ZodValidationPipe } from '@/modules/app/pipes/zod-validation.pipe';
 import { COOKIE_MAX_AGE, COOKIE_NAME } from '@rona/config/auth';
 import {
-  ForgotPasswordRequest,
-  ForgotPasswordResponse,
+  ForgotPasswordSchema,
   RegisterSchema,
   ResendVerificationCodeSchema,
-  ResetPasswordRequest,
-  ResetPasswordResponse,
+  ResetPasswordSchema,
   SignInSchema,
-  ForgotPasswordRequest,
-  ResetPasswordRequest,
-  ForgotPasswordResponse,
-  ResetPasswordResponse,
 } from '@rona/types/auth';
 import {
   forgotPasswordSchema,
@@ -188,22 +182,21 @@ export class AuthController {
   @Post('forgot-password')
   @UsePipes(new ZodValidationPipe(forgotPasswordSchema))
   async forgotPassword(
-    @Body() body: ForgotPasswordRequest,
-  ): Promise<ApiResponse<ForgotPasswordResponse>> {
+    @Body() body: ForgotPasswordSchema,
+  ): Promise<ApiResponse<ForgotPasswordSchema>> {
     await this.authService.forgotPassword(body.email);
     return {
       success: true,
       statusCode: HttpStatus.OK,
-      message:
-        'If an account with that email exists, a reset link has been sent.',
+      message: 'Your password reset token has been sent successfully.',
     };
   }
   // POST /api/auth/reset-password — completes the password reset flow
   @Post('reset-password')
   @UsePipes(new ZodValidationPipe(resetPasswordSchema))
   async resetPassword(
-    @Body() body: ResetPasswordRequest,
-  ): Promise<ApiResponse<ResetPasswordResponse>> {
+    @Body() body: ResetPasswordSchema,
+  ): Promise<ApiResponse<ResetPasswordSchema>> {
     await this.authService.resetPassword(body.token, body.password);
 
     return {

@@ -40,19 +40,19 @@ export const users = pgTable('users', {
 });
 
 export const userRoles = pgTable('user_roles', {
-   id: uuid('id').primaryKey().defaultRandom(),
-   userId: uuid('user_id')
-     .references(() => users.id, { onDelete: 'cascade' })
-     .notNull(),
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
 
-   position: positionsList('position').notNull(),
-   module: modulesList('module').array().notNull().default([]),
+  position: positionsList('position').notNull(),
+  module: modulesList('module').array().notNull().default([]),
 
-   createdAt: timestamp('created_at', { withTimezone: true })
-     .defaultNow()
-     .notNull(),
-   updatedAt: timestamp('updated_at', { withTimezone: true })
-     .defaultNow()
-     .notNull()
-     .$onUpdate(() => new Date()),
- );
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
