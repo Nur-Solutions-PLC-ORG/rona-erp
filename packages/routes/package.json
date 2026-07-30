@@ -13,6 +13,10 @@
     "./app": {
       "types": "./dist/app/index.d.ts",
       "default": "./dist/app/index.js"
+    },
+    "./admin": {
+      "types": "./dist/admin/index.d.ts",
+      "default": "./dist/admin/index.js"
     }
   },
   "scripts": {
