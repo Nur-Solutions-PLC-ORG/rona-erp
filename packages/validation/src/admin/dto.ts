@@ -7,14 +7,6 @@ import {
   PLATFORM_CONFIG_KEYS,
   PLATFORM_CONFIG_VALUE_TYPES,
 } from "@rona/config/admin";
-import { USER_STATUS_LIST } from "@rona/config/auth";
-
-export const userSummaryDto = z.object({
-  id: z.string(),
-  fullName: z.string(),
-  email: z.string(),
-  status: z.enum(USER_STATUS_LIST),
-});
 
 export const companyDto = z.object({
   id: z.string(),
