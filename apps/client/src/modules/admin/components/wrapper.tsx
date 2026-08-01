@@ -2,17 +2,31 @@
 
 import { DashboardWrapper } from "@/modules/app/components/dashboard";
 import {
+  LuBadge,
   LuBuilding,
+  LuBuilding2,
   LuFactory,
+  LuGitFork,
   LuGroup,
+  LuNfc,
   LuSettings,
   LuSettings2,
   LuUserPlus,
   LuUsers,
+  LuWrench,
 } from "react-icons/lu";
 
 import { GoHome } from "react-icons/go";
 import AdminModals from "../modals";
+import { FaCodeFork, FaScrewdriver, FaUsers } from "react-icons/fa6";
+import {
+  RiAccountBox2Fill,
+  RiAccountCircleLine,
+  RiTeamLine,
+  RiUser2Fill,
+  RiUser5Line,
+} from "react-icons/ri";
+import { GitFork, Nfc } from "lucide-react";
 
 type Props = {
   children: React.ReactNode;
@@ -32,28 +46,24 @@ const AdminWrapper = ({ children }: Props) => {
             header: "Tables",
             title: "Users",
             href: "/admin/users",
-            Icon: LuUsers,
+            Icon: FaUsers,
           },
           {
             title: "Companies",
             href: "/admin/companies",
-            Icon: LuFactory,
+            Icon: LuBuilding2,
           },
-
           {
             title: "Departments",
             href: "/admin/departments",
-            Icon: LuBuilding,
           },
           {
             title: "Branches",
             href: "/admin/branches",
-            Icon: LuGroup,
           },
           {
             title: "Employees",
             href: "/admin/employees",
-            Icon: LuUserPlus,
           },
           {
             header: "Settings",
@@ -64,7 +74,7 @@ const AdminWrapper = ({ children }: Props) => {
           {
             title: "Platform Configs",
             href: "/admin/configs",
-            Icon: LuSettings2,
+            Icon: LuWrench,
           },
         ]}
       >

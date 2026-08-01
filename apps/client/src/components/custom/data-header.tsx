@@ -35,7 +35,6 @@ function DataHeader<TSearchParams>({
       <div className="px-5 flex gap-4 items-center">
         {includeSearchQuery && (
           <SearchInput
-            translucent
             value={
               (searchParams[SEARCH_QUERY_KEY as keyof TSearchParams] ||
                 "") as string
@@ -49,7 +48,7 @@ function DataHeader<TSearchParams>({
                 [SEARCH_QUERY_KEY as keyof TSearchParams]: e.target.value,
               } as Partial<TSearchParams>);
             }}
-            className="h-9"
+            className="h-9 bg-white"
             containerClassName="flex-1"
             placeholder="Search anything..."
           />
@@ -66,7 +65,6 @@ function DataHeader<TSearchParams>({
             return (
               <div key={key}>
                 <Dropdown
-                  translucent
                   placeholder={"Select " + slugToString(key)}
                   value={value}
                   onChange={(newValue) => {

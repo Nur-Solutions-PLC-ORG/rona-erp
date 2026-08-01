@@ -72,7 +72,7 @@ const SheetWrapper: React.FC<SheetWrapperProps> = ({
             )}
             <div
               className={cn(
-                "px-4 pb-10 overflow-auto flex flex-col",
+                "px-4 pb-10 overflow-auto flex flex-1 flex-col",
                 divClassName,
               )}
             >

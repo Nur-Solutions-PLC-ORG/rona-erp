@@ -64,13 +64,8 @@ const Client = () => {
       },
       {
         id: "modules",
-        accessorFn: (user) => user.role.modules.join(", "),
         header: "Modules",
-        // coloring: {
-        //   admin: BADGE_COLOR.blue,
-        //   owner: BADGE_COLOR.green,
-        //   employee: BADGE_COLOR.purple,
-        // },
+        accessorFn: (user) => user.role.modules,
       },
       {
         accessorKey: "status",

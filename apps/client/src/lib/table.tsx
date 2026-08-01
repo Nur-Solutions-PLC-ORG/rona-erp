@@ -10,8 +10,8 @@ import {
 import { ColumnDef, Row } from "@tanstack/react-table";
 import { format, formatDistanceToNowStrict, isPast } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
+import { IoIosMore } from "react-icons/io";
 import { cn } from "./utils";
-import { RiMore2Fill } from "react-icons/ri";
 
 type ExtraColumn<T> = {
   id?: string;
@@ -58,6 +58,7 @@ export function createColumns<T>({
 }: CreateColumnsOptions<T>): ColumnDef<T>[] {
   const columns: ColumnDef<T>[] = [];
 
+  // including selection
   if (includeSelect) {
     columns.push({
       id: "select",
@@ -112,14 +113,14 @@ export function createColumns<T>({
             style={
               value
                 ? {
-                    backgroundColor: color + "25",
+                    backgroundColor: color + "15",
                     color: color,
                   }
                 : {}
             }
             variant={value ? "default" : "secondary"}
             className={cn(
-              "text-sm capitalize rounded-xl h-6 brightness-75 font-semibold! relative",
+              "text-sm capitalize rounded-lg h-6 brightness-75 font-semibold! relative",
               !value && "text-zinc-400",
             )}
           >
@@ -195,6 +196,7 @@ export function createColumns<T>({
     } as ColumnDef<T>);
   }
 
+  // adding actions
   if (includeActions) {
     columns.push({
       id: "actions",
@@ -205,22 +207,18 @@ export function createColumns<T>({
         ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="h-8 hover:opacity-80 cursor-pointer transition-all duration-200 w-8 p-0"
-              >
+              <Button variant="ghost" size={"icon-xs"}>
                 <span className="sr-only">Open menu</span>
-                <RiMore2Fill className="size-6" />
+                <IoIosMore className="size-6" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 p-0 py-2">
+            <DropdownMenuContent align="end" className="w-44">
               {actionsItems.map((item, index) => (
                 <DropdownMenuItem
                   key={index}
                   disabled={item.disabled}
                   onClick={() => item.onClick(row)}
                   className={cn(
-                    "p-3 px-6",
                     (item.title.toLowerCase().includes("delete") ||
                       item.title.toLowerCase().includes("remove")) &&
                       "text-destructive hover:text-destructive!",

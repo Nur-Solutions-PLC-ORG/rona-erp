@@ -1,7 +1,7 @@
 import { VariantProps } from "class-variance-authority";
-import { Button, buttonVariants } from "../ui/button";
-import { FiLoader } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
+import { RiLoader5Fill } from "react-icons/ri";
+import { Button, buttonVariants } from "../ui/button";
 
 const CustomButton = ({
   className,
@@ -30,7 +30,7 @@ const CustomButton = ({
       {...props}
     >
       {isPending ? (
-        <FiLoader className="animate-spin" />
+        <RiLoader5Fill className="animate-spin" />
       ) : Icon ? (
         <Icon />
       ) : null}

@@ -64,8 +64,8 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="px-5 flex flex-1">
-      <div className="flex flex-1 bg-white md:rounded-t-md shadow flex-col">
+    <div className="px-5 flex pb-6">
+      <div className="flex flex-1 bg-white md:rounded-md shadow flex-col">
         <div
           style={
             {
@@ -75,11 +75,11 @@ export function DataTable<TData, TValue>({
           className="flex w-full flex-col"
         >
           {/* Table */}
-          <ScrollArea className="max-w-screen pb-4">
+          <ScrollArea className="max-w-screen">
             <Table>
               <TableHeader className="border-b-2! border-black/5!">
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow className="h-12" key={headerGroup.id}>
+                  <TableRow className="h-10" key={headerGroup.id}>
                     {headerGroup.headers.map((header, cellIdx, arr) => (
                       <TableHead
                         className={cn(
@@ -108,16 +108,10 @@ export function DataTable<TData, TValue>({
                   <TableRow>
                     <TableCell
                       colSpan={table.getAllColumns().length}
-                      className="h-16 opacity-75"
+                      className="h-10 opacity-25 animate-pulse px-6"
                     >
-                      <span
-                        className={
-                          "flex items-center text-base gap-2 opacity-60 my-auto mx-auto"
-                        }
-                      >
-                        <RiLoader5Fill className="size-5 animate-spin" />{" "}
-                        Loading...
-                      </span>
+                      <RiLoader5Fill className="size-5 animate-spin inline mr-2" />
+                      Loading...
                     </TableCell>
                   </TableRow>
                 ) : table.getRowModel().rows.length ? (
@@ -125,13 +119,14 @@ export function DataTable<TData, TValue>({
                     <TableRow key={row.id}>
                       {row.getVisibleCells().map((cell, cellIdx, arr) => (
                         <TableCell
-                          className={
+                          className={cn(
                             cellIdx === 0
                               ? "pl-6"
                               : cellIdx === arr.length - 1
                                 ? "pr-6"
-                                : ""
-                          }
+                                : "",
+                            "h-10",
+                          )}
                           key={cell.id}
                         >
                           {flexRender(
@@ -146,7 +141,7 @@ export function DataTable<TData, TValue>({
                   <TableRow>
                     <TableCell
                       colSpan={table.getAllColumns().length}
-                      className="h-16 opacity-75 text-base px-6"
+                      className="h-10 opacity-75 px-6 opacity-50"
                     >
                       No results.
                     </TableCell>

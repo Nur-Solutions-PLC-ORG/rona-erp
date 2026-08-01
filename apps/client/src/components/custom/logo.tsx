@@ -24,6 +24,7 @@ const Logo = ({ className, icon, black, admin }: Props) => {
       width={200}
       height={200}
       className={cn("w-20", icon && "w-10", admin && "w-36", className)}
+      priority
     />
   );
 };

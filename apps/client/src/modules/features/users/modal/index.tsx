@@ -31,6 +31,7 @@ import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiPatchUser, ApiPostUser } from "../api";
+import { useCompanies } from "../../companies/hooks";
 
 const defaultValues: UserSchema = {
   fullName: "",
@@ -51,6 +52,9 @@ const UserModal = () => {
     id: "admin-user",
     title: "User",
   };
+
+  // required tables list
+  const { companies } = useCompanies();
 
   const queryClient = useQueryClient();
   const form = useForm<UserSchema>({
@@ -131,129 +135,42 @@ const UserModal = () => {
       open={open == modalMeta.id}
       onOpen={() => closeModal()}
     >
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="px-6 space-y-5 pt-6">
-          <FieldGroup>
-            <ControllerGroup>
-              <Controller
-                control={form.control}
-                name="fullName"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name + "-input"}>
-                      Full Name
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      id={field.name + "-input"}
-                      aria-invalid={fieldState.invalid}
-                      placeholder="John James Doe"
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-              <Controller
-                control={form.control}
-                name="status"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name + "-input"}>
-                      Status
-                    </FieldLabel>
-                    <Dropdown
-                      options={USER_STATUS_LIST.map((status) => ({
-                        value: status,
-                        label: slugToString(status),
-                      }))}
-                      {...field}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-            </ControllerGroup>
-
-            <ControllerGroup>
-              <Controller
-                control={form.control}
-                name="email"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name + "-input"}>
-                      Email
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      id={field.name + "-input"}
-                      aria-invalid={fieldState.invalid}
-                      placeholder="johndoe@gmail.com"
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-              <Controller
-                control={form.control}
-                name="password"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name + "-input"}>
-                      Password
-                    </FieldLabel>
-                    <PasswordInput
-                      {...field}
-                      id={field.name + "-input"}
-                      aria-invalid={fieldState.invalid}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-            </ControllerGroup>
-
-            <ControllerGroup>
-              <Controller
-                control={form.control}
-                name="role.position"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name + "-input"}>
-                      Position
-                    </FieldLabel>
-                    <Dropdown
-                      options={POSITIONS_LIST.map((status) => ({
-                        value: status,
-                        label: slugToString(status),
-                      }))}
-                      {...field}
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
-            </ControllerGroup>
-
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6 flex px-4 pt-4 flex-col flex-1"
+      >
+        <FieldGroup>
+          <ControllerGroup>
             <Controller
               control={form.control}
-              name="role.modules"
+              name="fullName"
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name + "-input"}>
-                    Modules
+                    Full Name
                   </FieldLabel>
-                  <ListInput
-                    options={MODULE_LIST.map((status) => ({
+                  <Input
+                    {...field}
+                    id={field.name + "-input"}
+                    aria-invalid={fieldState.invalid}
+                    placeholder="John James Doe"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="status"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name + "-input"}>
+                    Status
+                  </FieldLabel>
+                  <Dropdown
+                    options={USER_STATUS_LIST.map((status) => ({
                       value: status,
                       label: slugToString(status),
                     }))}
@@ -265,8 +182,113 @@ const UserModal = () => {
                 </Field>
               )}
             />
-          </FieldGroup>
-        </div>
+          </ControllerGroup>
+
+          <ControllerGroup>
+            <Controller
+              control={form.control}
+              name="email"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name + "-input"}>Email</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name + "-input"}
+                    aria-invalid={fieldState.invalid}
+                    placeholder="johndoe@gmail.com"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="password"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name + "-input"}>
+                    Password
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name + "-input"}
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </ControllerGroup>
+
+          <ControllerGroup>
+            <Controller
+              control={form.control}
+              name="role.position"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name + "-input"}>
+                    Position
+                  </FieldLabel>
+                  <Dropdown
+                    options={POSITIONS_LIST.map((status) => ({
+                      value: status,
+                      label: slugToString(status),
+                    }))}
+                    {...field}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="tenantId"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name + "-input"}>
+                    Company
+                  </FieldLabel>
+                  <Dropdown
+                    options={companies.map((comp) => ({
+                      value: comp.id,
+                      label: comp.name,
+                    }))}
+                    {...field}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </ControllerGroup>
+
+          <Controller
+            control={form.control}
+            name="role.modules"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name + "-input"}>Modules</FieldLabel>
+                <ListInput
+                  options={MODULE_LIST.map((status) => ({
+                    value: status,
+                    label: slugToString(status),
+                  }))}
+                  {...field}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+        </FieldGroup>
 
         {!view && (
           <SheetFooterWrapper>

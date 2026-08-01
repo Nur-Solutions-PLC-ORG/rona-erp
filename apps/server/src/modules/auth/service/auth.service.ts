@@ -122,7 +122,7 @@ export class AuthService {
       modules: role.module,
     };
 
-    await redisClient.set(roleKey, userRole, { ex: 30 }); // cache for 30s
+    await redisClient.set(roleKey, userRole, { ex: 60 * 60 }); // cache for an hour
     return userRole;
   }
 

@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
@@ -13,9 +14,11 @@ interface DialogWrapperProps {
   onOpen: (open: boolean) => void;
   title?: string;
   description?: string;
-  children: React.ReactNode;
+  info?: string;
+  children?: React.ReactNode;
   className?: string;
   light?: boolean;
+  footer?: React.ReactNode;
 }
 
 const DialogWrapper: React.FC<DialogWrapperProps> = ({
@@ -26,14 +29,16 @@ const DialogWrapper: React.FC<DialogWrapperProps> = ({
   className,
   children,
   light,
+  footer,
+  info,
 }) => {
   return (
     <Dialog open={open} onOpenChange={onOpen}>
       <DialogContent
         aria-describedby="Dialog content"
-        className={cn("space-y-0 gap-4 p-0", className)}
+        className={cn(className)}
       >
-        <DialogHeader className="border-b pb-4 p-6 pt-12">
+        <DialogHeader>
           <DialogTitle
             className={cn(
               !light ? "text-lg leading-[1.2] font-semibold" : "text-base",
@@ -41,9 +46,11 @@ const DialogWrapper: React.FC<DialogWrapperProps> = ({
           >
             {title}
           </DialogTitle>
+          {info && <p className="text-base opacity-80">{info}</p>}
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
-        <div className="overflow-auto px-5 pb-5">{children}</div>
+        {children && <div className="overflow-auto px-5 pb-5">{children}</div>}
+        {footer && <DialogFooter>{footer}</DialogFooter>}
       </DialogContent>
     </Dialog>
   );

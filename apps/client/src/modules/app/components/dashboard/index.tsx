@@ -18,7 +18,7 @@ type SidebarOptions = {
   header?: string;
   title: string;
   href: string;
-  Icon: IconType | (() => React.ReactNode);
+  Icon?: IconType | (() => React.ReactNode);
 }[];
 
 type Props = {
@@ -42,7 +42,7 @@ const DashboardWrapper = ({ children, options }: Props) => {
             pathname={pathname}
             isMobile={isMobile}
           />
-          <div className="flex-1 w-full flex flex-col bg-secondary">
+          <div className="flex-1 w-full flex flex-col bg-secondary/50">
             {children}
           </div>
         </div>
@@ -118,7 +118,11 @@ const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
                   : "hover:bg-secondary/10 text-white/50 hover:text-white/75",
               )}
             >
-              <option.Icon className={cn("size-4", isActive && "")} />
+              {option.Icon ? (
+                <option.Icon className={cn("size-4", isActive && "")} />
+              ) : (
+                <span className="size-4" />
+              )}
               <span>{option.title}</span>
             </Link>
           );
