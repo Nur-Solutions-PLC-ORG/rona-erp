@@ -98,10 +98,11 @@ const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
   const { isAdmin } = useSession();
 
   const sidebar = (
-    <div className="max-w-60 border-r bg-sidebar flex-1">
-      <div className="flex h-20 px-4 gap-3 items-center">
+    <div className="max-w-60 border-r bg-sidebar flex-1 flex flex-col">
+      <div className="flex h-20 px-4 gap-3 justify-center border-b border-border/10 items-center">
         <Logo admin={isAdmin} />
       </div>
+      <span className="mb-4 w-full" />
       <div className="flex flex-col">
         {options.map((option, i) => {
           const isActive = pathname == option.href;

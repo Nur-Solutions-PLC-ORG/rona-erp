@@ -4,7 +4,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef, Row } from "@tanstack/react-table";
@@ -39,6 +41,7 @@ type ActionItem<T> = {
   onTitle?: (row: Row<T>) => string;
   onClick: (row: Row<T>) => void;
   disabled?: boolean;
+  separator?: boolean;
 };
 
 interface CreateColumnsOptions<T> {
@@ -84,6 +87,7 @@ export function createColumns<T>({
     });
   }
 
+  // extra columns
   for (const col of extraColumns) {
     const key = col.accessorKey;
 
@@ -96,6 +100,28 @@ export function createColumns<T>({
           : undefined;
 
       const style: React.CSSProperties = {};
+
+      if (typeof value == "object" && Array.isArray(value)) {
+        if (value.length <= 0) {
+          return <span className="opacity-50">None</span>;
+        }
+
+        return (
+          <div className="flex gap-2">
+            {value.slice(0, 2).map((item) => (
+              <p
+                className="bg-black/5 rounded-lg text-sm font-semibold h-5 px-2"
+                key={item}
+              >
+                {item}
+              </p>
+            ))}
+            {value.length > 2 && (
+              <span className="text-xl flex items-center leading-5">. . .</span>
+            )}
+          </div>
+        );
+      }
 
       if (!value) {
         style.opacity = "50%";
@@ -120,7 +146,7 @@ export function createColumns<T>({
             }
             variant={value ? "default" : "secondary"}
             className={cn(
-              "text-sm capitalize rounded-lg h-6 brightness-75 font-semibold! relative",
+              "text-sm capitalize rounded-lg h-5 brightness-75 font-semibold! relative",
               !value && "text-zinc-400",
             )}
           >
@@ -212,21 +238,35 @@ export function createColumns<T>({
                 <IoIosMore className="size-6" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-44">
-              {actionsItems.map((item, index) => (
-                <DropdownMenuItem
-                  key={index}
-                  disabled={item.disabled}
-                  onClick={() => item.onClick(row)}
-                  className={cn(
-                    (item.title.toLowerCase().includes("delete") ||
-                      item.title.toLowerCase().includes("remove")) &&
-                      "text-destructive hover:text-destructive!",
-                  )}
-                >
-                  {item.onTitle ? item.onTitle(row) : item.title}
-                </DropdownMenuItem>
-              ))}
+            <DropdownMenuContent
+              alignOffset={12}
+              align="center"
+              className="w-52"
+            >
+              {actionsItems.map((item, index) => {
+                const dropDownItem = (
+                  <DropdownMenuItem
+                    key={index}
+                    disabled={item.disabled}
+                    onClick={() => item.onClick(row)}
+                    className={cn(
+                      (item.title.toLowerCase().includes("delete") ||
+                        item.title.toLowerCase().includes("remove")) &&
+                        "text-destructive hover:text-destructive!",
+                    )}
+                  >
+                    {item.onTitle ? item.onTitle(row) : item.title}
+                  </DropdownMenuItem>
+                );
+                return item.separator ? (
+                  <DropdownMenuGroup key={index}>
+                    {dropDownItem}
+                    <DropdownMenuSeparator />
+                  </DropdownMenuGroup>
+                ) : (
+                  dropDownItem
+                );
+              })}
             </DropdownMenuContent>
           </DropdownMenu>
         ),

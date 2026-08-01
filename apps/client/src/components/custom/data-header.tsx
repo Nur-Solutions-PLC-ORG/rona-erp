@@ -32,7 +32,7 @@ function DataHeader<TSearchParams>({
         </div>
       )}
 
-      <div className="px-5 flex gap-4 items-center">
+      <div className="px-5 flex flex-col md:flex-row gap-4 md:items-center">
         {includeSearchQuery && (
           <SearchInput
             value={

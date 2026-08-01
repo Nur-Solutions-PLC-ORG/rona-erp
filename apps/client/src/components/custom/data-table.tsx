@@ -65,7 +65,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="px-5 flex pb-6">
-      <div className="flex flex-1 bg-white md:rounded-md shadow flex-col">
+      <div className="flex flex-1 bg-white rounded-lg shadow flex-col">
         <div
           style={
             {
@@ -75,7 +75,7 @@ export function DataTable<TData, TValue>({
           className="flex w-full flex-col"
         >
           {/* Table */}
-          <ScrollArea className="max-w-screen">
+          <ScrollArea className="max-w-[calc(100vw-2.5rem)]">
             <Table>
               <TableHeader className="border-b-2! border-black/5!">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -87,8 +87,8 @@ export function DataTable<TData, TValue>({
                             ? "pl-6"
                             : cellIdx === arr.length - 1
                               ? "pr-6"
-                              : "",
-                          "opacity-75",
+                              : "px-6",
+                          "opacity-50",
                         )}
                         key={header.id}
                       >
@@ -108,7 +108,7 @@ export function DataTable<TData, TValue>({
                   <TableRow>
                     <TableCell
                       colSpan={table.getAllColumns().length}
-                      className="h-10 opacity-25 animate-pulse px-6"
+                      className="h-14 opacity-25 animate-pulse px-6"
                     >
                       <RiLoader5Fill className="size-5 animate-spin inline mr-2" />
                       Loading...
@@ -124,8 +124,8 @@ export function DataTable<TData, TValue>({
                               ? "pl-6"
                               : cellIdx === arr.length - 1
                                 ? "pr-6"
-                                : "",
-                            "h-10",
+                                : "px-6",
+                            "h-14",
                           )}
                           key={cell.id}
                         >
@@ -141,7 +141,7 @@ export function DataTable<TData, TValue>({
                   <TableRow>
                     <TableCell
                       colSpan={table.getAllColumns().length}
-                      className="h-10 opacity-75 px-6 opacity-50"
+                      className="h-14 px-6 opacity-50"
                     >
                       No results.
                     </TableCell>

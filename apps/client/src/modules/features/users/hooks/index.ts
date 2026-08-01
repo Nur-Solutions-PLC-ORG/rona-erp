@@ -39,9 +39,10 @@ export const useAdminUsers = (
       fullName: "John Doe",
       email: "johndoe@gmail.com",
       status: "inactive",
+      tenantId: "a;s",
       role: {
         position: "manager",
-        modules: ["accounting", "inventory"],
+        modules: [],
       },
     },
   ];

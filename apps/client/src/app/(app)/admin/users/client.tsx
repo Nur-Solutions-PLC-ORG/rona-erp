@@ -6,7 +6,9 @@ import { DataTable } from "@/components/custom/data-table";
 import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
 import { BADGE_COLORS } from "@/lib/colors";
-import { createColumns } from "@/lib/table";
+import { createColumns } from "@/lib/create-columns";
+import { slugToString } from "@/lib/utils";
+import { useCompanies } from "@/modules/features/companies/hooks";
 import { useAdminUsers } from "@/modules/features/users/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { UserListSearchParamsSchema } from "@rona/types/admin";
@@ -17,11 +19,15 @@ import { FiPlus } from "react-icons/fi";
 const Client = () => {
   const customSearchParams =
     useCustomSearchParams<UserListSearchParamsSchema>();
+
   const { paginationData } = usePagination();
   const { users, deleteMutation } = useAdminUsers(
     customSearchParams.requestSearchParams,
     paginationData,
   );
+
+  const { companies } = useCompanies();
+
   const columns = createColumns<UserDto>({
     includeActions: true,
     extraColumns: [
@@ -31,27 +37,23 @@ const Client = () => {
         isBold: true,
       },
       { accessorKey: "email", header: "Email", highlight: true },
-      // {
-      //   accessorKey: "orgIds",
-      //   header: "Organization",
-      //   cell: ({ row }) => {
-      //     const org =
-      //       ((row.original.orgIds || []).length > 0 &&
-      //         organizations.find(
-      //           (item) => item.id == ((row.original.orgIds || [])[0] as string),
-      //         )) ||
-      //       undefined;
-      //     return (
-      //       <>
-      //         {org ? (
-      //           <p className="text-sm font-semibold">{org.name}</p>
-      //         ) : (
-      //           <p className="text-sm  opacity-50">None</p>
-      //         )}
-      //       </>
-      //     );
-      //   },
-      // },
+      {
+        accessorKey: "status",
+        header: "Status",
+        coloring: {
+          inactive: BADGE_COLORS.red,
+          active: BADGE_COLORS.green,
+        },
+      },
+      {
+        id: "company",
+        header: "Company",
+        accessorFn: (user) => {
+          const company = companies.find((item) => item.id == user.tenantId);
+
+          return company?.name;
+        },
+      },
       {
         accessorKey: "role.position",
         header: "Role",
@@ -65,18 +67,20 @@ const Client = () => {
       {
         id: "modules",
         header: "Modules",
-        accessorFn: (user) => user.role.modules,
-      },
-      {
-        accessorKey: "status",
-        header: "Status",
-        coloring: {
-          inactive: BADGE_COLORS.red,
-          active: BADGE_COLORS.green,
-        },
+        accessorFn: (user) =>
+          user.role.modules.map((item) => slugToString(item)),
       },
     ],
     actionsItems: [
+      {
+        title: "View",
+        onClick: (row) => {
+          useModalStore
+            .getState()
+            .openModal("admin-user", { user: row.original }, true);
+        },
+        separator: true,
+      },
       {
         title: "Edit",
         onClick: (row) => {
@@ -111,6 +115,7 @@ const Client = () => {
         head={
           <>
             <CustomButton
+              primary
               onClick={() => useModalStore.getState().openModal("admin-user")}
               icon={FiPlus}
             >

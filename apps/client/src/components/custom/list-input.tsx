@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { FiCheck, FiCheckCircle } from "react-icons/fi";
 import { IoCheckmarkDone } from "react-icons/io5";
 
 type Props = {
@@ -8,6 +7,7 @@ type Props = {
   value: string[];
   onChange: (value: string[]) => void;
   disabled?: boolean;
+  viewMode?: boolean;
 };
 
 export const ListInput = ({
@@ -16,6 +16,7 @@ export const ListInput = ({
   name,
   onChange,
   disabled,
+  viewMode,
 }: Props) => {
   const toggleItem = (val: string) => {
     if (disabled) return;
@@ -26,6 +27,10 @@ export const ListInput = ({
       onChange([...value, val]);
     }
   };
+  const processedOptions = viewMode
+    ? options.filter((item) => value.includes(item.value))
+    : options;
+
   return (
     <div className="flex flex-col">
       <div
@@ -35,7 +40,7 @@ export const ListInput = ({
           disabled && "opacity-80",
         )}
       >
-        {options.map((option) => {
+        {processedOptions.map((option) => {
           const isActive = value.includes(option.value);
           return (
             <div
@@ -43,7 +48,7 @@ export const ListInput = ({
               onClick={() => toggleItem(option.value)}
               className={cn(
                 "rounded-lg px-2 bg-white py-0.5 flex gap-2 items-center flex-1 border ",
-                isActive && "text-primary",
+                isActive && "text-primary font-semibold",
                 !disabled &&
                   "hover:opacity-90 cursor-pointer hover:bg-black/5 active:scale-105 transition-all",
               )}
@@ -53,8 +58,14 @@ export const ListInput = ({
             </div>
           );
         })}
+
+        {processedOptions.length <= 0 && (
+          <span className="px-2 opacity-50">None</span>
+        )}
       </div>
-      <span className="text-sm opacity-50 mt-2">Click to select</span>
+      {!viewMode && (
+        <span className="text-sm opacity-50 mt-2">Click to select</span>
+      )}
     </div>
   );
 };

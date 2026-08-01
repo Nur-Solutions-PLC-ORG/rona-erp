@@ -281,6 +281,7 @@ const UserModal = () => {
                     label: slugToString(status),
                   }))}
                   {...field}
+                  viewMode={view}
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
