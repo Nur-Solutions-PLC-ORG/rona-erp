@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { useCreateMutation } from "@/hooks/utils";
-import { FaUser } from "react-icons/fa";
+import { FaUser } from "react-icons/fa6";
 import { FiLogOut } from "react-icons/fi";
 import { toast } from "sonner";
 import { ApiPostSignOut } from "../api";
@@ -36,9 +36,9 @@ const UserButton = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar>
-          <AvatarFallback className="bg-primary shadow-inner">
-            <FaUser className="size-6 absolute bottom-0 right-0 opacity-50 text-white" />
+        <Avatar className=" cursor-pointer hover:ring-2  hover:ring-border">
+          <AvatarFallback className="bg-primary shadow-inner overflow-hidden">
+            <FaUser className="size-6 mt-2 opacity-50 text-white" />
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
@@ -50,7 +50,7 @@ const UserButton = () => {
         <DropdownMenuGroup>
           <DropdownMenuItem
             onClick={() => {
-              signOutMutation.mutate();
+              signOutMutation.mutate({});
 
               toast.info("Signing out...");
             }}

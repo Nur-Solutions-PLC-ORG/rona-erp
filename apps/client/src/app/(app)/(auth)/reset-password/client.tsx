@@ -48,7 +48,7 @@ const Client = () => {
   );
 
   const onSubmit = (values: ResetPasswordSchema) => {
-    resetPasswordMutation.mutate(values);
+    resetPasswordMutation.mutate({ body: values });
   };
 
   return (

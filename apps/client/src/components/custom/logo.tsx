@@ -5,9 +5,10 @@ type Props = {
   className?: string;
   black?: boolean;
   icon?: boolean;
+  admin?: boolean;
 };
 
-const Logo = ({ className, icon, black }: Props) => {
+const Logo = ({ className, icon, black, admin }: Props) => {
   return (
     <Image
       src={
@@ -15,12 +16,14 @@ const Logo = ({ className, icon, black }: Props) => {
           ? "/rona-icon.png"
           : black
             ? "/rona-logo-black.png"
-            : "/rona-logo.png"
+            : admin
+              ? "/rona-logo-admin.png"
+              : "/rona-logo.png"
       }
       alt="rona-logo"
       width={200}
       height={200}
-      className={cn("w-20", className)}
+      className={cn("w-20", icon && "w-10", admin && "w-36", className)}
     />
   );
 };

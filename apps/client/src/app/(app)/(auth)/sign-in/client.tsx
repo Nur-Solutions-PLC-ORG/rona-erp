@@ -103,8 +103,8 @@ const Client = () => {
     return () => clearInterval(intervalID);
   }, [resendIn]);
 
-  const handleContinueWithGoogleClick = () => {
-    googleMutation.mutate();
+  const handleContinueWithGoogleClick = async () => {
+    googleMutation.mutate({});
   };
 
   const onSubmit = (values: SignInSchema) => {
@@ -119,7 +119,7 @@ const Client = () => {
       return;
     }
 
-    signInMutation.mutate(body);
+    signInMutation.mutate({ body });
   };
 
   return (
@@ -238,7 +238,7 @@ const Client = () => {
                                 email: emailValue,
                               };
 
-                              resendVerificationCodeMutation.mutate(body);
+                              resendVerificationCodeMutation.mutate({ body });
                             }
                           }}
                           size={"sm"}

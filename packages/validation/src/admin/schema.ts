@@ -38,10 +38,10 @@ export const userSchema = z.object({
   email: z.email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters long"),
   tenantId: z.string().min(1).optional(),
-  status: z.enum(USER_STATUS_LIST).default("active"),
+  status: z.enum(USER_STATUS_LIST),
   role: z.object({
     position: z.enum(POSITIONS_LIST),
-    modules: z.array(z.enum(MODULE_LIST)).default([]),
+    modules: z.array(z.enum(MODULE_LIST)),
   }),
 });
 
@@ -54,18 +54,18 @@ export const companySchema = z.object({
   email: z.email("Company email is invalid"),
   phone: z.string().min(7, "Phone is required"),
   country: z.string().min(2, "Country is required"),
-  status: z.enum(COMPANY_STATUS_LIST).default("active"),
+  status: z.enum(COMPANY_STATUS_LIST),
 });
 
 export const companySettingsSchema = z.object({
   tenantId: z.string().min(1).optional(),
-  currency: z.enum(CURRENCY_LIST).default("ETB"),
+  currency: z.enum(CURRENCY_LIST),
 });
 
 export const departmentSchema = z.object({
   tenantId: z.string().min(1).optional(),
   name: z.string().min(2, "Department name is required"),
-  module: z.array(z.enum(MODULE_LIST)).default([]),
+  module: z.array(z.enum(MODULE_LIST)),
 });
 
 export const branchSchema = z.object({
@@ -79,9 +79,9 @@ export const employeeSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
   phone: z.string().min(7, "Phone is required"),
   email: z.email("Email is invalid").optional().or(z.literal("")),
-  gender: z.enum(GENDER_LIST).default("M"),
+  gender: z.enum(GENDER_LIST),
   birthDate: z.string().min(1, "Birth date is required"),
-  status: z.enum(EMPLOYEE_STATUS_LIST).default("active"),
+  status: z.enum(EMPLOYEE_STATUS_LIST),
 });
 
 export const platformConfigSchema = z.object({

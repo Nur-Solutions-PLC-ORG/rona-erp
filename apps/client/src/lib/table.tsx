@@ -1,0 +1,239 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ColumnDef, Row } from "@tanstack/react-table";
+import { format, formatDistanceToNowStrict, isPast } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
+import { cn } from "./utils";
+import { RiMore2Fill } from "react-icons/ri";
+
+type ExtraColumn<T> = {
+  id?: string;
+  // accessorKey is used to access the value from the row object, while accessorFn is a function that takes the row object and returns the value. You can use either one, but not both.
+  accessorKey?: string;
+  accessorFn?: (row: T) => unknown;
+  //
+  header?: string | ((props: unknown) => React.ReactNode);
+  cell?: (props: { row: Row<T> }) => React.ReactNode;
+  enableSorting?: boolean;
+  enableHiding?: boolean;
+  coloring?: Record<string, string>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onRender?: (value: any) => string | React.ReactNode;
+  isDate?: boolean;
+  isTime?: boolean;
+  isPrice?: boolean;
+  isBold?: boolean;
+  daysLeft?: boolean;
+  highlight?: boolean;
+};
+
+type ActionItem<T> = {
+  title: string;
+  onTitle?: (row: Row<T>) => string;
+  onClick: (row: Row<T>) => void;
+  disabled?: boolean;
+};
+
+interface CreateColumnsOptions<T> {
+  includeSelect?: boolean;
+  includeActions?: boolean;
+  extraColumns?: ExtraColumn<T>[];
+  customActionsCell?: (row: Row<T>) => React.ReactNode;
+  actionsItems?: ActionItem<T>[];
+}
+
+export function createColumns<T>({
+  includeSelect = false,
+  includeActions = false,
+  extraColumns = [],
+  customActionsCell,
+  actionsItems = [],
+}: CreateColumnsOptions<T>): ColumnDef<T>[] {
+  const columns: ColumnDef<T>[] = [];
+
+  if (includeSelect) {
+    columns.push({
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    });
+  }
+
+  for (const col of extraColumns) {
+    const key = col.accessorKey;
+
+    const defaultCell = ({ row }: { row: Row<T> }) => {
+      // Resolve value from accessorFn or accessorKey (dot-notation works natively)
+      const value = col.accessorFn
+        ? col.accessorFn(row.original)
+        : key !== undefined
+          ? row.getValue(key)
+          : undefined;
+
+      const style: React.CSSProperties = {};
+
+      if (!value) {
+        style.opacity = "50%";
+      }
+
+      if (col.isBold) {
+        style.fontWeight = "600";
+      }
+
+      if (col.coloring) {
+        const color = col.coloring[String(value)] || "#222";
+
+        return (
+          <Badge
+            style={
+              value
+                ? {
+                    backgroundColor: color + "25",
+                    color: color,
+                  }
+                : {}
+            }
+            variant={value ? "default" : "secondary"}
+            className={cn(
+              "text-sm capitalize rounded-xl h-6 brightness-75 font-semibold! relative",
+              !value && "text-zinc-400",
+            )}
+          >
+            {!value ? "None" : String(value)}
+          </Badge>
+        );
+      }
+
+      return (
+        <div
+          style={style}
+          className={cn(
+            !col.isBold && !col.coloring && "",
+            col.highlight && "text-primary underline brightness-50",
+          )}
+        >
+          <span className="z-10">
+            {!value ? (
+              "None"
+            ) : col.isDate ? (
+              <span className="flex text-base items-center gap-4">
+                {format(new Date(value as string), "dd MMM yyyy")}{" "}
+                {col.daysLeft &&
+                  (isPast(new Date(value as string)) ? (
+                    <Badge
+                      variant={"destructive"}
+                      className="block brightness-75 rounded-xl"
+                    >
+                      Expired
+                    </Badge>
+                  ) : (
+                    <>
+                      <span className="text-sm! block opacity-80 font-medium">
+                        {formatDistanceToNowStrict(new Date(value as string))}{" "}
+                        left
+                      </span>
+                    </>
+                  ))}
+              </span>
+            ) : col.isTime ? (
+              <>
+                {format(
+                  toZonedTime(new Date(value as string), "Etc/GMT"),
+                  "h:mm aaa",
+                )}
+                <span className="text-xs! block opacity-70">
+                  {format(new Date(value as string), "dd MMM yyyy")}
+                </span>
+              </>
+            ) : col.isPrice ? (
+              `Br ${Number(value).toLocaleString()}`
+            ) : col.onRender ? (
+              col.onRender(value)
+            ) : (
+              String(value)
+            )}
+          </span>
+        </div>
+      );
+    };
+
+    columns.push({
+      id: col.id ?? key ?? `col-${columns.length}`,
+      ...(col.accessorFn
+        ? { accessorFn: col.accessorFn }
+        : key !== undefined
+          ? { accessorKey: key }
+          : {}),
+      header: col.header,
+      cell: col.cell ?? defaultCell,
+      enableSorting: col.enableSorting,
+      enableHiding: col.enableHiding,
+    } as ColumnDef<T>);
+  }
+
+  if (includeActions) {
+    columns.push({
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) =>
+        customActionsCell ? (
+          customActionsCell(row)
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-8 hover:opacity-80 cursor-pointer transition-all duration-200 w-8 p-0"
+              >
+                <span className="sr-only">Open menu</span>
+                <RiMore2Fill className="size-6" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 p-0 py-2">
+              {actionsItems.map((item, index) => (
+                <DropdownMenuItem
+                  key={index}
+                  disabled={item.disabled}
+                  onClick={() => item.onClick(row)}
+                  className={cn(
+                    "p-3 px-6",
+                    (item.title.toLowerCase().includes("delete") ||
+                      item.title.toLowerCase().includes("remove")) &&
+                      "text-destructive hover:text-destructive!",
+                  )}
+                >
+                  {item.onTitle ? item.onTitle(row) : item.title}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
+    });
+  }
+
+  return columns;
+}

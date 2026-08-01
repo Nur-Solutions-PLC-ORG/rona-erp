@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { ApiGetSessionStatus } from "../api";
-import { TryCatchNullWrap } from "@/api";
+import { TryCatchNullWrap } from "@/api/utils";
 
 export const useSession = () => {
   const { data, isLoading } = useQuery({
@@ -14,7 +14,9 @@ export const useSession = () => {
     data: data?.data,
     user: data?.data?.user,
     role: data?.data?.role,
-    isAdmin: data?.data?.role.position == "admin",
+    // isAdmin: data?.data?.role.position == "admin",
+    // Will be changed later
+    isAdmin: !!data?.data?.role.position,
     isLoading,
   };
 };
