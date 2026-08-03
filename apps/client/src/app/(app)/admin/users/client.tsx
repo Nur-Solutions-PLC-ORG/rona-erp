@@ -26,7 +26,7 @@ const Client = () => {
     paginationData,
   );
 
-  const { companies } = useAdminCompanies();
+  const { companiesNameLookup } = useAdminCompanies();
 
   const columns = createColumns<UserDto>({
     includeActions: true,
@@ -48,11 +48,7 @@ const Client = () => {
       {
         id: "company",
         header: "Company",
-        accessorFn: (user) => {
-          const company = companies.find((item) => item.id == user.tenantId);
-
-          return company?.name;
-        },
+        accessorFn: (user) => companiesNameLookup[user.tenantId || ""],
       },
       {
         accessorKey: "role.position",

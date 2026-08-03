@@ -32,6 +32,8 @@ type ExtraColumn<T> = {
   isTime?: boolean;
   isPrice?: boolean;
   isBold?: boolean;
+  isRaw?: boolean;
+  isMono?: boolean;
   daysLeft?: boolean;
   highlight?: boolean;
 };
@@ -101,6 +103,21 @@ export function createColumns<T>({
 
       const style: React.CSSProperties = {};
 
+      if (col.isRaw) {
+        return (
+          <Badge
+            variant={"secondary"}
+            className={cn(
+              "bg-taupe-900/5 text-sm!",
+              col.isBold && "font-bold!",
+              col.isMono && "font-mono!",
+            )}
+          >
+            {String(value)}
+          </Badge>
+        );
+      }
+
       if (typeof value == "object" && Array.isArray(value)) {
         if (value.length <= 0) {
           return <span className="opacity-50">None</span>;
@@ -148,6 +165,7 @@ export function createColumns<T>({
             className={cn(
               "text-sm capitalize rounded-lg h-5 brightness-75 font-semibold! relative",
               !value && "text-zinc-400",
+              col.isMono && "font-mono!",
             )}
           >
             {!value ? "None" : String(value)}

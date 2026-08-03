@@ -83,7 +83,7 @@ export const employeeSchema = z.object({
   phone: z.string().min(7, "Phone is required"),
   email: z.email("Email is invalid").optional().or(z.literal("")),
   gender: z.enum(GENDER_LIST),
-  birthDate: z.string().min(1, "Birth date is required"),
+  birthDate: z.date("Date is required!"),
   status: z.enum(EMPLOYEE_STATUS_LIST),
 });
 

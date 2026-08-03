@@ -24,13 +24,16 @@ import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiPatchBranch, ApiPostBranch } from "../api";
+import { useAdminCompanies } from "../../companies/hooks";
 
 const defaultValues: BranchSchema = { departmentId: "", name: "" };
 
 const BranchModal = () => {
   const { open, data: rawData, closeModal, view } = useModalStore();
-  const modalData = rawData as { branch: BranchDto } | null;
+  const modalData = rawData as { branch?: BranchDto | undefined } | null;
   const { departments } = useAdminDepartments();
+  const { companiesNameLookup } = useAdminCompanies();
+
   const form = useForm<BranchSchema>({
     resolver: zodResolver(branchSchema),
     defaultValues,
@@ -46,23 +49,23 @@ const BranchModal = () => {
 
   const createMutation = useCreateMutation(
     ApiPostBranch,
-    (data) => {
-      toast.success(data.message);
+    (result) => {
+      toast.success(result.message);
       concludeMutation();
     },
-    (data) => toast.error(data.message),
+    (result) => toast.error(result.message),
   );
   const updateMutation = useCreateMutation(
     ApiPatchBranch,
-    (data) => {
-      toast.success(data.message);
+    (result) => {
+      toast.success(result.message);
       concludeMutation();
     },
-    (data) => toast.error(data.message),
+    (result) => toast.error(result.message),
   );
 
   useEffect(() => {
-    if (modalData) {
+    if (modalData && modalData.branch) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, tenantId, createdAt, ...values } = modalData.branch;
       form.reset(values);
@@ -72,19 +75,29 @@ const BranchModal = () => {
   const submit = (values: BranchSchema) => {
     if (view) return;
 
-    if (modalData)
+    if (modalData) {
+      if (!modalData.branch) {
+        toast.info("Please select a branch to update");
+        return;
+      }
+
       updateMutation.mutate({
         body: getDirtyValues(values, form.formState.dirtyFields),
         slugReplacement: { id: modalData.branch.id },
       });
-    else {
+    } else {
       createMutation.mutate({ body: values });
     }
   };
+
   return (
     <SheetWrapper
       title={
-        modalData ? (view ? "Branch details" : "Edit Branch") : "Add Branch"
+        modalData?.branch
+          ? view
+            ? "Branch details"
+            : "Edit Branch"
+          : "Add Branch"
       }
       open={open === "admin-branch"}
       onOpen={closeModal}
@@ -100,7 +113,11 @@ const BranchModal = () => {
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor={field.name + "-input"}>Name</FieldLabel>
-                <Input {...field} aria-invalid={fieldState.invalid} />
+                <Input
+                  {...field}
+                  id={field.name + "-input"}
+                  aria-invalid={fieldState.invalid}
+                />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
                 )}
@@ -120,6 +137,7 @@ const BranchModal = () => {
                   options={departments.map((department) => ({
                     value: department.id,
                     label: department.name,
+                    id: companiesNameLookup[department.tenantId],
                   }))}
                   disabled={!!view}
                   search
@@ -137,7 +155,7 @@ const BranchModal = () => {
               type="submit"
               disabled={createMutation.isPending || updateMutation.isPending}
             >
-              {modalData ? "Save" : "Add"}
+              {modalData?.branch ? "Save" : "Add"}
             </CustomButton>
           </SheetFooterWrapper>
         )}

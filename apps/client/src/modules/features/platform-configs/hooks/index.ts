@@ -1,8 +1,6 @@
-import { RequestSearchParams } from "@/api";
+import { Primitive, RequestSearchParams } from "@/api";
 import { PaginationData } from "@/hooks/pagination";
-import { useCreateMutation } from "@/hooks/utils";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 import { ApiGetPlatformConfigs } from "../api";
 
 export const useAdminPlatformConfigs = (
@@ -20,15 +18,7 @@ export const useAdminPlatformConfigs = (
       }),
   });
 
-  const items = data?.data ?? [
-    {
-      id: "pc-1",
-      key: "name" as const,
-      value: "Rona ERP",
-      type: "string" as const,
-      createdAt: "",
-    },
-  ];
+  const items = data?.data ?? [];
 
   return {
     platformConfigs: items,

@@ -27,6 +27,9 @@ import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiPatchEmployee, ApiPostEmployee } from "../api";
+import { DatePickerInput } from "@/components/custom/date-picker-input";
+import { Button } from "@/components/ui/button";
+import { generateCombinations } from "@/lib/passwords";
 
 const defaultValues: EmployeeSchema = {
   tenantId: "",
@@ -35,57 +38,82 @@ const defaultValues: EmployeeSchema = {
   phone: "",
   email: "",
   gender: "M",
-  birthDate: "",
+  birthDate: new Date(),
   status: "active",
 };
+
 const EmployeeModal = () => {
   const { open, data: rawData, closeModal, view } = useModalStore();
-  const modalData = rawData as { employee: EmployeeDto } | null;
+  const modalData = rawData as { employee?: EmployeeDto | undefined } | null;
+
   const { companies } = useAdminCompanies();
   const form = useForm<EmployeeSchema>({
     resolver: zodResolver(employeeSchema),
     defaultValues,
     disabled: !!view,
   });
+
   const queryClient = useQueryClient();
-  const done = () => {
+  const concludeMutation = () => {
     queryClient.invalidateQueries({ queryKey: ["admin-employees"] });
+    form.reset();
     closeModal();
   };
+
   const createMutation = useCreateMutation(
     ApiPostEmployee,
-    (data) => {
-      toast.success(data.message);
-      done();
+    (result) => {
+      toast.success(result.message);
+      concludeMutation();
     },
-    (data) => toast.error(data.message),
+    (result) => {
+      toast.error(result.message);
+    },
   );
   const updateMutation = useCreateMutation(
     ApiPatchEmployee,
-    (data) => {
-      toast.success(data.message);
-      done();
+    (result) => {
+      toast.success(result.message);
+      concludeMutation();
     },
-    (data) => toast.error(data.message),
+    (result) => {
+      toast.error(result.message);
+    },
   );
+
   useEffect(() => {
-    if (modalData) {
+    if (modalData && modalData.employee) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, createdAt, ...values } = modalData.employee;
       form.reset(values);
     } else form.reset(defaultValues);
   }, [open, modalData, form]);
+
   const submit = (values: EmployeeSchema) => {
-    if (modalData)
+    if (view) return;
+
+    if (!values.email) {
+      values.email = undefined;
+    }
+
+    if (modalData) {
+      if (!modalData.employee) {
+        toast.info("Please select an employee to update");
+        return;
+      }
+
       updateMutation.mutate({
         body: getDirtyValues(values, form.formState.dirtyFields),
         slugReplacement: { id: modalData.employee.id },
       });
-    else createMutation.mutate({ body: values });
+    } else {
+      createMutation.mutate({ body: values });
+    }
   };
   return (
     <SheetWrapper
       title={
-        modalData
+        modalData?.employee
           ? view
             ? "Employee details"
             : "Edit Employee"
@@ -99,64 +127,182 @@ const EmployeeModal = () => {
         className="space-y-6 flex px-4 pt-4 flex-col flex-1"
       >
         <FieldGroup>
-          <Controller
-            control={form.control}
-            name="fullName"
-            render={({ field }) => (
-              <Field>
-                <FieldLabel htmlFor={field.name + "-input"}>
-                  Full Name
-                </FieldLabel>
-                <Input {...field} />
-              </Field>
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="eId"
-            render={({ field }) => (
-              <Field>
-                <FieldLabel htmlFor={field.name + "-input"}>
-                  Employee ID
-                </FieldLabel>
-                <Input {...field} />
-              </Field>
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="tenantId"
-            render={({ field }) => (
-              <Field>
-                <FieldLabel htmlFor={field.name + "-input"}>Company</FieldLabel>
-                <Dropdown
-                  {...field}
-                  options={companies.map((company) => ({
-                    value: company.id,
-                    label: company.name,
-                  }))}
-                  disabled={!!view}
-                />
-              </Field>
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <Field>
-                <FieldLabel htmlFor={field.name + "-input"}>Status</FieldLabel>
-                <Dropdown
-                  {...field}
-                  options={EMPLOYEE_STATUS_LIST.map((value) => ({
-                    value,
-                    label: slugToString(value),
-                  }))}
-                  disabled={!!view}
-                />
-              </Field>
-            )}
-          />
+          <ControllerGroup>
+            <Controller
+              control={form.control}
+              name="fullName"
+              render={({ field, fieldState }) => (
+                <Field>
+                  <FieldLabel htmlFor={field.name + "-input"}>
+                    Full Name
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name + "-input"}
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Simon Seol"
+                  />
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="eId"
+              render={({ field, fieldState }) => (
+                <Field>
+                  <div className="flex items-center justify-between">
+                    <FieldLabel htmlFor={field.name + "-input"}>EID</FieldLabel>
+
+                    <Button
+                      type="button"
+                      variant={"link"}
+                      onClick={() => {
+                        form.setValue(
+                          "eId",
+                          generateCombinations({
+                            includeLowercase: false,
+                            includeSymbols: false,
+                            includeUppercase: false,
+                            length: 5,
+                          }),
+                        );
+                      }}
+                      size={"sm"}
+                      className="h-0 cursor-pointer"
+                    >
+                      Generate EID
+                    </Button>
+                  </div>
+                  <Input
+                    {...field}
+                    type="number"
+                    id={field.name + "-input"}
+                    aria-invalid={fieldState.invalid}
+                    placeholder="000000"
+                  />
+                </Field>
+              )}
+            />
+          </ControllerGroup>
+          <ControllerGroup>
+            <Controller
+              control={form.control}
+              name="tenantId"
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel htmlFor={field.name + "-input"}>
+                    Company
+                  </FieldLabel>
+                  <Dropdown
+                    {...field}
+                    options={companies.map((company) => ({
+                      value: company.id,
+                      label: company.name,
+                    }))}
+                    disabled={!!view}
+                  />
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel htmlFor={field.name + "-input"}>
+                    Status
+                  </FieldLabel>
+                  <Dropdown
+                    {...field}
+                    options={EMPLOYEE_STATUS_LIST.map((value) => ({
+                      value,
+                      label: slugToString(value),
+                    }))}
+                    disabled={!!view}
+                  />
+                </Field>
+              )}
+            />
+          </ControllerGroup>
+          <ControllerGroup>
+            <Controller
+              control={form.control}
+              name={"phone"}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name + "-input"}>Phone</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name + "-input"}
+                    type={"tel"}
+                    placeholder="+251 99919191919"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name={"email"}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name + "-input"}>Email</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name + "-input"}
+                    type={"email"}
+                    placeholder="email@gmail.com"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </ControllerGroup>
+          <ControllerGroup>
+            <Controller
+              control={form.control}
+              name="gender"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name + "-input"}>
+                    Gender
+                  </FieldLabel>
+                  <Dropdown
+                    {...field}
+                    options={GENDER_LIST.map((item) => ({
+                      value: item,
+                      label: item == "F" ? "Female" : "Male",
+                    }))}
+                    disabled={!!view}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="birthDate"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name + "-input"}>
+                    Birth Date (GC)
+                  </FieldLabel>
+                  <DatePickerInput {...field} />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </ControllerGroup>
         </FieldGroup>
         {!view && (
           <SheetFooterWrapper>
@@ -164,7 +310,7 @@ const EmployeeModal = () => {
               type="submit"
               disabled={createMutation.isPending || updateMutation.isPending}
             >
-              {modalData ? "Save" : "Add"}
+              {modalData?.employee ? "Save" : "Add"}
             </CustomButton>
           </SheetFooterWrapper>
         )}

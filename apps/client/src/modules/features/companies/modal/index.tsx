@@ -39,7 +39,7 @@ const defaultValues: CompanySchema = {
 
 const CompanyModal = () => {
   const { open, data: rawData, closeModal, view } = useModalStore();
-  const modalData = rawData as { company: CompanyDto } | null;
+  const modalData = rawData as { company?: CompanyDto | undefined } | null;
 
   const form = useForm<CompanySchema>({
     resolver: zodResolver(companySchema),
@@ -56,23 +56,27 @@ const CompanyModal = () => {
 
   const createMutation = useCreateMutation(
     ApiPostCompany,
-    (data) => {
-      toast.success(data.message);
+    (result) => {
+      toast.success(result.message);
       concludeMutation();
     },
-    (data) => toast.error(data.message),
+    (result) => {
+      toast.error(result.message);
+    },
   );
   const updateMutation = useCreateMutation(
     ApiPatchCompany,
-    (data) => {
-      toast.success(data.message);
+    (result) => {
+      toast.success(result.message);
       concludeMutation();
     },
-    (data) => toast.error(data.message),
+    (result) => {
+      toast.error(result.message);
+    },
   );
 
   useEffect(() => {
-    if (modalData) {
+    if (modalData && modalData.company) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, createdAt, ...values } = modalData.company;
       form.reset(values);
@@ -82,12 +86,17 @@ const CompanyModal = () => {
   const onSubmit = (values: CompanySchema) => {
     if (view) return;
 
-    if (modalData)
+    if (modalData) {
+      if (!modalData.company) {
+        toast.info("Please select a company to update");
+        return;
+      }
+
       updateMutation.mutate({
         body: getDirtyValues(values, form.formState.dirtyFields),
         slugReplacement: { id: modalData.company.id },
       });
-    else {
+    } else {
       createMutation.mutate({ body: values });
     }
   };
@@ -95,7 +104,11 @@ const CompanyModal = () => {
   return (
     <SheetWrapper
       title={
-        modalData ? (view ? "Company details" : "Edit Company") : "Add Company"
+        modalData?.company
+          ? view
+            ? "Company details"
+            : "Edit Company"
+          : "Add Company"
       }
       open={open === "admin-company"}
       onOpen={closeModal}
@@ -256,7 +269,7 @@ const CompanyModal = () => {
               type="submit"
               disabled={createMutation.isPending || updateMutation.isPending}
             >
-              {modalData ? "Save" : "Add"}
+              {modalData?.company ? "Save" : "Add"}
             </CustomButton>
           </SheetFooterWrapper>
         )}

@@ -18,19 +18,24 @@ import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiPutPlatformConfig } from "../api";
-const defaults: PlatformConfigSchema = {
+import { Switch } from "@/components/ui/switch";
+
+const defaultValues: PlatformConfigSchema = {
   key: "name",
   value: "",
   type: "string",
 };
+
 const PlatformConfigModal = () => {
   const { open, data, view, closeModal } = useModalStore();
-  const config = (data as { config: PlatformConfigDto } | null)?.config;
+  const modalData = data as { config?: PlatformConfigDto | undefined } | null;
+
   const form = useForm<PlatformConfigSchema>({
     resolver: zodResolver(platformConfigSchema),
-    defaultValues: defaults,
+    defaultValues,
     disabled: !!view,
   });
+
   const queryClient = useQueryClient();
   const updateMutation = useCreateMutation(
     ApiPutPlatformConfig,
@@ -39,19 +44,28 @@ const PlatformConfigModal = () => {
       queryClient.invalidateQueries({ queryKey: ["admin-platform-configs"] });
       closeModal();
     },
-    (result) => toast.error(result.message),
+    (result) => {
+      toast.error(result.message);
+    },
   );
+
   useEffect(() => {
-    if (config)
-      form.reset({ key: config.key, value: config.value, type: config.type });
-  }, [config, open, form]);
+    if (modalData && modalData.config) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, createdAt, ...values } = modalData.config;
+      form.reset(values);
+    } else form.reset(defaultValues);
+  }, [open, modalData, form]);
+
   const submit = (values: PlatformConfigSchema) => {
-    if (config)
+    if (modalData && modalData.config)
       updateMutation.mutate({
         body: { value: values.value, type: values.type },
-        slugReplacement: { key: config.key },
+        slugReplacement: { key: modalData.config.key },
       });
+    else toast.info("Please select a config to update");
   };
+
   return (
     <SheetWrapper
       title={view ? "Platform Config details" : "Edit Platform Config"}
@@ -65,42 +79,64 @@ const PlatformConfigModal = () => {
         <FieldGroup>
           <Controller
             control={form.control}
+            name="type"
+            render={({ field }) => (
+              <Field>
+                <FieldLabel htmlFor={field.name + "-input"}>Type</FieldLabel>
+                <Input value={field.value} disabled className="font-mono" />
+              </Field>
+            )}
+          />
+          <Controller
+            control={form.control}
             name="key"
             render={({ field }) => (
               <Field>
                 <FieldLabel htmlFor={field.name + "-input"}>Config</FieldLabel>
-                <Input value={slugToString(field.value)} disabled />
+                <Input value={field.value} disabled className="font-mono" />
               </Field>
             )}
           />
           <Controller
             control={form.control}
             name="value"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <Field>
                 <FieldLabel htmlFor={field.name + "-input"}>Value</FieldLabel>
-                <Input
-                  value={String(field.value)}
-                  onChange={(event) => field.onChange(event.target.value)}
-                  disabled={!!view}
-                />
-              </Field>
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <Field>
-                <FieldLabel htmlFor={field.name + "-input"}>Type</FieldLabel>
-                <Dropdown
-                  {...field}
-                  options={PLATFORM_CONFIG_VALUE_TYPES.map((value) => ({
-                    value,
-                    label: slugToString(value),
-                  }))}
-                  disabled
-                />
+
+                {typeof field.value == "boolean" ? (
+                  <Switch
+                    id={field.name + "-input"}
+                    name={field.name}
+                    aria-invalid={fieldState.invalid}
+                    disabled={field.disabled}
+                    checked={field.value as boolean}
+                    onCheckedChange={(value) =>
+                      field.onChange(value as boolean)
+                    }
+                  />
+                ) : typeof field.value == "string" ? (
+                  <Input
+                    disabled={field.disabled}
+                    id={field.name + "-input"}
+                    name={field.name}
+                    aria-invalid={fieldState.invalid}
+                    value={field.value as string}
+                    onChange={(e) => field.onChange(e.target.value as string)}
+                  />
+                ) : (
+                  <Input
+                    disabled={field.disabled}
+                    id={field.name + "-input"}
+                    name={field.name}
+                    aria-invalid={fieldState.invalid}
+                    type="number"
+                    value={field.value as number}
+                    onChange={(e) =>
+                      field.onChange(Number(e.target.value as string))
+                    }
+                  />
+                )}
               </Field>
             )}
           />

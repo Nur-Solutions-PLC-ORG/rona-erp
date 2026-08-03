@@ -116,8 +116,8 @@ const Dropdown: React.FC<DropdownProps> = ({
         <Command className="p-0">
           {search && (
             <>
-              <CommandInput placeholder="Search..." className="h-9" />
-              <span className="border-b my-2 -mx-2" />
+              <CommandInput placeholder="Search..." />
+              <span className="border-b -mx-2" />
             </>
           )}
 

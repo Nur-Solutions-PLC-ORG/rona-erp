@@ -51,7 +51,7 @@ export const employeeDto = z.object({
   phone: z.string(),
   email: z.string().optional(),
   gender: z.enum(GENDER_LIST),
-  birthDate: z.string(),
+  birthDate: z.date(),
   status: z.enum(EMPLOYEE_STATUS_LIST),
   createdAt: z.string(),
 });

@@ -6,7 +6,7 @@ export interface PasswordOptions {
   includeSymbols?: boolean;
 }
 
-export function generateStrongPassword(options: PasswordOptions = {}): string {
+export function generateCombinations(options: PasswordOptions = {}): string {
   const {
     length = 8,
     includeUppercase = true,

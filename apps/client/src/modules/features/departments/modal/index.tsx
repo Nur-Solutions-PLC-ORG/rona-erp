@@ -33,7 +33,9 @@ const defaultValues: DepartmentSchema = { tenantId: "", name: "", module: [] };
 
 const DepartmentModal = () => {
   const { open, data: rawData, closeModal, view } = useModalStore();
-  const modalData = rawData as { department: DepartmentDto } | null;
+  const modalData = rawData as {
+    department?: DepartmentDto | undefined;
+  } | null;
   const { companies } = useAdminCompanies();
 
   const form = useForm<DepartmentSchema>({
@@ -51,23 +53,27 @@ const DepartmentModal = () => {
 
   const createMutation = useCreateMutation(
     ApiPostDepartment,
-    (data) => {
-      toast.success(data.message);
+    (result) => {
+      toast.success(result.message);
       concludeMutation();
     },
-    (data) => toast.error(data.message),
+    (result) => {
+      toast.error(result.message);
+    },
   );
   const updateMutation = useCreateMutation(
     ApiPatchDepartment,
-    (data) => {
-      toast.success(data.message);
+    (result) => {
+      toast.success(result.message);
       concludeMutation();
     },
-    (data) => toast.error(data.message),
+    (result) => {
+      toast.error(result.message);
+    },
   );
 
   useEffect(() => {
-    if (modalData) {
+    if (modalData && modalData.department) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, createdAt, ...values } = modalData.department;
       form.reset(values);
@@ -76,12 +82,17 @@ const DepartmentModal = () => {
   const submit = (values: DepartmentSchema) => {
     if (view) return;
 
-    if (modalData)
+    if (modalData) {
+      if (!modalData.department) {
+        toast.info("Please select a user to update");
+        return;
+      }
+
       updateMutation.mutate({
         body: getDirtyValues(values, form.formState.dirtyFields),
         slugReplacement: { id: modalData.department.id },
       });
-    else {
+    } else {
       createMutation.mutate({ body: values });
     }
   };
@@ -89,7 +100,7 @@ const DepartmentModal = () => {
   return (
     <SheetWrapper
       title={
-        modalData
+        modalData?.department
           ? view
             ? "Department details"
             : "Edit Department"
@@ -137,7 +148,6 @@ const DepartmentModal = () => {
                       label: company.name,
                     }))}
                     disabled={!!view}
-                    search
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -173,7 +183,7 @@ const DepartmentModal = () => {
               type="submit"
               disabled={createMutation.isPending || updateMutation.isPending}
             >
-              {modalData ? "Save" : "Add"}
+              {modalData?.department ? "Save" : "Add"}
             </CustomButton>
           </SheetFooterWrapper>
         )}

@@ -3,10 +3,7 @@ import { PaginationData } from "@/hooks/pagination";
 import { useCreateMutation } from "@/hooks/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  ApiDeleteEmployee,
-  ApiGetEmployees,
-} from "../api";
+import { ApiDeleteEmployee, ApiGetEmployees } from "../api";
 
 export const useAdminEmployees = (
   searchParams: RequestSearchParams = {},
@@ -45,7 +42,7 @@ export const useAdminEmployees = (
       phone: "+251911000000",
       email: "jane@example.com",
       gender: "F" as const,
-      birthDate: "1990-01-01",
+      birthDate: new Date(),
       status: "active" as const,
       createdAt: "",
     },

@@ -20,48 +20,81 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiPatchCompanySettings, ApiPostCompanySettings } from "../api";
 
-const defaults: CompanySettingsSchema = { tenantId: "", currency: "ETB" };
+const defaultValues: CompanySettingsSchema = { tenantId: "", currency: "ETB" };
+
 const CompanySettingsModal = () => {
   const { open, data, view, closeModal } = useModalStore();
-  const settings = (data as { settings: CompanySettingsDto } | null)?.settings;
+  const modalData = data as {
+    settings?: CompanySettingsDto | undefined;
+  } | null;
+
   const { companies } = useAdminCompanies();
   const form = useForm<CompanySettingsSchema>({
     resolver: zodResolver(companySettingsSchema),
-    defaultValues: defaults,
+    defaultValues,
     disabled: !!view,
   });
+
   const client = useQueryClient();
-  const done = (message: string) => {
+
+  const concludeMutation = (message: string) => {
     toast.success(message);
     client.invalidateQueries({ queryKey: ["admin-company-settings"] });
+    form.reset();
     closeModal();
   };
+
   const createMutation = useCreateMutation(
     ApiPostCompanySettings,
-    (result) => done(result.message),
-    (result) => toast.error(result.message),
+    (result) => {
+      toast.success(result.message);
+      concludeMutation(result.message);
+    },
+    (result) => {
+      toast.error(result.message);
+    },
   );
   const updateMutation = useCreateMutation(
     ApiPatchCompanySettings,
-    (result) => done(result.message),
-    (result) => toast.error(result.message),
+    (result) => {
+      toast.success(result.message);
+      concludeMutation(result.message);
+    },
+    (result) => {
+      toast.error(result.message);
+    },
   );
+
   useEffect(() => {
-    if (settings)
-      form.reset({ tenantId: settings.tenantId, currency: settings.currency });
-    else form.reset(defaults);
-  }, [settings, open, form]);
-  const submit = (values: CompanySettingsSchema) =>
-    settings
-      ? updateMutation.mutate({
-          body: getDirtyValues(values, form.formState.dirtyFields),
-          slugReplacement: { id: settings.id },
-        })
-      : createMutation.mutate({ body: values });
+    if (modalData && modalData.settings) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, createdAt, ...values } = modalData.settings;
+      form.reset(values);
+    } else form.reset(defaultValues);
+  }, [open, modalData, form]);
+
+  const submit = (values: CompanySettingsSchema) => {
+    if (view) return;
+
+    if (modalData) {
+      if (!modalData.settings) {
+        toast.info("Please select a settings to update");
+        return;
+      }
+
+      updateMutation.mutate({
+        body: getDirtyValues(values, form.formState.dirtyFields),
+        slugReplacement: { id: modalData.settings.id },
+      });
+    } else {
+      createMutation.mutate({ body: values });
+    }
+  };
+
   return (
     <SheetWrapper
       title={
-        settings
+        modalData?.settings
           ? view
             ? "Company settings details"
             : "Edit Company Settings"
@@ -118,7 +151,7 @@ const CompanySettingsModal = () => {
               type="submit"
               disabled={createMutation.isPending || updateMutation.isPending}
             >
-              {settings ? "Save" : "Add"}
+              {modalData?.settings ? "Save" : "Add"}
             </CustomButton>
           </SheetFooterWrapper>
         )}

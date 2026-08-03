@@ -24,3 +24,18 @@ export function stringToSlug(text: string): string {
     .replace(/[\s-]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+export function createLookup<T, K extends keyof T, V extends keyof T>(
+  items: T[],
+  keyProp: K,
+  valueProp: V,
+): Record<string, T[V]> {
+  return items.reduce(
+    (acc, item) => {
+      const key = String(item[keyProp]);
+      acc[key] = item[valueProp];
+      return acc;
+    },
+    {} as Record<string, T[V]>,
+  );
+}

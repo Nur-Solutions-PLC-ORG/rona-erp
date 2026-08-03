@@ -33,7 +33,7 @@ import { toast } from "sonner";
 import { ApiPatchUser, ApiPostUser } from "../api";
 import { useAdminCompanies } from "../../companies/hooks";
 import { Button } from "@/components/ui/button";
-import { generateStrongPassword } from "@/lib/passwords";
+import { generateCombinations } from "@/lib/passwords";
 
 const defaultValues: UserSchema = {
   fullName: "",
@@ -49,7 +49,7 @@ const defaultValues: UserSchema = {
 
 const UserModal = () => {
   const { open, data: rawData, closeModal, view } = useModalStore();
-  const modalData = rawData as { user: UserDto } | null;
+  const modalData = rawData as { user?: UserDto | undefined } | null;
 
   const { companies } = useAdminCompanies();
 
@@ -69,32 +69,32 @@ const UserModal = () => {
 
   const createMutation = useCreateMutation(
     ApiPostUser,
-    (data) => {
-      toast.success(data.message);
+    (result) => {
+      toast.success(result.message);
       concludeMutation();
     },
-    (data) => {
-      toast.error(data.message);
+    (result) => {
+      toast.error(result.message);
     },
   );
 
   const editMutation = useCreateMutation(
     ApiPatchUser,
-    (data) => {
-      toast.success(data.message);
+    (result) => {
+      toast.success(result.message);
       concludeMutation();
     },
-    (data) => {
-      toast.error(data.message);
+    (result) => {
+      toast.error(result.message);
     },
   );
 
   useEffect(() => {
-    if (modalData) {
+    if (modalData && modalData.user) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, ...alikeFields } = modalData.user;
+      const { id, ...values } = modalData.user;
       form.reset({
-        ...alikeFields,
+        ...values,
       });
     } else {
       form.reset(defaultValues);
@@ -104,7 +104,16 @@ const UserModal = () => {
   const onSubmit = (values: UserSchema) => {
     if (view) return;
 
+    if (!values.tenantId) {
+      values.tenantId = undefined;
+    }
+
     if (modalData) {
+      if (!modalData.user) {
+        toast.info("Please select a user to update");
+        return;
+      }
+
       editMutation.mutate({
         body: getDirtyValues(values, form.formState.dirtyFields),
         slugReplacement: {
@@ -120,7 +129,9 @@ const UserModal = () => {
 
   return (
     <SheetWrapper
-      title={modalData ? (view ? `User details` : `Edit User`) : `Add User`}
+      title={
+        modalData?.user ? (view ? `User details` : `Edit User`) : `Add User`
+      }
       open={open == "admin-user"}
       onOpen={() => closeModal()}
     >
@@ -207,7 +218,7 @@ const UserModal = () => {
                       type="button"
                       variant={"link"}
                       onClick={() => {
-                        form.setValue("password", generateStrongPassword());
+                        form.setValue("password", generateCombinations());
                       }}
                       size={"sm"}
                       className="h-0 cursor-pointer"
@@ -301,7 +312,7 @@ const UserModal = () => {
               type="submit"
               disabled={createMutation.isPending || editMutation.isPending}
             >
-              {modalData ? "Save" : "Add"}
+              {modalData?.user ? "Save" : "Add"}
             </CustomButton>
           </SheetFooterWrapper>
         )}

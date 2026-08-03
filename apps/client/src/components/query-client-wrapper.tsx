@@ -8,7 +8,20 @@ interface Props {
 }
 
 const QueryClientWrapper = ({ children }: Props) => {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: 1,
+            retryDelay: 1000,
+          },
+          mutations: {
+            retry: 0,
+          },
+        },
+      }),
+  );
 
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

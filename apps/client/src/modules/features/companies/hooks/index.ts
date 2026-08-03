@@ -3,10 +3,8 @@ import { PaginationData } from "@/hooks/pagination";
 import { useCreateMutation } from "@/hooks/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  ApiDeleteCompany,
-  ApiGetCompanies,
-} from "../api";
+import { ApiDeleteCompany, ApiGetCompanies } from "../api";
+import { createLookup } from "@/lib/utils";
 
 export const useAdminCompanies = (
   searchParams: RequestSearchParams = {},
@@ -49,9 +47,12 @@ export const useAdminCompanies = (
     },
   ];
 
+  const companiesNameLookup = createLookup(items, "id", "name");
+
   return {
     companies: items,
     isLoading,
     deleteMutation,
+    companiesNameLookup,
   };
 };
