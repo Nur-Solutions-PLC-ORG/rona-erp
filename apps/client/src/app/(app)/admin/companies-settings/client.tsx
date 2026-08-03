@@ -30,6 +30,7 @@ const Client = () => {
 
   const columns = createColumns<CompanySettingsDto>({
     includeActions: true,
+    searchQuery: customSearchParams.searchParams.searchQuery,
     extraColumns: [
       {
         id: "company",

@@ -30,6 +30,7 @@ const Client = () => {
 
   const columns = createColumns<UserDto>({
     includeActions: true,
+    searchQuery: customSearchParams.searchParams.searchQuery,
     extraColumns: [
       {
         accessorKey: "fullName",

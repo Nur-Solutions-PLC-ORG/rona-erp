@@ -25,6 +25,7 @@ const Client = () => {
 
   const columns = createColumns<PlatformConfigDto>({
     includeActions: true,
+    searchQuery: customSearchParams.searchParams.searchQuery,
     extraColumns: [
       {
         accessorKey: "key",

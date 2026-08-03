@@ -1,4 +1,4 @@
-import { Primitive, RequestSearchParams } from "@/api";
+import { RequestSearchParams } from "@/api";
 import { PaginationData } from "@/hooks/pagination";
 import { useQuery } from "@tanstack/react-query";
 import { ApiGetPlatformConfigs } from "../api";

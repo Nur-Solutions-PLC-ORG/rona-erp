@@ -50,18 +50,64 @@ interface CreateColumnsOptions<T> {
   includeSelect?: boolean;
   includeActions?: boolean;
   extraColumns?: ExtraColumn<T>[];
+  searchQuery?: string;
   customActionsCell?: (row: Row<T>) => React.ReactNode;
   actionsItems?: ActionItem<T>[];
+}
+
+function highlightSearchMatch(
+  value: string,
+  searchQuery?: string,
+): React.ReactNode {
+  const query = searchQuery?.trim();
+
+  if (!query) return value;
+
+  const normalizedValue = value.toLocaleLowerCase();
+  const normalizedQuery = query.toLocaleLowerCase();
+  const segments: React.ReactNode[] = [];
+  let startIndex = 0;
+  let matchIndex = normalizedValue.indexOf(normalizedQuery);
+
+  while (matchIndex !== -1) {
+    if (matchIndex > startIndex) {
+      segments.push(value.slice(startIndex, matchIndex));
+    }
+
+    segments.push(
+      <mark
+        key={`${matchIndex}-${matchIndex + query.length}`}
+        className="bg-yellow-200 text-inherit"
+      >
+        {value.slice(matchIndex, matchIndex + query.length)}
+      </mark>,
+    );
+
+    startIndex = matchIndex + query.length;
+    matchIndex = normalizedValue.indexOf(normalizedQuery, startIndex);
+  }
+
+  return segments.length > 0 ? (
+    <>
+      {segments}
+      {value.slice(startIndex)}
+    </>
+  ) : (
+    value
+  );
 }
 
 export function createColumns<T>({
   includeSelect = false,
   includeActions = false,
   extraColumns = [],
+  searchQuery,
   customActionsCell,
   actionsItems = [],
 }: CreateColumnsOptions<T>): ColumnDef<T>[] {
   const columns: ColumnDef<T>[] = [];
+
+  const None = <span className="text-muted-foreground">None</span>;
 
   // including selection
   if (includeSelect) {
@@ -113,14 +159,14 @@ export function createColumns<T>({
               col.isMono && "font-mono!",
             )}
           >
-            {String(value)}
+            {highlightSearchMatch(String(value), searchQuery)}
           </Badge>
         );
       }
 
       if (typeof value == "object" && Array.isArray(value)) {
         if (value.length <= 0) {
-          return <span className="opacity-50">None</span>;
+          return None;
         }
 
         return (
@@ -130,7 +176,7 @@ export function createColumns<T>({
                 className="bg-black/5 rounded-lg text-sm font-semibold h-5 px-2"
                 key={item}
               >
-                {item}
+                {highlightSearchMatch(String(item), searchQuery)}
               </p>
             ))}
             {value.length > 2 && (
@@ -140,12 +186,12 @@ export function createColumns<T>({
         );
       }
 
-      if (!value) {
-        style.opacity = "50%";
-      }
-
       if (col.isBold) {
         style.fontWeight = "600";
+      }
+
+      if (!String(value)) {
+        return None;
       }
 
       if (col.coloring) {
@@ -153,22 +199,17 @@ export function createColumns<T>({
 
         return (
           <Badge
-            style={
-              value
-                ? {
-                    backgroundColor: color + "15",
-                    color: color,
-                  }
-                : {}
-            }
+            style={{
+              backgroundColor: color + "15",
+              color: color,
+            }}
             variant={value ? "default" : "secondary"}
             className={cn(
-              "text-sm capitalize rounded-lg h-5 brightness-75 font-semibold! relative",
-              !value && "text-zinc-400",
+              "text-sm capitalize rounded-lg h-5 font-semibold! relative",
               col.isMono && "font-mono!",
             )}
           >
-            {!value ? "None" : String(value)}
+            {highlightSearchMatch(String(value), searchQuery)}
           </Badge>
         );
       }
@@ -178,26 +219,24 @@ export function createColumns<T>({
           style={style}
           className={cn(
             !col.isBold && !col.coloring && "",
-            col.highlight && "text-primary underline brightness-50",
+            col.highlight && "text-blue-800 font-medium underline",
           )}
         >
           <span className="z-10">
-            {!value ? (
-              "None"
-            ) : col.isDate ? (
+            {col.isDate ? (
               <span className="flex text-base items-center gap-4">
-                {format(new Date(value as string), "dd MMM yyyy")}{" "}
+                {highlightSearchMatch(
+                  format(new Date(value as string), "dd MMM yyyy"),
+                  searchQuery,
+                )}{" "}
                 {col.daysLeft &&
                   (isPast(new Date(value as string)) ? (
-                    <Badge
-                      variant={"destructive"}
-                      className="block brightness-75 rounded-xl"
-                    >
+                    <Badge variant={"destructive"} className="block rounded-xl">
                       Expired
                     </Badge>
                   ) : (
                     <>
-                      <span className="text-sm! block opacity-80 font-medium">
+                      <span className="text-sm! block font-medium">
                         {formatDistanceToNowStrict(new Date(value as string))}{" "}
                         left
                       </span>
@@ -206,20 +245,35 @@ export function createColumns<T>({
               </span>
             ) : col.isTime ? (
               <>
-                {format(
-                  toZonedTime(new Date(value as string), "Etc/GMT"),
-                  "h:mm aaa",
+                {highlightSearchMatch(
+                  format(
+                    toZonedTime(new Date(value as string), "Etc/GMT"),
+                    "h:mm aaa",
+                  ),
+                  searchQuery,
                 )}
-                <span className="text-xs! block opacity-70">
-                  {format(new Date(value as string), "dd MMM yyyy")}
+                <span className="text-xs! block">
+                  {highlightSearchMatch(
+                    format(new Date(value as string), "dd MMM yyyy"),
+                    searchQuery,
+                  )}
                 </span>
               </>
             ) : col.isPrice ? (
-              `Br ${Number(value).toLocaleString()}`
+              highlightSearchMatch(
+                `Br ${Number(value).toLocaleString()}`,
+                searchQuery,
+              )
             ) : col.onRender ? (
-              col.onRender(value)
+              (() => {
+                const renderedValue = col.onRender(value);
+                return typeof renderedValue === "string" ||
+                  typeof renderedValue === "number"
+                  ? highlightSearchMatch(String(renderedValue), searchQuery)
+                  : renderedValue;
+              })()
             ) : (
-              String(value)
+              highlightSearchMatch(String(value), searchQuery)
             )}
           </span>
         </div>

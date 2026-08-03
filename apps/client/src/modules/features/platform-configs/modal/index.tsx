@@ -1,24 +1,21 @@
 "use client";
 import CustomButton from "@/components/custom/custom-button";
-import Dropdown from "@/components/custom/dropdown";
 import SheetWrapper, {
   SheetFooterWrapper,
 } from "@/components/custom/sheet-wrapper";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { useCreateMutation } from "@/hooks/utils";
-import { slugToString } from "@/lib/utils";
 import { useModalStore } from "@/store";
-import { PLATFORM_CONFIG_VALUE_TYPES } from "@rona/config/admin";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { PlatformConfigDto, PlatformConfigSchema } from "@rona/types/admin";
 import { platformConfigSchema } from "@rona/validation/admin";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiPutPlatformConfig } from "../api";
-import { Switch } from "@/components/ui/switch";
 
 const defaultValues: PlatformConfigSchema = {
   key: "name",

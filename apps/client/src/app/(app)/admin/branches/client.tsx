@@ -27,6 +27,7 @@ const Client = () => {
 
   const columns = createColumns<BranchDto>({
     includeActions: true,
+    searchQuery: customSearchParams.searchParams.searchQuery,
     extraColumns: [
       { accessorKey: "name", header: "Branch", isBold: true },
       {

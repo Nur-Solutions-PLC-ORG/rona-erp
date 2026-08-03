@@ -24,6 +24,7 @@ const Client = () => {
 
   const columns = createColumns<CompanyDto>({
     includeActions: true,
+    searchQuery: customSearchParams.searchParams.searchQuery,
     extraColumns: [
       { accessorKey: "name", header: "Company", isBold: true },
       { accessorKey: "slug", header: "Slug", highlight: true },

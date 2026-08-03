@@ -2,10 +2,10 @@ import CustomButton from "@/components/custom/custom-button";
 import Dropdown from "@/components/custom/dropdown";
 import { ControllerGroup } from "@/components/custom/form";
 import { ListInput } from "@/components/custom/list-input";
-import PasswordInput from "@/components/custom/password-input";
 import SheetWrapper, {
   SheetFooterWrapper,
 } from "@/components/custom/sheet-wrapper";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldError,
@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useCreateMutation } from "@/hooks/utils";
 import { getDirtyValues } from "@/lib/form";
+import { generateCombinations } from "@/lib/passwords";
 import { slugToString } from "@/lib/utils";
 import { useModalStore } from "@/store";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,10 +31,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ApiPatchUser, ApiPostUser } from "../api";
 import { useAdminCompanies } from "../../companies/hooks";
-import { Button } from "@/components/ui/button";
-import { generateCombinations } from "@/lib/passwords";
+import { ApiPatchUser, ApiPostUser } from "../api";
 
 const defaultValues: UserSchema = {
   fullName: "",
@@ -214,17 +213,19 @@ const UserModal = () => {
                       Password
                     </FieldLabel>
 
-                    <Button
-                      type="button"
-                      variant={"link"}
-                      onClick={() => {
-                        form.setValue("password", generateCombinations());
-                      }}
-                      size={"sm"}
-                      className="h-0 cursor-pointer"
-                    >
-                      Generate password
-                    </Button>
+                    {!view && (
+                      <Button
+                        type="button"
+                        variant={"link"}
+                        onClick={() => {
+                          form.setValue("password", generateCombinations());
+                        }}
+                        size={"sm"}
+                        className="h-0 cursor-pointer"
+                      >
+                        Generate password
+                      </Button>
+                    )}
                   </div>
                   <Input
                     {...field}
