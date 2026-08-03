@@ -25,6 +25,8 @@ import {
   platformConfigSchema,
   userListSearchParamsSchema,
   userSchema,
+  companySettingsListSearchParamsSchema,
+  configsListSearchParamsSchema,
 } from "@rona/validation/admin";
 import z from "zod";
 
@@ -51,6 +53,12 @@ export type DepartmentListSearchParamsSchema = z.infer<
 >;
 export type BranchListSearchParamsSchema = z.infer<
   typeof branchListSearchParamsSchema
+>;
+export type ConfigsListSearchParamsSchema = z.infer<
+  typeof configsListSearchParamsSchema
+>;
+export type CompanySettingsListSearchParamsSchema = z.infer<
+  typeof companySettingsListSearchParamsSchema
 >;
 
 export type UserSchema = z.infer<typeof userSchema>;

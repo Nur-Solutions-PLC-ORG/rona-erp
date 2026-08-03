@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { ApiDeleteUser, ApiGetUsers } from "../api";
 
 export const useAdminUsers = (
-  searchParams: RequestSearchParams,
+  searchParams: RequestSearchParams = {},
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({

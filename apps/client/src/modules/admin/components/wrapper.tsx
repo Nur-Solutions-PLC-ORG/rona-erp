@@ -1,32 +1,11 @@
 "use client";
 
 import { DashboardWrapper } from "@/modules/app/components/dashboard";
-import {
-  LuBadge,
-  LuBuilding,
-  LuBuilding2,
-  LuFactory,
-  LuGitFork,
-  LuGroup,
-  LuNfc,
-  LuSettings,
-  LuSettings2,
-  LuUserPlus,
-  LuUsers,
-  LuWrench,
-} from "react-icons/lu";
+import { LuBuilding2, LuSettings, LuWrench } from "react-icons/lu";
 
+import { FaUsers } from "react-icons/fa6";
 import { GoHome } from "react-icons/go";
 import AdminModals from "../modals";
-import { FaCodeFork, FaScrewdriver, FaUsers } from "react-icons/fa6";
-import {
-  RiAccountBox2Fill,
-  RiAccountCircleLine,
-  RiTeamLine,
-  RiUser2Fill,
-  RiUser5Line,
-} from "react-icons/ri";
-import { GitFork, Nfc } from "lucide-react";
 
 type Props = {
   children: React.ReactNode;

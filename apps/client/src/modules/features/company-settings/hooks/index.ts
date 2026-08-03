@@ -4,18 +4,18 @@ import { useCreateMutation } from "@/hooks/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  ApiDeleteCompany,
-  ApiGetCompanies,
+  ApiDeleteCompanySettings,
+  ApiGetCompanySettings,
 } from "../api";
 
-export const useAdminCompanies = (
+export const useAdminCompanySettings = (
   searchParams: RequestSearchParams = {},
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-companies", JSON.stringify(searchParams)],
+    queryKey: ["admin-company-settings", JSON.stringify(searchParams)],
     queryFn: () =>
-      ApiGetCompanies({
+      ApiGetCompanySettings({
         searchParams: {
           ...searchParams,
           ...pagination,
@@ -26,10 +26,10 @@ export const useAdminCompanies = (
   const queryClient = useQueryClient();
 
   const deleteMutation = useCreateMutation(
-    ApiDeleteCompany,
+    ApiDeleteCompanySettings,
     (data) => {
       toast.success(data.message);
-      queryClient.invalidateQueries({ queryKey: ["admin-companies"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-company-settings"] });
     },
     (data) => {
       toast.error(data.message);
@@ -38,19 +38,15 @@ export const useAdminCompanies = (
 
   const items = data?.data ?? [
     {
-      id: "a;s",
-      name: "Sample Org",
-      slug: "samlsd-s",
-      email: "samls@tgma.com",
-      phone: "910821",
-      country: "Ethiopia",
-      status: "active" as const,
+      id: "cs-1",
+      tenantId: "a;s",
+      currency: "ETB" as const,
       createdAt: "",
     },
   ];
 
   return {
-    companies: items,
+    companySettings: items,
     isLoading,
     deleteMutation,
   };

@@ -8,7 +8,7 @@ import { useCustomSearchParams } from "@/hooks/search-params";
 import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
 import { slugToString } from "@/lib/utils";
-import { useCompanies } from "@/modules/features/companies/hooks";
+import { useAdminCompanies } from "@/modules/features/companies/hooks";
 import { useAdminUsers } from "@/modules/features/users/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { UserListSearchParamsSchema } from "@rona/types/admin";
@@ -20,13 +20,13 @@ const Client = () => {
   const customSearchParams =
     useCustomSearchParams<UserListSearchParamsSchema>();
 
-  const { paginationData } = usePagination();
-  const { users, deleteMutation } = useAdminUsers(
+  const { paginationData, pagination } = usePagination();
+  const { users, deleteMutation, isLoading } = useAdminUsers(
     customSearchParams.requestSearchParams,
     paginationData,
   );
 
-  const { companies } = useCompanies();
+  const { companies } = useAdminCompanies();
 
   const columns = createColumns<UserDto>({
     includeActions: true,
@@ -125,7 +125,12 @@ const Client = () => {
         }
         {...customSearchParams}
       />
-      <DataTable columns={columns} data={users} />
+      <DataTable
+        columns={columns}
+        data={users}
+        loading={isLoading}
+        pagination={pagination}
+      />
     </>
   );
 };

@@ -4,18 +4,18 @@ import { useCreateMutation } from "@/hooks/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  ApiDeleteCompany,
-  ApiGetCompanies,
+  ApiDeleteBranch,
+  ApiGetBranches,
 } from "../api";
 
-export const useAdminCompanies = (
+export const useAdminBranches = (
   searchParams: RequestSearchParams = {},
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-companies", JSON.stringify(searchParams)],
+    queryKey: ["admin-branches", JSON.stringify(searchParams)],
     queryFn: () =>
-      ApiGetCompanies({
+      ApiGetBranches({
         searchParams: {
           ...searchParams,
           ...pagination,
@@ -26,10 +26,10 @@ export const useAdminCompanies = (
   const queryClient = useQueryClient();
 
   const deleteMutation = useCreateMutation(
-    ApiDeleteCompany,
+    ApiDeleteBranch,
     (data) => {
       toast.success(data.message);
-      queryClient.invalidateQueries({ queryKey: ["admin-companies"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-branches"] });
     },
     (data) => {
       toast.error(data.message);
@@ -38,19 +38,16 @@ export const useAdminCompanies = (
 
   const items = data?.data ?? [
     {
-      id: "a;s",
-      name: "Sample Org",
-      slug: "samlsd-s",
-      email: "samls@tgma.com",
-      phone: "910821",
-      country: "Ethiopia",
-      status: "active" as const,
+      id: "branch-1",
+      tenantId: "a;s",
+      departmentId: "dept-1",
+      name: "Addis Ababa Branch",
       createdAt: "",
     },
   ];
 
   return {
-    companies: items,
+    branches: items,
     isLoading,
     deleteMutation,
   };

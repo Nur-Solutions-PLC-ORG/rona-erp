@@ -1,8 +1,8 @@
+"use client";
+
 import CustomButton from "@/components/custom/custom-button";
 import Dropdown from "@/components/custom/dropdown";
 import { ControllerGroup } from "@/components/custom/form";
-import { ListInput } from "@/components/custom/list-input";
-import PasswordInput from "@/components/custom/password-input";
 import SheetWrapper, {
   SheetFooterWrapper,
 } from "@/components/custom/sheet-wrapper";
@@ -15,114 +15,90 @@ import {
 import { Input } from "@/components/ui/input";
 import { useCreateMutation } from "@/hooks/utils";
 import { getDirtyValues } from "@/lib/form";
-import { slugToString } from "@/lib/utils";
+import { slugToString, stringToSlug } from "@/lib/utils";
 import { useModalStore } from "@/store";
+import { COMPANY_STATUS_LIST } from "@rona/config/admin";
+import { CompanyDto, CompanySchema } from "@rona/types/admin";
+import { companySchema } from "@rona/validation/admin";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  MODULE_LIST,
-  POSITIONS_LIST,
-  USER_STATUS_LIST,
-} from "@rona/config/auth";
-import { UserSchema } from "@rona/types/admin";
-import { UserDto } from "@rona/types/auth";
-import { userSchema } from "@rona/validation/admin";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ApiPatchUser, ApiPostUser } from "../api";
-import { useAdminCompanies } from "../../companies/hooks";
+import { ApiPatchCompany, ApiPostCompany } from "../api";
 import { Button } from "@/components/ui/button";
-import { generateStrongPassword } from "@/lib/passwords";
 
-const defaultValues: UserSchema = {
-  fullName: "",
+const defaultValues: CompanySchema = {
+  name: "",
+  slug: "",
   email: "",
-  password: "",
+  phone: "",
+  country: "",
   status: "active",
-  role: {
-    position: "staff",
-    modules: [],
-  },
-  tenantId: "",
 };
 
-const UserModal = () => {
+const CompanyModal = () => {
   const { open, data: rawData, closeModal, view } = useModalStore();
-  const modalData = rawData as { user: UserDto } | null;
+  const modalData = rawData as { company: CompanyDto } | null;
 
-  const { companies } = useAdminCompanies();
-
-  const queryClient = useQueryClient();
-  const form = useForm<UserSchema>({
-    resolver: zodResolver(userSchema),
-    reValidateMode: "onSubmit",
+  const form = useForm<CompanySchema>({
+    resolver: zodResolver(companySchema),
     defaultValues,
     disabled: !!view,
   });
 
+  const queryClient = useQueryClient();
   const concludeMutation = () => {
-    queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-companies"] });
     form.reset();
     closeModal();
   };
 
   const createMutation = useCreateMutation(
-    ApiPostUser,
+    ApiPostCompany,
     (data) => {
       toast.success(data.message);
       concludeMutation();
     },
-    (data) => {
-      toast.error(data.message);
-    },
+    (data) => toast.error(data.message),
   );
-
-  const editMutation = useCreateMutation(
-    ApiPatchUser,
+  const updateMutation = useCreateMutation(
+    ApiPatchCompany,
     (data) => {
       toast.success(data.message);
       concludeMutation();
     },
-    (data) => {
-      toast.error(data.message);
-    },
+    (data) => toast.error(data.message),
   );
 
   useEffect(() => {
     if (modalData) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, ...alikeFields } = modalData.user;
-      form.reset({
-        ...alikeFields,
-      });
-    } else {
-      form.reset(defaultValues);
-    }
-  }, [open, form, modalData]);
+      const { id, createdAt, ...values } = modalData.company;
+      form.reset(values);
+    } else form.reset(defaultValues);
+  }, [open, modalData, form]);
 
-  const onSubmit = (values: UserSchema) => {
+  const onSubmit = (values: CompanySchema) => {
     if (view) return;
 
-    if (modalData) {
-      editMutation.mutate({
+    if (modalData)
+      updateMutation.mutate({
         body: getDirtyValues(values, form.formState.dirtyFields),
-        slugReplacement: {
-          id: modalData.user.id,
-        },
+        slugReplacement: { id: modalData.company.id },
       });
-    } else {
-      createMutation.mutate({
-        body: values,
-      });
+    else {
+      createMutation.mutate({ body: values });
     }
   };
 
   return (
     <SheetWrapper
-      title={modalData ? (view ? `User details` : `Edit User`) : `Add User`}
-      open={open == "admin-user"}
-      onOpen={() => closeModal()}
+      title={
+        modalData ? (view ? "Company details" : "Edit Company") : "Add Company"
+      }
+      open={open === "admin-company"}
+      onOpen={closeModal}
     >
       <form
         onSubmit={form.handleSubmit(onSubmit)}
@@ -132,17 +108,117 @@ const UserModal = () => {
           <ControllerGroup>
             <Controller
               control={form.control}
-              name="fullName"
+              name={"name"}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name + "-input"}>
-                    Full Name
-                  </FieldLabel>
+                  <FieldLabel htmlFor={field.name + "-input"}>Name</FieldLabel>
                   <Input
                     {...field}
                     id={field.name + "-input"}
                     aria-invalid={fieldState.invalid}
-                    placeholder="John James Doe"
+                    placeholder={"Acme Inc."}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name={"slug"}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <div className="flex items-center justify-between">
+                    <FieldLabel htmlFor={field.name + "-input"}>
+                      Slug
+                    </FieldLabel>
+
+                    <Button
+                      type="button"
+                      variant={"link"}
+                      onClick={() => {
+                        const name = form.getValues("name");
+                        if (!name) {
+                          toast.info("Please provide name first.");
+                          return;
+                        }
+
+                        form.setValue("slug", stringToSlug(name));
+                      }}
+                      size={"sm"}
+                      className="h-0 cursor-pointer"
+                    >
+                      Generate slug
+                    </Button>
+                  </div>
+                  <Input
+                    {...field}
+                    id={field.name + "-input"}
+                    aria-invalid={fieldState.invalid}
+                    placeholder={"acme-inc"}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </ControllerGroup>
+          <ControllerGroup>
+            <Controller
+              control={form.control}
+              name={"email"}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name + "-input"}>Email</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name + "-input"}
+                    type={"email"}
+                    placeholder="acmeinc@gmail.com"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name={"phone"}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name + "-input"}>Phone</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name + "-input"}
+                    type={"tel"}
+                    placeholder="+251 99919191919"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </ControllerGroup>
+          <ControllerGroup>
+            <Controller
+              control={form.control}
+              name="country"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name + "-input"}>
+                    Country
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name + "-input"}
+                    placeholder="Ethiopia"
+                    aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -159,11 +235,12 @@ const UserModal = () => {
                     Status
                   </FieldLabel>
                   <Dropdown
-                    options={USER_STATUS_LIST.map((status) => ({
-                      value: status,
-                      label: slugToString(status),
-                    }))}
                     {...field}
+                    options={COMPANY_STATUS_LIST.map((value) => ({
+                      value,
+                      label: slugToString(value),
+                    }))}
+                    disabled={!!view}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -172,134 +249,12 @@ const UserModal = () => {
               )}
             />
           </ControllerGroup>
-
-          <ControllerGroup>
-            <Controller
-              control={form.control}
-              name="email"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name + "-input"}>Email</FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name + "-input"}
-                    type="email"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="johndoe@gmail.com"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="password"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <div className="flex items-center justify-between">
-                    <FieldLabel htmlFor={field.name + "-input"}>
-                      Password
-                    </FieldLabel>
-
-                    <Button
-                      type="button"
-                      variant={"link"}
-                      onClick={() => {
-                        form.setValue("password", generateStrongPassword());
-                      }}
-                      size={"sm"}
-                      className="h-0 cursor-pointer"
-                    >
-                      Generate password
-                    </Button>
-                  </div>
-                  <Input
-                    {...field}
-                    id={field.name + "-input"}
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          </ControllerGroup>
-
-          <ControllerGroup>
-            <Controller
-              control={form.control}
-              name="role.position"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name + "-input"}>
-                    Position
-                  </FieldLabel>
-                  <Dropdown
-                    options={POSITIONS_LIST.map((status) => ({
-                      value: status,
-                      label: slugToString(status),
-                    }))}
-                    {...field}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="tenantId"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name + "-input"}>
-                    Company
-                  </FieldLabel>
-                  <Dropdown
-                    options={companies.map((comp) => ({
-                      value: comp.id,
-                      label: comp.name,
-                    }))}
-                    {...field}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          </ControllerGroup>
-
-          <Controller
-            control={form.control}
-            name="role.modules"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name + "-input"}>Modules</FieldLabel>
-                <ListInput
-                  options={MODULE_LIST.map((status) => ({
-                    value: status,
-                    label: slugToString(status),
-                  }))}
-                  {...field}
-                  viewMode={view}
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
         </FieldGroup>
-
         {!view && (
           <SheetFooterWrapper>
             <CustomButton
               type="submit"
-              disabled={createMutation.isPending || editMutation.isPending}
+              disabled={createMutation.isPending || updateMutation.isPending}
             >
               {modalData ? "Save" : "Add"}
             </CustomButton>
@@ -310,4 +265,4 @@ const UserModal = () => {
   );
 };
 
-export default UserModal;
+export default CompanyModal;

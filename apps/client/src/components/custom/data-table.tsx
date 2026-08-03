@@ -64,7 +64,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="px-5 flex pb-6">
+    <div className="px-5 flex-1 flex pb-6">
       <div className="flex flex-1 bg-white rounded-lg shadow flex-col">
         <div
           style={
@@ -153,21 +153,21 @@ export function DataTable<TData, TValue>({
           </ScrollArea>
         </div>
         {pagination && (
-          <div className="flex px mt-auto h-16 border-t border-border/25">
+          <div className="flex px-6 mt-auto h-16 border-t border-border/25">
             <div className="flex items-center gap-6">
-              <div className="border pl-2 h-9 rounded-md gap-2 flex">
+              <div className="pl-2 h-9 rounded-md gap-2 flex items-center">
                 <p className="my-auto text-sm opacity-75">Per Page</p>
                 <Dropdown
-                  className="min-w-0 w-20! max-w-20!"
+                  className="min-w-0 w-20! max-w-20! h-8"
                   options={PAGE_SIZE_OPTIONS}
                   placeholder="Size"
                   value={pagination.limit?.toString() || ""}
                   onChange={(e) => pagination.setLimit(Number(e))}
                 />
               </div>
-              <div className="border pl-2 h-9 rounded-md gap-2 flex">
+              <div className="pl-2 h-9 rounded-md gap-2 flex items-center">
                 <p className="my-auto text-sm opacity-75">Page</p>
-                <div className="flex border rounded-md h-9">
+                <div className="flex border rounded-md h-8">
                   <FiChevronLeft
                     onClick={() => {
                       if (pagination.page && pagination.page - 1 > 0) {
@@ -175,15 +175,15 @@ export function DataTable<TData, TValue>({
                       }
                     }}
                     className={cn(
-                      "h-full px-2 w-9 rounded-md hover:bg-secondary/5 active:bg-secondary/10 duration-200 transition-all cursor-pointer",
+                      "h-full px-2 w-8 rounded-md hover:bg-secondary/5 active:bg-secondary/10 duration-200 transition-all cursor-pointer",
                       // disable
-                      pagination.page == 1 && "opacity-50",
+                      pagination.page == 1 && "opacity-25",
                     )}
                   />
 
                   <span
                     className={cn(
-                      "h-full px-4 font-medium border-x text-base flex items-center",
+                      "h-full px-3 font-medium border-x text-base flex items-center",
                       !pagination.page && "opacity-50",
                     )}
                   >
@@ -201,9 +201,9 @@ export function DataTable<TData, TValue>({
                       }
                     }}
                     className={cn(
-                      "h-full px-2 w-9 rounded-md hover:bg-secondary/5 active:bg-secondary/10 duration-200 transition-all cursor-pointer",
+                      "h-full px-2 w-8 rounded-md hover:bg-secondary/5 active:bg-secondary/10 duration-200 transition-all cursor-pointer",
                       // disable
-                      !hasNextPage && "opacity-50",
+                      !hasNextPage && "opacity-25",
                     )}
                   />
                 </div>

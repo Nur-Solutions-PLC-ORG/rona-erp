@@ -110,6 +110,9 @@ const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
           const link = (
             <Link
               key={option.href + i.toString()}
+              onClick={() => {
+                if (sheet) setOpen(false);
+              }}
               href={option.href}
               className={cn(
                 "flex items-center gap-4  cursor-pointer ",

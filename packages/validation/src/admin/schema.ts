@@ -31,6 +31,9 @@ export const employeeListSearchParamsSchema =
 
 export const departmentListSearchParamsSchema = paginationSearchParamsSchema;
 export const branchListSearchParamsSchema = paginationSearchParamsSchema;
+export const configsListSearchParamsSchema = paginationSearchParamsSchema;
+export const companySettingsListSearchParamsSchema =
+  paginationSearchParamsSchema;
 
 // Tables schema
 export const userSchema = z.object({

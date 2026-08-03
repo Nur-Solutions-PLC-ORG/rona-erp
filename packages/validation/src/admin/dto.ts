@@ -7,6 +7,7 @@ import {
   PLATFORM_CONFIG_KEYS,
   PLATFORM_CONFIG_VALUE_TYPES,
 } from "@rona/config/admin";
+import { MODULE_LIST } from "@rona/config/auth";
 
 export const companyDto = z.object({
   id: z.string(),
@@ -30,7 +31,7 @@ export const departmentDto = z.object({
   id: z.string(),
   tenantId: z.string(),
   name: z.string(),
-  module: z.array(z.string()),
+  module: z.enum(MODULE_LIST).array(),
   createdAt: z.string(),
 });
 

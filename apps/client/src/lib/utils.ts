@@ -5,11 +5,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function slugToString(slug: string) {
-  const spaced = slug.replace("_", " ").replace("-", " ");
-  const capitalized = spaced
-    .split(" ")
-    .map((item) => item[0].toUpperCase() + item.slice(1))
-    .join(" ");
-  return capitalized;
+export function slugToString(slug: string): string {
+  if (!slug) return "";
+
+  return slug
+    .replace(/[-_]+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+export function stringToSlug(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }

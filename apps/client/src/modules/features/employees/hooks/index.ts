@@ -4,18 +4,18 @@ import { useCreateMutation } from "@/hooks/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  ApiDeleteCompany,
-  ApiGetCompanies,
+  ApiDeleteEmployee,
+  ApiGetEmployees,
 } from "../api";
 
-export const useAdminCompanies = (
+export const useAdminEmployees = (
   searchParams: RequestSearchParams = {},
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-companies", JSON.stringify(searchParams)],
+    queryKey: ["admin-employees", JSON.stringify(searchParams)],
     queryFn: () =>
-      ApiGetCompanies({
+      ApiGetEmployees({
         searchParams: {
           ...searchParams,
           ...pagination,
@@ -26,10 +26,10 @@ export const useAdminCompanies = (
   const queryClient = useQueryClient();
 
   const deleteMutation = useCreateMutation(
-    ApiDeleteCompany,
+    ApiDeleteEmployee,
     (data) => {
       toast.success(data.message);
-      queryClient.invalidateQueries({ queryKey: ["admin-companies"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-employees"] });
     },
     (data) => {
       toast.error(data.message);
@@ -38,19 +38,21 @@ export const useAdminCompanies = (
 
   const items = data?.data ?? [
     {
-      id: "a;s",
-      name: "Sample Org",
-      slug: "samlsd-s",
-      email: "samls@tgma.com",
-      phone: "910821",
-      country: "Ethiopia",
+      id: "emp-1",
+      tenantId: "a;s",
+      eId: "10001",
+      fullName: "Jane Doe",
+      phone: "+251911000000",
+      email: "jane@example.com",
+      gender: "F" as const,
+      birthDate: "1990-01-01",
       status: "active" as const,
       createdAt: "",
     },
   ];
 
   return {
-    companies: items,
+    employees: items,
     isLoading,
     deleteMutation,
   };

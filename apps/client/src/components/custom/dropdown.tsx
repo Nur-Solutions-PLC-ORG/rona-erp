@@ -73,7 +73,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "h-9 w-full justify-between font-normal min-w-24",
+            "h-8 w-full justify-between font-normal min-w-24",
             ghost &&
               "bg-transparent shadow-none border-none rounded-none hover:bg-transparent",
             translucent && "bg-white/75 shadow-none border-none",
@@ -113,7 +113,7 @@ const Dropdown: React.FC<DropdownProps> = ({
         className="w-(--radix-popover-trigger-width) p-0"
         align="start"
       >
-        <Command>
+        <Command className="p-0">
           {search && (
             <>
               <CommandInput placeholder="Search..." className="h-9" />
