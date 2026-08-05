@@ -5,7 +5,7 @@ import {
   EMPLOYEE_STATUS_LIST,
   GENDER_LIST,
   PLATFORM_CONFIG_KEYS,
-  PLATFORM_CONFIG_VALUE_TYPES,
+  PLATFORM_CONFIG_TYPE_LIST,
 } from "@rona/config/admin";
 
 export const companyDto = z.object({
@@ -58,7 +58,7 @@ export const employeeDto = z.object({
 export const platformConfigDto = z.object({
   id: z.string(),
   key: z.enum(PLATFORM_CONFIG_KEYS),
-  value: z.union([z.string(), z.number(), z.boolean()]),
-  type: z.enum(PLATFORM_CONFIG_VALUE_TYPES),
+  value: z.string(),
+  type: z.enum(PLATFORM_CONFIG_TYPE_LIST),
   createdAt: z.string(),
 });

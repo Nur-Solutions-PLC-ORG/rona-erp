@@ -15,10 +15,10 @@ export const registerSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters long"),
   email: z.email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters long"),
-  tfaEnabled: z.boolean().default(false),
+  tfaEnabled: z.boolean(),
   role: z.object({
     position: z.enum(POSITIONS_LIST),
-    modules: z.array(z.enum(MODULE_LIST)).default([]),
+    modules: z.array(z.enum(MODULE_LIST)),
   }),
 });
 

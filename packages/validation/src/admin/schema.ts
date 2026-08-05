@@ -5,7 +5,7 @@ import {
   EMPLOYEE_STATUS_LIST,
   GENDER_LIST,
   PLATFORM_CONFIG_KEYS,
-  PLATFORM_CONFIG_VALUE_TYPES,
+  PLATFORM_CONFIG_TYPE_LIST,
 } from "@rona/config/admin";
 import {
   MODULE_LIST,
@@ -31,6 +31,9 @@ export const employeeListSearchParamsSchema =
 
 export const departmentListSearchParamsSchema = paginationSearchParamsSchema;
 export const branchListSearchParamsSchema = paginationSearchParamsSchema;
+export const configsListSearchParamsSchema = paginationSearchParamsSchema;
+export const companySettingsListSearchParamsSchema =
+  paginationSearchParamsSchema;
 
 // Tables schema
 export const userSchema = z.object({
@@ -38,10 +41,10 @@ export const userSchema = z.object({
   email: z.email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters long"),
   tenantId: z.string().min(1).optional(),
-  status: z.enum(USER_STATUS_LIST).default("active"),
+  status: z.enum(USER_STATUS_LIST),
   role: z.object({
     position: z.enum(POSITIONS_LIST),
-    modules: z.array(z.enum(MODULE_LIST)).default([]),
+    modules: z.array(z.enum(MODULE_LIST)),
   }),
 });
 
@@ -54,18 +57,18 @@ export const companySchema = z.object({
   email: z.email("Company email is invalid"),
   phone: z.string().min(7, "Phone is required"),
   country: z.string().min(2, "Country is required"),
-  status: z.enum(COMPANY_STATUS_LIST).default("active"),
+  status: z.enum(COMPANY_STATUS_LIST),
 });
 
 export const companySettingsSchema = z.object({
   tenantId: z.string().min(1).optional(),
-  currency: z.enum(CURRENCY_LIST).default("ETB"),
+  currency: z.enum(CURRENCY_LIST),
 });
 
 export const departmentSchema = z.object({
   tenantId: z.string().min(1).optional(),
   name: z.string().min(2, "Department name is required"),
-  module: z.array(z.enum(MODULE_LIST)).default([]),
+  module: z.array(z.enum(MODULE_LIST)),
 });
 
 export const branchSchema = z.object({
@@ -79,13 +82,13 @@ export const employeeSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
   phone: z.string().min(7, "Phone is required"),
   email: z.email("Email is invalid").optional().or(z.literal("")),
-  gender: z.enum(GENDER_LIST).default("M"),
-  birthDate: z.string().min(1, "Birth date is required"),
-  status: z.enum(EMPLOYEE_STATUS_LIST).default("active"),
+  gender: z.enum(GENDER_LIST),
+  birthDate: z.date("Date is required!"),
+  status: z.enum(EMPLOYEE_STATUS_LIST),
 });
 
 export const platformConfigSchema = z.object({
   key: z.enum(PLATFORM_CONFIG_KEYS),
-  value: z.union([z.string(), z.number(), z.boolean()]),
-  type: z.enum(PLATFORM_CONFIG_VALUE_TYPES),
+  value: z.string().min(1, "Value is required!"),
+  type: z.enum(PLATFORM_CONFIG_TYPE_LIST),
 });

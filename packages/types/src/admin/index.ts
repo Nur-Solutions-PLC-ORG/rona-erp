@@ -4,7 +4,7 @@ import {
   EMPLOYEE_STATUS_LIST,
   GENDER_LIST,
   PLATFORM_CONFIG_KEYS,
-  PLATFORM_CONFIG_VALUE_TYPES,
+  PLATFORM_CONFIG_TYPE_LIST,
 } from "@rona/config/admin";
 import {
   branchDto,
@@ -25,16 +25,19 @@ import {
   platformConfigSchema,
   userListSearchParamsSchema,
   userSchema,
+  companySettingsListSearchParamsSchema,
+  configsListSearchParamsSchema,
 } from "@rona/validation/admin";
 import z from "zod";
 
 export type CompanyStatus = (typeof COMPANY_STATUS_LIST)[number];
 export type EmployeeStatus = (typeof EMPLOYEE_STATUS_LIST)[number];
-export type PlatformConfigValueType =
-  (typeof PLATFORM_CONFIG_VALUE_TYPES)[number];
+
+export type PlatformConfigType = (typeof PLATFORM_CONFIG_TYPE_LIST)[number];
+export type PlatformConfigKey = (typeof PLATFORM_CONFIG_KEYS)[number];
+
 export type Currency = (typeof CURRENCY_LIST)[number];
 export type Gender = (typeof GENDER_LIST)[number];
-export type PlatformConfigKey = (typeof PLATFORM_CONFIG_KEYS)[number];
 
 // Schemas
 export type UserListSearchParamsSchema = z.infer<
@@ -51,6 +54,12 @@ export type DepartmentListSearchParamsSchema = z.infer<
 >;
 export type BranchListSearchParamsSchema = z.infer<
   typeof branchListSearchParamsSchema
+>;
+export type ConfigsListSearchParamsSchema = z.infer<
+  typeof configsListSearchParamsSchema
+>;
+export type CompanySettingsListSearchParamsSchema = z.infer<
+  typeof companySettingsListSearchParamsSchema
 >;
 
 export type UserSchema = z.infer<typeof userSchema>;
