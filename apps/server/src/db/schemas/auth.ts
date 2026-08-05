@@ -6,20 +6,16 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
-import {
-  MODULE_LIST,
-  POSITIONS_LIST,
-  USER_STATUS_LIST,
-} from '@rona/config/auth';
 
-// ENUMS
-export const modulesList = pgEnum('modules_list', MODULE_LIST);
-export const positionsList = pgEnum('positions_list', POSITIONS_LIST);
-export const statusesList = pgEnum('statuses_list', USER_STATUS_LIST);
+// ENUMS - Using hardcoded values to avoid package dependency
+export const modulesList = pgEnum('modules_list', ['workforce', 'payroll', 'inventory', 'production', 'sales', 'accounting']);
+export const positionsList = pgEnum('positions_list', ['super_admin', 'admin', 'owner', 'manager', 'staff']);
+export const statusesList = pgEnum('statuses_list', ['active', 'inactive', 'suspended', 'pending_onboarding']);
 
 // TABLES
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
+  tenantId: uuid('tenant_id'),
 
   fullName: text('full_name').notNull(),
   email: text('email').notNull().unique(),

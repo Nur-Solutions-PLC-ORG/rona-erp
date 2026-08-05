@@ -127,9 +127,9 @@ export class AuthService {
   }
 
   // encoding a jwt session token
-  createSession(user: SessionUser): string {
+  createSession(user: any): string {
     try {
-      const sessionUser: SessionUser = { id: user.id, email: user.email };
+      const sessionUser: SessionUser = { id: user.id, email: user.email, name: user.fullName || user.name };
       const payload = { user: sessionUser };
 
       return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '7d' });
