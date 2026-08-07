@@ -72,7 +72,7 @@ export const departments = pgTable('departments', {
     .references(() => companies.id, { onDelete: 'cascade' })
     .notNull(),
   name: text('name').notNull(),
-  module: text('module').array().notNull().default([]),
+  modules: text('modules').array().notNull().default([]),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -105,7 +105,7 @@ export const employees = pgTable('employees', {
   tenantId: uuid('tenant_id')
     .references(() => companies.id, { onDelete: 'cascade' })
     .notNull(),
-  eId: text('e_id').notNull(),
+  eid: text('eid').notNull(),
   fullName: text('full_name').notNull(),
   phone: text('phone').notNull(),
   email: text('email'),

@@ -159,7 +159,7 @@ export class AdminService {
     await db.insert(userRoles).values({
       userId: result[0].id,
       position: body.role.position,
-      module: body.role.modules,
+      module: body.role.module || body.role.modules,
     });
 
     return result[0];
@@ -190,7 +190,7 @@ export class AdminService {
       .update(userRoles)
       .set({
         position: body.role.position,
-        module: body.role.modules,
+        module: body.role.module || body.role.modules,
       })
       .where(eq(userRoles.userId, id));
 
@@ -401,7 +401,7 @@ export class AdminService {
       .values({
         tenantId: body.tenantId,
         name: body.name,
-        module: body.module,
+        modules: body.module,
       })
       .returning();
     return result[0];
@@ -422,7 +422,7 @@ export class AdminService {
       .set({
         tenantId: body.tenantId,
         name: body.name,
-        module: body.module,
+        modules: body.module,
       })
       .where(eq(departments.id, id))
       .returning();
@@ -558,7 +558,7 @@ export class AdminService {
       .insert(employees)
       .values({
         tenantId: body.tenantId,
-        eId: body.eId,
+        eid: body.eId,
         fullName: body.fullName,
         phone: body.phone,
         email: body.email,
@@ -584,7 +584,7 @@ export class AdminService {
       .update(employees)
       .set({
         tenantId: body.tenantId,
-        eId: body.eId,
+        eid: body.eId,
         fullName: body.fullName,
         phone: body.phone,
         email: body.email,
@@ -644,15 +644,37 @@ export class AdminService {
   }
 
   async updateUserRole(userId: string, body: any) {
-    const result = await db
-      .update(userRoles)
-      .set({
-        position: body.position,
-        module: body.module,
-      })
-      .where(eq(userRoles.userId, userId))
-      .returning();
+    // Check if user role exists
+    const existingRole = await db
+      .select()
+      .from(userRoles)
+      .where(eq(userRoles.userId, userId));
+
+    let result;
+    if (existingRole.length > 0) {
+      // Update existing role
+      result = await db
+        .update(userRoles)
+        .set({
+          position: body.position,
+          module: body.module || body.modules,
+        })
+        .where(eq(userRoles.userId, userId))
+        .returning();
+    } else {
+      // Create new role
+      result = await db
+        .insert(userRoles)
+        .values({
+          userId,
+          position: body.position,
+          module: body.module || body.modules,
+        })
+        .returning();
+    }
+
     if (!result[0]) throw new NotFoundException('User role not found');
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return result[0];
   }
 

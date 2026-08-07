@@ -427,11 +427,13 @@ export class AdminController {
     @Param('userId') userId: string,
     @Body() body: any,
   ): Promise<any> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const result = await this.adminService.updateUserRole(userId, body);
     return {
       success: true,
       statusCode: HttpStatus.OK,
       message: 'User role updated successfully',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       data: result,
     };
   }
