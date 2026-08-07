@@ -11,36 +11,62 @@ import {
 } from '@/db/schemas/admin';
 import { eq, and, like, desc } from 'drizzle-orm';
 
+// Backend specific platform config defaults
+const PLATFORM_CONFIG_DEFAULTS: Record<
+  string,
+  { type: string; value: string }
+> = {
+  maintenance_mode: {
+    type: 'boolean',
+    value: 'false',
+  },
+  name: {
+    type: 'string',
+    value: 'Rona ERP',
+  },
+  contact_phone: {
+    type: 'string',
+    value: '+251 90 909 0909',
+  },
+  contact_email: {
+    type: 'string',
+    value: 'hello@ronaerp.com',
+  },
+};
+
 @Injectable()
 export class AdminService {
   // Dashboard
   async getDashboardStats() {
-    // Total Companies
     const allCompanies = await db.select().from(companies);
-    const activeCompanies = allCompanies.filter(c => c.status === 'active').length;
+    const activeCompanies = allCompanies.filter(
+      (c) => c.status === 'active',
+    ).length;
 
-    // Total Departments
     const totalDepartments = await db.select().from(departments);
 
-    // Total Branches
     const totalBranches = await db.select().from(branches);
 
-    // Total Employees with status breakdown
     const allEmployees = await db.select().from(employees);
-    const employeeStatusBreakdown = allEmployees.reduce((acc, emp) => {
-      acc[emp.status] = (acc[emp.status] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const employeeStatusBreakdown = allEmployees.reduce(
+      (acc, emp) => {
+        acc[emp.status] = (acc[emp.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
-    // Total Users with role breakdown
     const allUsers = await db.select().from(users);
     const allUserRoles = await db.select().from(userRoles);
-    const userRoleBreakdown = allUserRoles.reduce((acc, userRole) => {
-      acc[userRole.position] = (acc[userRole.position] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const userRoleBreakdown = allUserRoles.reduce(
+      (acc, userRole) => {
+        acc[userRole.position] = (acc[userRole.position] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
-    const activeUsers = allUsers.filter(u => u.status === 'active').length;
+    const activeUsers = allUsers.filter((u) => u.status === 'active').length;
 
     // Platform configs
     const platformConfigsData = await db.select().from(platformConfigs);
@@ -74,16 +100,21 @@ export class AdminService {
 
   // Users
   async getUsers(query: any) {
-    const { page = 1, limit = 10, searchQuery, status, position, tenantId } = query;
+    const {
+      page = 1,
+      limit = 10,
+      searchQuery,
+      status,
+      position,
+      tenantId,
+    } = query;
     const offset = (page - 1) * limit;
 
     const conditions: any[] = [];
     if (tenantId) conditions.push(eq(users.tenantId, tenantId));
     if (status) conditions.push(eq(users.status, status));
     if (searchQuery) {
-      conditions.push(
-        like(users.fullName, `%${searchQuery}%`),
-      );
+      conditions.push(like(users.fullName, `%${searchQuery}%`));
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -114,21 +145,24 @@ export class AdminService {
   }
 
   async createUser(body: any) {
-    const result = await db.insert(users).values({
-      tenantId: body.tenantId,
-      fullName: body.fullName,
-      email: body.email,
-      passwordHash: body.password,
-      status: body.status,
-    }).returning();
-    
+    const result = await db
+      .insert(users)
+      .values({
+        tenantId: body.tenantId,
+        fullName: body.fullName,
+        email: body.email,
+        passwordHash: body.password,
+        status: body.status,
+      })
+      .returning();
+
     // Create user role
     await db.insert(userRoles).values({
       userId: result[0].id,
       position: body.role.position,
       module: body.role.modules,
     });
-    
+
     return result[0];
   }
 
@@ -151,7 +185,7 @@ export class AdminService {
       .where(eq(users.id, id))
       .returning();
     if (!result[0]) throw new NotFoundException('User not found');
-    
+
     // Update user role
     await db
       .update(userRoles)
@@ -160,7 +194,7 @@ export class AdminService {
         module: body.role.modules,
       })
       .where(eq(userRoles.userId, id));
-    
+
     return result[0];
   }
 
@@ -208,19 +242,25 @@ export class AdminService {
   }
 
   async createCompany(body: any) {
-    const result = await db.insert(companies).values({
-      name: body.name,
-      slug: body.slug,
-      email: body.email,
-      phone: body.phone,
-      country: body.country,
-      status: body.status,
-    }).returning();
+    const result = await db
+      .insert(companies)
+      .values({
+        name: body.name,
+        slug: body.slug,
+        email: body.email,
+        phone: body.phone,
+        country: body.country,
+        status: body.status,
+      })
+      .returning();
     return result[0];
   }
 
   async getCompanyById(id: string) {
-    const result = await db.select().from(companies).where(eq(companies.id, id));
+    const result = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.id, id));
     if (!result[0]) throw new NotFoundException('Company not found');
     return result[0];
   }
@@ -243,7 +283,10 @@ export class AdminService {
   }
 
   async deleteCompany(id: string) {
-    const result = await db.delete(companies).where(eq(companies.id, id)).returning();
+    const result = await db
+      .delete(companies)
+      .where(eq(companies.id, id))
+      .returning();
     if (!result[0]) throw new NotFoundException('Company not found');
   }
 
@@ -259,7 +302,9 @@ export class AdminService {
       .offset(offset)
       .orderBy(desc(companySettings.createdAt));
 
-    const totalResult = await db.select({ count: companySettings.id }).from(companySettings);
+    const totalResult = await db
+      .select({ count: companySettings.id })
+      .from(companySettings);
     const total = totalResult.length;
 
     return {
@@ -274,10 +319,13 @@ export class AdminService {
   }
 
   async createCompanySettings(body: any) {
-    const result = await db.insert(companySettings).values({
-      tenantId: body.tenantId,
-      currency: body.currency,
-    }).returning();
+    const result = await db
+      .insert(companySettings)
+      .values({
+        tenantId: body.tenantId,
+        currency: body.currency,
+      })
+      .returning();
     return result[0];
   }
 
@@ -349,11 +397,14 @@ export class AdminService {
   }
 
   async createDepartment(body: any) {
-    const result = await db.insert(departments).values({
-      tenantId: body.tenantId,
-      name: body.name,
-      module: body.module,
-    }).returning();
+    const result = await db
+      .insert(departments)
+      .values({
+        tenantId: body.tenantId,
+        name: body.name,
+        module: body.module,
+      })
+      .returning();
     return result[0];
   }
 
@@ -426,11 +477,14 @@ export class AdminService {
   }
 
   async createBranch(body: any) {
-    const result = await db.insert(branches).values({
-      tenantId: body.tenantId,
-      departmentId: body.departmentId,
-      name: body.name,
-    }).returning();
+    const result = await db
+      .insert(branches)
+      .values({
+        tenantId: body.tenantId,
+        departmentId: body.departmentId,
+        name: body.name,
+      })
+      .returning();
     return result[0];
   }
 
@@ -455,7 +509,10 @@ export class AdminService {
   }
 
   async deleteBranch(id: string) {
-    const result = await db.delete(branches).where(eq(branches.id, id)).returning();
+    const result = await db
+      .delete(branches)
+      .where(eq(branches.id, id))
+      .returning();
     if (!result[0]) throw new NotFoundException('Branch not found');
   }
 
@@ -498,21 +555,27 @@ export class AdminService {
   }
 
   async createEmployee(body: any) {
-    const result = await db.insert(employees).values({
-      tenantId: body.tenantId,
-      eId: body.eId,
-      fullName: body.fullName,
-      phone: body.phone,
-      email: body.email,
-      gender: body.gender,
-      birthDate: body.birthDate,
-      status: body.status,
-    }).returning();
+    const result = await db
+      .insert(employees)
+      .values({
+        tenantId: body.tenantId,
+        eId: body.eId,
+        fullName: body.fullName,
+        phone: body.phone,
+        email: body.email,
+        gender: body.gender,
+        birthDate: body.birthDate,
+        status: body.status,
+      })
+      .returning();
     return result[0];
   }
 
   async getEmployeeById(id: string) {
-    const result = await db.select().from(employees).where(eq(employees.id, id));
+    const result = await db
+      .select()
+      .from(employees)
+      .where(eq(employees.id, id));
     if (!result[0]) throw new NotFoundException('Employee not found');
     return result[0];
   }
@@ -537,7 +600,10 @@ export class AdminService {
   }
 
   async deleteEmployee(id: string) {
-    const result = await db.delete(employees).where(eq(employees.id, id)).returning();
+    const result = await db
+      .delete(employees)
+      .where(eq(employees.id, id))
+      .returning();
     if (!result[0]) throw new NotFoundException('Employee not found');
   }
 
@@ -563,7 +629,7 @@ export class AdminService {
         value: body.value,
         type: body.type,
       })
-      .where(eq(platformConfigs.key, body.key as any))
+      .where(eq(platformConfigs.key, body.key))
       .returning();
     if (!result[0]) throw new NotFoundException('Platform config not found');
     return result[0];
@@ -571,7 +637,10 @@ export class AdminService {
 
   // Role Management
   async getUserRoles(userId: string) {
-    const result = await db.select().from(userRoles).where(eq(userRoles.userId, userId));
+    const result = await db
+      .select()
+      .from(userRoles)
+      .where(eq(userRoles.userId, userId));
     return result;
   }
 
@@ -589,7 +658,10 @@ export class AdminService {
   }
 
   async deleteUserRole(userId: string) {
-    const result = await db.delete(userRoles).where(eq(userRoles.userId, userId)).returning();
+    const result = await db
+      .delete(userRoles)
+      .where(eq(userRoles.userId, userId))
+      .returning();
     if (!result[0]) throw new NotFoundException('User role not found');
   }
 }

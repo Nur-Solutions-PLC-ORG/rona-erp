@@ -72,10 +72,7 @@ export class AdminController {
   }
 
   @Patch('users/:id')
-  async updateUser(
-    @Param('id') id: string,
-    @Body() body: any,
-  ): Promise<any> {
+  async updateUser(@Param('id') id: string, @Body() body: any): Promise<any> {
     const result = await this.adminService.updateUser(id, body);
     return {
       success: true,
@@ -304,10 +301,7 @@ export class AdminController {
   }
 
   @Patch('branches/:id')
-  async updateBranch(
-    @Param('id') id: string,
-    @Body() body: any,
-  ): Promise<any> {
+  async updateBranch(@Param('id') id: string, @Body() body: any): Promise<any> {
     const result = await this.adminService.updateBranch(id, body);
     return {
       success: true,

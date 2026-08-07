@@ -8,9 +8,27 @@ import {
 } from 'drizzle-orm/pg-core';
 
 // ENUMS - Using hardcoded values to avoid package dependency
-export const modulesList = pgEnum('modules_list', ['workforce', 'payroll', 'inventory', 'production', 'sales', 'accounting']);
-export const positionsList = pgEnum('positions_list', ['super_admin', 'admin', 'owner', 'manager', 'staff']);
-export const statusesList = pgEnum('statuses_list', ['active', 'inactive', 'suspended', 'pending_onboarding']);
+export const modulesList = pgEnum('modules_list', [
+  'workforce',
+  'payroll',
+  'inventory',
+  'production',
+  'sales',
+  'accounting',
+]);
+export const positionsList = pgEnum('positions_list', [
+  'super_admin',
+  'admin',
+  'owner',
+  'manager',
+  'staff',
+]);
+export const statusesList = pgEnum('statuses_list', [
+  'active',
+  'inactive',
+  'suspended',
+  'pending_onboarding',
+]);
 
 // TABLES
 export const users = pgTable('users', {

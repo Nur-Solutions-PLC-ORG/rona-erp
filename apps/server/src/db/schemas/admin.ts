@@ -9,12 +9,30 @@ import {
 } from 'drizzle-orm/pg-core';
 
 // ENUMS - Using values from packages config (will be available after build)
-export const companyStatusList = pgEnum('company_status_list', ['active', 'inactive', 'suspended']);
+export const companyStatusList = pgEnum('company_status_list', [
+  'active',
+  'inactive',
+  'suspended',
+]);
 export const currencyList = pgEnum('currency_list', ['ETB', 'USD']);
-export const employeeStatusList = pgEnum('employee_status_list', ['active', 'inactive', 'terminated', 'on_leave']);
+export const employeeStatusList = pgEnum('employee_status_list', [
+  'active',
+  'inactive',
+  'terminated',
+  'on_leave',
+]);
 export const genderList = pgEnum('gender_list', ['M', 'F']);
-export const platformConfigTypeList = pgEnum('platform_config_type_list', ['string', 'number', 'boolean']);
-export const platformConfigKeys = pgEnum('platform_config_keys', ['maintenance_mode', 'name', 'contact_phone', 'contact_email']);
+export const platformConfigTypeList = pgEnum('platform_config_type_list', [
+  'string',
+  'number',
+  'boolean',
+]);
+export const platformConfigKeys = pgEnum('platform_config_keys', [
+  'maintenance_mode',
+  'name',
+  'contact_phone',
+  'contact_email',
+]);
 
 // TABLES
 export const companies = pgTable('companies', {
