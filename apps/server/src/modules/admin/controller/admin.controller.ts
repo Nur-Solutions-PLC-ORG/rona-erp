@@ -25,6 +25,18 @@ import { ZodValidationPipe } from '@/modules/app/pipes/zod-validation.pipe';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
+  // Dashboard endpoint
+  @Get('dashboard')
+  async getDashboard(): Promise<any> {
+    const result = await this.adminService.getDashboardStats();
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'Dashboard stats retrieved successfully',
+      data: result,
+    };
+  }
+
   // Users endpoints
   @Get('users')
   async getUsers(@Query() query: any): Promise<any> {

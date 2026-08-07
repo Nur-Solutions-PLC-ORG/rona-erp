@@ -6,6 +6,13 @@ export const API_ADMIN_USERS_URL = "/api/admin/users";
  * Response: ApiResponse<UserSummaryDto[] | UserSummaryDto>
  */
 
+// Dashboard
+export const API_ADMIN_DASHBOARD_URL = "/api/admin/dashboard";
+/**
+ * Method: GET
+ * Response: ApiResponse<DashboardStats>
+ */
+
 export const API_ADMIN_USER_BY_ID_URL = "/api/admin/users/:id";
 /**
  * Methods: GET, PUT, DELETE

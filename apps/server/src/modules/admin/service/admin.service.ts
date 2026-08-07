@@ -13,6 +13,65 @@ import { eq, and, like, desc } from 'drizzle-orm';
 
 @Injectable()
 export class AdminService {
+  // Dashboard
+  async getDashboardStats() {
+    // Total Companies
+    const allCompanies = await db.select().from(companies);
+    const activeCompanies = allCompanies.filter(c => c.status === 'active').length;
+
+    // Total Departments
+    const totalDepartments = await db.select().from(departments);
+
+    // Total Branches
+    const totalBranches = await db.select().from(branches);
+
+    // Total Employees with status breakdown
+    const allEmployees = await db.select().from(employees);
+    const employeeStatusBreakdown = allEmployees.reduce((acc, emp) => {
+      acc[emp.status] = (acc[emp.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Total Users with role breakdown
+    const allUsers = await db.select().from(users);
+    const allUserRoles = await db.select().from(userRoles);
+    const userRoleBreakdown = allUserRoles.reduce((acc, userRole) => {
+      acc[userRole.position] = (acc[userRole.position] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const activeUsers = allUsers.filter(u => u.status === 'active').length;
+
+    // Platform configs
+    const platformConfigsData = await db.select().from(platformConfigs);
+
+    return {
+      companies: {
+        total: allCompanies.length,
+        active: activeCompanies,
+      },
+      departments: {
+        total: totalDepartments.length,
+      },
+      branches: {
+        total: totalBranches.length,
+      },
+      employees: {
+        total: allEmployees.length,
+        byStatus: employeeStatusBreakdown,
+      },
+      users: {
+        total: allUsers.length,
+        active: activeUsers,
+        byRole: userRoleBreakdown,
+      },
+      platformConfigs: {
+        total: platformConfigsData.length,
+        configs: platformConfigsData,
+      },
+    };
+  }
+
   // Users
   async getUsers(query: any) {
     const { page = 1, limit = 10, searchQuery, status, position, tenantId } = query;
