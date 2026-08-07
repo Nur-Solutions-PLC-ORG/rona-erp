@@ -1,5 +1,4 @@
 import {
-  boolean,
   pgEnum,
   pgTable,
   text,

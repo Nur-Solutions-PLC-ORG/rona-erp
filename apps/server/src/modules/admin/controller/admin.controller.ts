@@ -9,15 +9,12 @@ import {
   Post,
   Query,
   UseGuards,
-  UsePipes,
 } from '@nestjs/common';
 
 import { AuthGuard } from '../../auth/guards/auth.guard';
 import { Roles } from '../../auth/guards/roles.decorator';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { AdminService } from '../service/admin.service';
-
-import { ZodValidationPipe } from '@/modules/app/pipes/zod-validation.pipe';
 
 @Controller('api/admin')
 @UseGuards(AuthGuard, RolesGuard)
