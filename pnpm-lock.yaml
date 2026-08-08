@@ -459,7 +459,11 @@ importers:
 
   packages/config: {}
 
-  packages/routes: {}
+  packages/routes:
+    dependencies:
+      '@rona/types':
+        specifier: workspace:*
+        version: link:../types
 
   packages/types:
     dependencies:

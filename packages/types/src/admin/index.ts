@@ -77,3 +77,30 @@ export type DepartmentDto = z.infer<typeof departmentDto>;
 export type BranchDto = z.infer<typeof branchDto>;
 export type EmployeeDto = z.infer<typeof employeeDto>;
 export type PlatformConfigDto = z.infer<typeof platformConfigDto>;
+
+// Dashboard Stats
+export interface DashboardStats {
+  companies: {
+    total: number;
+    active: number;
+  };
+  departments: {
+    total: number;
+  };
+  branches: {
+    total: number;
+  };
+  employees: {
+    total: number;
+    byStatus: Record<string, number>;
+  };
+  users: {
+    total: number;
+    active: number;
+    byRole: Record<string, number>;
+  };
+  platformConfigs: {
+    total: number;
+    configs: PlatformConfigDto[];
+  };
+}

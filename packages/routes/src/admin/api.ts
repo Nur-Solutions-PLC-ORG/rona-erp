@@ -1,3 +1,5 @@
+import type { DashboardStats } from '@rona/types';
+
 export const API_ADMIN_USERS_URL = "/api/admin/users";
 /**
  * Methods: GET, POST
