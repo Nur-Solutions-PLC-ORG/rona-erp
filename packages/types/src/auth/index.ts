@@ -27,6 +27,8 @@ export interface UserRole {
 export interface SessionUser {
   id: string;
   email: string;
+  name: string;
+  tenantId?: string | undefined;
 }
 
 export interface Session {
