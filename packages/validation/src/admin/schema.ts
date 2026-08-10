@@ -66,12 +66,13 @@ export const companySettingsSchema = z.object({
 });
 
 export const departmentSchema = z.object({
-  tenantId: z.string().min(1).optional(),
+  tenantId: z.string().min(1, "Tenant ID is required"),
   name: z.string().min(2, "Department name is required"),
   module: z.array(z.enum(MODULE_LIST)),
 });
 
 export const branchSchema = z.object({
+  tenantId: z.string().min(1, "Tenant ID is required"),
   departmentId: z.string().min(1, "Department is required"),
   name: z.string().min(2, "Branch name is required"),
 });
