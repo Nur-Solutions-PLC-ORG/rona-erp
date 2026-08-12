@@ -1,5 +1,5 @@
 import { Controller, Get, HttpStatus } from '@nestjs/common';
-import { AppService } from '../services/app.service';
+import { AppService } from './app.service';
 import { ApiResponse } from '@rona/types/api';
 
 @Controller()

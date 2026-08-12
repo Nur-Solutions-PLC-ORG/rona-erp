@@ -129,8 +129,7 @@ export class AuthService {
   // encoding a jwt session token
   createSession(user: SessionUser): string {
     try {
-      const sessionUser: SessionUser = { id: user.id, email: user.email };
-      const payload = { user: sessionUser };
+      const payload = { user };
 
       return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '7d' });
     } catch (e) {
@@ -204,7 +203,11 @@ export class AuthService {
     const profile = await getGoogleUserProfile(code);
     const user = await this.validateUserByEmail(profile.email);
 
-    const token = this.createSession(user);
+    const token = this.createSession({
+      id: user.id,
+      email: user.email,
+      name: user.fullName,
+    });
 
     return { token };
   }

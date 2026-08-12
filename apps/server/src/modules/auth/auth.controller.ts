@@ -12,10 +12,10 @@ import {
 } from '@nestjs/common';
 
 import { Request, Response } from 'express';
-import { AuthGuard } from '../guards/auth.guard';
-import { Roles } from '../guards/roles.decorator';
-import { RolesGuard } from '../guards/roles.guard';
-import { AuthService } from '../service/auth.service';
+import { AuthGuard } from './guards/auth.guard';
+import { Roles } from './guards/roles.decorator';
+import { RolesGuard } from './guards/roles.guard';
+import { AuthService } from './auth.service';
 
 import { ZodValidationPipe } from '@/modules/app/pipes/zod-validation.pipe';
 import { COOKIE_MAX_AGE, COOKIE_NAME } from '@rona/config/auth';
@@ -71,7 +71,10 @@ export class AuthController {
       await this.authService.verifyCode(user.email, body.code);
     }
 
-    const token = this.authService.createSession(user);
+    const token = this.authService.createSession({
+      ...user,
+      name: user.fullName,
+    });
     const isProduction = process.env.NODE_ENV === 'production';
 
     res.cookie(COOKIE_NAME, token, {
