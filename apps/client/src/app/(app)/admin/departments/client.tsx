@@ -7,7 +7,7 @@ import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
 import { createColumns } from "@/lib/create-columns";
 import { slugToString } from "@/lib/utils";
-import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
+import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
 import { useAdminDepartments } from "@/modules/features/admin/departments/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import {
@@ -25,7 +25,7 @@ const Client = () => {
     customSearchParams.requestSearchParams,
     paginationData,
   );
-  const { companies } = useAdminCompanies();
+  const { organizations } = useAdminOrganizations();
 
   const columns = createColumns<DepartmentDto>({
     includeActions: true,
@@ -33,11 +33,12 @@ const Client = () => {
     extraColumns: [
       { accessorKey: "name", header: "Department", isBold: true },
       {
-        id: "company",
-        header: "Company",
+        id: "organization",
+        header: "Organization",
         accessorFn: (department) =>
-          companies.find((company) => company.id === department.organizationId)
-            ?.name,
+          organizations.find(
+            (organization) => organization.id === department.organizationId,
+          )?.name,
       },
       {
         accessorKey: "module",

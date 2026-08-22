@@ -28,7 +28,7 @@ import { toast } from "sonner";
 import { ApiPatchEmployee, ApiPostEmployee } from "../api";
 import { Button } from "@/components/ui/button";
 import { generateCombinations } from "@/lib/passwords";
-import { useAdminCompanies } from "../../companies/hooks";
+import { useAdminOrganizations } from "../../organizations/hooks";
 import { DatePickerInput } from "@/components/custom/date-picker-input";
 
 const defaultValues: EmployeeSchema = {
@@ -46,7 +46,7 @@ const EmployeeModal = () => {
   const { open, data: rawData, closeModal, view } = useModalStore();
   const modalData = rawData as { employee?: EmployeeDto | undefined } | null;
 
-  const { companies } = useAdminCompanies();
+  const { organizations } = useAdminOrganizations();
   const form = useForm<EmployeeSchema>({
     resolver: zodResolver(employeeSchema),
     defaultValues,
@@ -191,13 +191,13 @@ const EmployeeModal = () => {
               render={({ field }) => (
                 <Field>
                   <FieldLabel htmlFor={field.name + "-input"}>
-                    Company
+                    Organization
                   </FieldLabel>
                   <Dropdown
                     {...field}
-                    options={companies.map((company) => ({
-                      value: company.id,
-                      label: company.name,
+                    options={organizations.map((organization) => ({
+                      value: organization.id,
+                      label: organization.name,
                     }))}
                     disabled={!!view}
                   />

@@ -1,7 +1,7 @@
 import { useHydrated } from "@/lib/hydrate";
 import BranchModal from "@/modules/features/admin/branches/components/modal";
-import CompanyModal from "@/modules/features/admin/companies/components/modal";
-import CompanySettingsModal from "@/modules/features/admin/company-settings/components/modal";
+import OrganizationModal from "@/modules/features/admin/organizations/components/modal";
+import OrganizationSettingsModal from "@/modules/features/admin/organization-settings/components/modal";
 import DepartmentModal from "@/modules/features/admin/departments/components/modal";
 import EmployeeModal from "@/modules/features/admin/employees/components/modal";
 import PlatformConfigModal from "@/modules/features/admin/platform-configs/components/modal";
@@ -15,11 +15,11 @@ const AdminModals = () => {
   return (
     <>
       <UserModal />
-      <CompanyModal />
+      <OrganizationModal />
       <DepartmentModal />
       <BranchModal />
       <EmployeeModal />
-      <CompanySettingsModal />
+      <OrganizationSettingsModal />
       <PlatformConfigModal />
     </>
   );

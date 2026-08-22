@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Client from "./client";
 
 export const metadata: Metadata = {
-  title: "Companies",
+  title: "Organizations Settings",
 };
 
 const Page = () => {

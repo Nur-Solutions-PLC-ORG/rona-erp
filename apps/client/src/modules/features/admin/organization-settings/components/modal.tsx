@@ -8,32 +8,38 @@ import SheetWrapper, {
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { useCreateMutation } from "@/hooks/utils";
 import { getDirtyValues } from "@/lib/form";
-import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
+import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
 import { useModalStore } from "@/store";
 import { CURRENCY_LIST } from "@rona/config/admin";
-import { CompanySettingsDto, CompanySettingsSchema } from "@rona/types/admin";
-import { companySettingsSchema } from "@rona/validation/admin";
+import {
+  OrganizationSettingsDto,
+  OrganizationSettingsSchema,
+} from "@rona/types/admin";
+import { organizationSettingsSchema } from "@rona/validation/admin";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ApiPatchCompanySettings, ApiPostCompanySettings } from "../api";
+import {
+  ApiPatchOrganizationSettings,
+  ApiPostOrganizationSettings,
+} from "../api";
 
-const defaultValues: CompanySettingsSchema = {
+const defaultValues: OrganizationSettingsSchema = {
   organizationId: "",
   currency: "ETB",
 };
 
-const CompanySettingsModal = () => {
+const OrganizationSettingsModal = () => {
   const { open, data, view, closeModal } = useModalStore();
   const modalData = data as {
-    settings?: CompanySettingsDto | undefined;
+    settings?: OrganizationSettingsDto | undefined;
   } | null;
 
-  const { companies } = useAdminCompanies();
-  const form = useForm<CompanySettingsSchema>({
-    resolver: zodResolver(companySettingsSchema),
+  const { organizations } = useAdminOrganizations();
+  const form = useForm<OrganizationSettingsSchema>({
+    resolver: zodResolver(organizationSettingsSchema),
     defaultValues,
     disabled: !!view,
   });
@@ -42,13 +48,13 @@ const CompanySettingsModal = () => {
 
   const concludeMutation = (message: string) => {
     toast.success(message);
-    client.invalidateQueries({ queryKey: ["admin-company-settings"] });
+    client.invalidateQueries({ queryKey: ["admin-organization-settings"] });
     form.reset();
     closeModal();
   };
 
   const createMutation = useCreateMutation(
-    ApiPostCompanySettings,
+    ApiPostOrganizationSettings,
     (result) => {
       toast.success(result.message);
       concludeMutation(result.message);
@@ -58,7 +64,7 @@ const CompanySettingsModal = () => {
     },
   );
   const updateMutation = useCreateMutation(
-    ApiPatchCompanySettings,
+    ApiPatchOrganizationSettings,
     (result) => {
       toast.success(result.message);
       concludeMutation(result.message);
@@ -76,7 +82,7 @@ const CompanySettingsModal = () => {
     } else form.reset(defaultValues);
   }, [open, modalData, form]);
 
-  const submit = (values: CompanySettingsSchema) => {
+  const submit = (values: OrganizationSettingsSchema) => {
     if (view) return;
 
     if (modalData) {
@@ -99,11 +105,11 @@ const CompanySettingsModal = () => {
       title={
         modalData?.settings
           ? view
-            ? "Company settings details"
-            : "Edit Company Settings"
-          : "Add Company Settings"
+            ? "Organization settings details"
+            : "Edit Organization Settings"
+          : "Add Organization Settings"
       }
-      open={open === "admin-company-settings"}
+      open={open === "admin-organization-settings"}
       onOpen={closeModal}
     >
       <form
@@ -116,12 +122,14 @@ const CompanySettingsModal = () => {
             name="organizationId"
             render={({ field }) => (
               <Field>
-                <FieldLabel htmlFor={field.name + "-input"}>Company</FieldLabel>
+                <FieldLabel htmlFor={field.name + "-input"}>
+                  Organization
+                </FieldLabel>
                 <Dropdown
                   {...field}
-                  options={companies.map((company) => ({
-                    value: company.id,
-                    label: company.name,
+                  options={organizations.map((organization) => ({
+                    value: organization.id,
+                    label: organization.name,
                   }))}
                   disabled={!!view}
                 />
@@ -162,4 +170,4 @@ const CompanySettingsModal = () => {
     </SheetWrapper>
   );
 };
-export default CompanySettingsModal;
+export default OrganizationSettingsModal;

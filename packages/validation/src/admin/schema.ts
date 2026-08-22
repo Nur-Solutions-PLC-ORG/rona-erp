@@ -1,6 +1,6 @@
 import { z } from "zod";
 import {
-  COMPANY_STATUS_LIST,
+  ORGANIZATION_STATUS_LIST,
   CURRENCY_LIST,
   EMPLOYEE_STATUS_LIST,
   GENDER_LIST,
@@ -19,9 +19,9 @@ export const userListSearchParamsSchema = paginationSearchParamsSchema.extend({
   position: z.enum(POSITIONS_LIST).optional(),
 });
 
-export const companyListSearchParamsSchema =
+export const organizationListSearchParamsSchema =
   paginationSearchParamsSchema.extend({
-    status: z.enum(COMPANY_STATUS_LIST).optional(),
+    status: z.enum(ORGANIZATION_STATUS_LIST).optional(),
   });
 
 export const employeeListSearchParamsSchema =
@@ -32,7 +32,7 @@ export const employeeListSearchParamsSchema =
 export const departmentListSearchParamsSchema = paginationSearchParamsSchema;
 export const branchListSearchParamsSchema = paginationSearchParamsSchema;
 export const configsListSearchParamsSchema = paginationSearchParamsSchema;
-export const companySettingsListSearchParamsSchema =
+export const organizationSettingsListSearchParamsSchema =
   paginationSearchParamsSchema;
 
 // Tables schema
@@ -48,19 +48,19 @@ export const userSchema = z.object({
   }),
 });
 
-export const companySchema = z.object({
-  name: z.string().min(2, "Company name is required"),
+export const organizationSchema = z.object({
+  name: z.string().min(2, "Organization name is required"),
   slug: z
     .string()
     .min(2, "Slug is required")
     .regex(/^[a-z0-9-]+$/),
-  email: z.email("Company email is invalid"),
+  email: z.email("Organization email is invalid"),
   phone: z.string().min(7, "Phone is required"),
   country: z.string().min(2, "Country is required"),
-  status: z.enum(COMPANY_STATUS_LIST),
+  status: z.enum(ORGANIZATION_STATUS_LIST),
 });
 
-export const companySettingsSchema = z.object({
+export const organizationSettingsSchema = z.object({
   organizationId: z.string().min(1, "organization ID is required"),
   currency: z.enum(CURRENCY_LIST),
 });

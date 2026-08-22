@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { useCreateMutation } from "@/hooks/utils";
 import { getDirtyValues } from "@/lib/form";
 import { slugToString } from "@/lib/utils";
-import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
+import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
 import { useModalStore } from "@/store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MODULE_LIST } from "@rona/config/auth";
@@ -40,7 +40,7 @@ const DepartmentModal = () => {
   const modalData = rawData as {
     department?: DepartmentDto | undefined;
   } | null;
-  const { companies } = useAdminCompanies();
+  const { organizations } = useAdminOrganizations();
 
   const form = useForm<DepartmentSchema>({
     resolver: zodResolver(departmentSchema),
@@ -143,13 +143,13 @@ const DepartmentModal = () => {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name + "-input"}>
-                    Company
+                    Organization
                   </FieldLabel>
                   <Dropdown
                     {...field}
-                    options={companies.map((company) => ({
-                      value: company.id,
-                      label: company.name,
+                    options={organizations.map((organization) => ({
+                      value: organization.id,
+                      label: organization.name,
                     }))}
                     disabled={!!view}
                   />

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s | Rona ERP",
   },
   description:
-    "An ERP system designed to help companies effectively and efficiently manage their workforce, inventory and production, and tracking sales and finance digitally.",
+    "An ERP system designed to help organizations effectively and efficiently manage their workforce, inventory and production, and tracking sales and finance digitally.",
   icons: [
     {
       url: "/rona-icon.png",

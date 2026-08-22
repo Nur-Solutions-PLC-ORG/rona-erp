@@ -28,8 +28,8 @@ const AdminWrapper = ({ children }: Props) => {
             Icon: FaUsers,
           },
           {
-            title: "Companies",
-            href: "/admin/companies",
+            title: "Organizations",
+            href: "/admin/organizations",
             Icon: LuBuilding2,
           },
           {
@@ -46,8 +46,8 @@ const AdminWrapper = ({ children }: Props) => {
           },
           {
             header: "Settings",
-            title: "Companies Settings",
-            href: "/admin/companies-settings",
+            title: "Org. Settings",
+            href: "/admin/organization-settings",
             Icon: LuSettings,
           },
           {

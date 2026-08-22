@@ -7,26 +7,29 @@ import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
 import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
-import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
+import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
-import { CompanyDto, CompanyListSearchParamsSchema } from "@rona/types/admin";
-import { companyListSearchParamsSchema } from "@rona/validation/admin";
+import {
+  OrganizationDto,
+  OrganizationListSearchParamsSchema,
+} from "@rona/types/admin";
+import { organizationListSearchParamsSchema } from "@rona/validation/admin";
 import { FiPlus } from "react-icons/fi";
 
 const Client = () => {
   const customSearchParams =
-    useCustomSearchParams<CompanyListSearchParamsSchema>();
+    useCustomSearchParams<OrganizationListSearchParamsSchema>();
   const { pagination, paginationData } = usePagination();
-  const { companies, isLoading, deleteMutation } = useAdminCompanies(
+  const { organizations, isLoading, deleteMutation } = useAdminOrganizations(
     customSearchParams.requestSearchParams,
     paginationData,
   );
 
-  const columns = createColumns<CompanyDto>({
+  const columns = createColumns<OrganizationDto>({
     includeActions: true,
     searchQuery: customSearchParams.searchParams.searchQuery,
     extraColumns: [
-      { accessorKey: "name", header: "Company", isBold: true },
+      { accessorKey: "name", header: "Organization", isBold: true },
       { accessorKey: "slug", header: "Slug", highlight: true },
       { accessorKey: "email", header: "Email" },
       { accessorKey: "phone", header: "Phone" },
@@ -44,20 +47,24 @@ const Client = () => {
         onClick: (row) =>
           useModalStore
             .getState()
-            .openModal("admin-company", { company: row.original }, true),
+            .openModal(
+              "admin-organization",
+              { organization: row.original },
+              true,
+            ),
       },
       {
         title: "Edit",
         onClick: (row) =>
           useModalStore
             .getState()
-            .openModal("admin-company", { company: row.original }),
+            .openModal("admin-organization", { organization: row.original }),
       },
       {
         title: "Delete",
         onClick: (row) =>
           useConfirmationModalStore.getState().openModal({
-            title: "delete company",
+            title: "delete organization",
             variant: "destructive",
             onClick: async () => {
               await deleteMutation.mutateAsync({
@@ -71,22 +78,24 @@ const Client = () => {
 
   return (
     <>
-      <DataHeader<CompanyListSearchParamsSchema>
-        searchParamsSchema={companyListSearchParamsSchema}
+      <DataHeader<OrganizationListSearchParamsSchema>
+        searchParamsSchema={organizationListSearchParamsSchema}
         head={
           <CustomButton
             primary
-            onClick={() => useModalStore.getState().openModal("admin-company")}
+            onClick={() =>
+              useModalStore.getState().openModal("admin-organization")
+            }
             icon={FiPlus}
           >
-            Add Company
+            Add Organization
           </CustomButton>
         }
         {...customSearchParams}
       />
       <DataTable
         columns={columns}
-        data={companies}
+        data={organizations}
         loading={isLoading}
         pagination={pagination}
       />

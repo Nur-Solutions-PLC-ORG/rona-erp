@@ -3,17 +3,17 @@ import { PaginationData } from "@/hooks/pagination";
 import { useCreateMutation } from "@/hooks/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiDeleteCompany, ApiGetCompanies } from "./api";
+import { ApiDeleteOrganization, ApiGetOrganizations } from "./api";
 import { createLookup } from "@/lib/utils";
 
-export const useAdminCompanies = (
+export const useAdminOrganizations = (
   searchParams: RequestSearchParams = {},
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-companies", JSON.stringify(searchParams)],
+    queryKey: ["admin-organizations", JSON.stringify(searchParams)],
     queryFn: () =>
-      ApiGetCompanies({
+      ApiGetOrganizations({
         searchParams: {
           ...searchParams,
           ...pagination,
@@ -24,10 +24,10 @@ export const useAdminCompanies = (
   const queryClient = useQueryClient();
 
   const deleteMutation = useCreateMutation(
-    ApiDeleteCompany,
+    ApiDeleteOrganization,
     (data) => {
       toast.success(data.message);
-      queryClient.invalidateQueries({ queryKey: ["admin-companies"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-organizations"] });
     },
     (data) => {
       toast.error(data.message);
@@ -36,12 +36,12 @@ export const useAdminCompanies = (
 
   const items = data?.data ?? [];
 
-  const companiesNameLookup = createLookup(items, "id", "name");
+  const organizationsNameLookup = createLookup(items, "id", "name");
 
   return {
-    companies: items,
+    organizations: items,
     isLoading,
     deleteMutation,
-    companiesNameLookup,
+    organizationsNameLookup,
   };
 };

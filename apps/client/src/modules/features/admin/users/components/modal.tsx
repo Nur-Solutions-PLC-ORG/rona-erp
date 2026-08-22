@@ -31,7 +31,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useAdminCompanies } from "../../companies/hooks";
+import { useAdminOrganizations } from "../../organizations/hooks";
 import { ApiPatchUser, ApiPostUser } from "../api";
 
 const defaultValues: UserSchema = {
@@ -50,7 +50,7 @@ const UserModal = () => {
   const { open, data: rawData, closeModal, view } = useModalStore();
   const modalData = rawData as { user?: UserDto | undefined } | null;
 
-  const { companies } = useAdminCompanies();
+  const { organizations } = useAdminOrganizations();
 
   const queryClient = useQueryClient();
   const form = useForm<UserSchema>({
@@ -269,7 +269,7 @@ const UserModal = () => {
                 <Field data-invalid={fieldState.invalid}>
                   <div className="flex items-center gap-3 justify-between">
                     <FieldLabel htmlFor={field.name + "-input"}>
-                      Company
+                      Organization
                     </FieldLabel>
                     <Button
                       size={"sm"}
@@ -283,7 +283,7 @@ const UserModal = () => {
                   </div>
 
                   <Dropdown
-                    options={companies.map((comp) => ({
+                    options={organizations.map((comp) => ({
                       value: comp.id,
                       label: comp.name,
                     }))}

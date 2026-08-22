@@ -1,4 +1,8 @@
-export const COMPANY_STATUS_LIST = ["active", "inactive", "suspended"] as const;
+export const ORGANIZATION_STATUS_LIST = [
+  "active",
+  "inactive",
+  "suspended",
+] as const;
 
 export const EMPLOYEE_STATUS_LIST = [
   "active",

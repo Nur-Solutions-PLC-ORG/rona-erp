@@ -17,18 +17,18 @@ import { useCreateMutation } from "@/hooks/utils";
 import { getDirtyValues } from "@/lib/form";
 import { slugToString, stringToSlug } from "@/lib/utils";
 import { useModalStore } from "@/store";
-import { COMPANY_STATUS_LIST } from "@rona/config/admin";
-import { CompanyDto, CompanySchema } from "@rona/types/admin";
-import { companySchema } from "@rona/validation/admin";
+import { ORGANIZATION_STATUS_LIST } from "@rona/config/admin";
+import { OrganizationDto, OrganizationSchema } from "@rona/types/admin";
+import { organizationSchema } from "@rona/validation/admin";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ApiPatchCompany, ApiPostCompany } from "../api";
+import { ApiPatchOrganization, ApiPostOrganization } from "../api";
 import { Button } from "@/components/ui/button";
 
-const defaultValues: CompanySchema = {
+const defaultValues: OrganizationSchema = {
   name: "",
   slug: "",
   email: "",
@@ -37,25 +37,27 @@ const defaultValues: CompanySchema = {
   status: "active",
 };
 
-const CompanyModal = () => {
+const OrganizationModal = () => {
   const { open, data: rawData, closeModal, view } = useModalStore();
-  const modalData = rawData as { company?: CompanyDto | undefined } | null;
+  const modalData = rawData as {
+    organization?: OrganizationDto | undefined;
+  } | null;
 
-  const form = useForm<CompanySchema>({
-    resolver: zodResolver(companySchema),
+  const form = useForm<OrganizationSchema>({
+    resolver: zodResolver(organizationSchema),
     defaultValues,
     disabled: !!view,
   });
 
   const queryClient = useQueryClient();
   const concludeMutation = () => {
-    queryClient.invalidateQueries({ queryKey: ["admin-companies"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-organizations"] });
     form.reset();
     closeModal();
   };
 
   const createMutation = useCreateMutation(
-    ApiPostCompany,
+    ApiPostOrganization,
     (result) => {
       toast.success(result.message);
       concludeMutation();
@@ -65,7 +67,7 @@ const CompanyModal = () => {
     },
   );
   const updateMutation = useCreateMutation(
-    ApiPatchCompany,
+    ApiPatchOrganization,
     (result) => {
       toast.success(result.message);
       concludeMutation();
@@ -76,25 +78,25 @@ const CompanyModal = () => {
   );
 
   useEffect(() => {
-    if (modalData && modalData.company) {
+    if (modalData && modalData.organization) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, createdAt, ...values } = modalData.company;
+      const { id, createdAt, ...values } = modalData.organization;
       form.reset(values);
     } else form.reset(defaultValues);
   }, [open, modalData, form]);
 
-  const onSubmit = (values: CompanySchema) => {
+  const onSubmit = (values: OrganizationSchema) => {
     if (view) return;
 
     if (modalData) {
-      if (!modalData.company) {
-        toast.info("Please select a company to update");
+      if (!modalData.organization) {
+        toast.info("Please select a organization to update");
         return;
       }
 
       updateMutation.mutate({
         body: getDirtyValues(values, form.formState.dirtyFields),
-        slugReplacement: { id: modalData.company.id },
+        slugReplacement: { id: modalData.organization.id },
       });
     } else {
       createMutation.mutate({ body: values });
@@ -104,13 +106,13 @@ const CompanyModal = () => {
   return (
     <SheetWrapper
       title={
-        modalData?.company
+        modalData?.organization
           ? view
-            ? "Company details"
-            : "Edit Company"
-          : "Add Company"
+            ? "Organization details"
+            : "Edit Organization"
+          : "Add Organization"
       }
-      open={open === "admin-company"}
+      open={open === "admin-organization"}
       onOpen={closeModal}
     >
       <form
@@ -249,7 +251,7 @@ const CompanyModal = () => {
                   </FieldLabel>
                   <Dropdown
                     {...field}
-                    options={COMPANY_STATUS_LIST.map((value) => ({
+                    options={ORGANIZATION_STATUS_LIST.map((value) => ({
                       value,
                       label: slugToString(value),
                     }))}
@@ -269,7 +271,7 @@ const CompanyModal = () => {
               type="submit"
               isPending={createMutation.isPending || updateMutation.isPending}
             >
-              {modalData?.company ? "Save" : "Add"}
+              {modalData?.organization ? "Save" : "Add"}
             </CustomButton>
           </SheetFooterWrapper>
         )}
@@ -278,4 +280,4 @@ const CompanyModal = () => {
   );
 };
 
-export default CompanyModal;
+export default OrganizationModal;

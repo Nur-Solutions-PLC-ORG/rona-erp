@@ -1,5 +1,5 @@
 import {
-  COMPANY_STATUS_LIST,
+  ORGANIZATION_STATUS_LIST,
   CURRENCY_LIST,
   EMPLOYEE_STATUS_LIST,
   GENDER_LIST,
@@ -10,11 +10,11 @@ import {
   branchDto,
   branchListSearchParamsSchema,
   branchSchema,
-  companyDto,
-  companyListSearchParamsSchema,
-  companySchema,
-  companySettingsDto,
-  companySettingsSchema,
+  organizationDto,
+  organizationListSearchParamsSchema,
+  organizationSchema,
+  organizationSettingsDto,
+  organizationSettingsSchema,
   departmentDto,
   departmentListSearchParamsSchema,
   departmentSchema,
@@ -25,12 +25,12 @@ import {
   platformConfigSchema,
   userListSearchParamsSchema,
   userSchema,
-  companySettingsListSearchParamsSchema,
+  organizationSettingsListSearchParamsSchema,
   configsListSearchParamsSchema,
 } from "@rona/validation/admin";
 import z from "zod";
 
-export type CompanyStatus = (typeof COMPANY_STATUS_LIST)[number];
+export type OrganizationStatus = (typeof ORGANIZATION_STATUS_LIST)[number];
 export type EmployeeStatus = (typeof EMPLOYEE_STATUS_LIST)[number];
 
 export type PlatformConfigType = (typeof PLATFORM_CONFIG_TYPE_LIST)[number];
@@ -43,8 +43,8 @@ export type Gender = (typeof GENDER_LIST)[number];
 export type UserListSearchParamsSchema = z.infer<
   typeof userListSearchParamsSchema
 >;
-export type CompanyListSearchParamsSchema = z.infer<
-  typeof companyListSearchParamsSchema
+export type OrganizationListSearchParamsSchema = z.infer<
+  typeof organizationListSearchParamsSchema
 >;
 export type EmployeeListSearchParamsSchema = z.infer<
   typeof employeeListSearchParamsSchema
@@ -58,21 +58,23 @@ export type BranchListSearchParamsSchema = z.infer<
 export type ConfigsListSearchParamsSchema = z.infer<
   typeof configsListSearchParamsSchema
 >;
-export type CompanySettingsListSearchParamsSchema = z.infer<
-  typeof companySettingsListSearchParamsSchema
+export type OrganizationSettingsListSearchParamsSchema = z.infer<
+  typeof organizationSettingsListSearchParamsSchema
 >;
 
 export type UserSchema = z.infer<typeof userSchema>;
-export type CompanySchema = z.infer<typeof companySchema>;
-export type CompanySettingsSchema = z.infer<typeof companySettingsSchema>;
+export type OrganizationSchema = z.infer<typeof organizationSchema>;
+export type OrganizationSettingsSchema = z.infer<
+  typeof organizationSettingsSchema
+>;
 export type DepartmentSchema = z.infer<typeof departmentSchema>;
 export type BranchSchema = z.infer<typeof branchSchema>;
 export type EmployeeSchema = z.infer<typeof employeeSchema>;
 export type PlatformConfigSchema = z.infer<typeof platformConfigSchema>;
 
 // DTOs
-export type CompanyDto = z.infer<typeof companyDto>;
-export type CompanySettingsDto = z.infer<typeof companySettingsDto>;
+export type OrganizationDto = z.infer<typeof organizationDto>;
+export type OrganizationSettingsDto = z.infer<typeof organizationSettingsDto>;
 export type DepartmentDto = z.infer<typeof departmentDto>;
 export type BranchDto = z.infer<typeof branchDto>;
 export type EmployeeDto = z.infer<typeof employeeDto>;
@@ -80,7 +82,7 @@ export type PlatformConfigDto = z.infer<typeof platformConfigDto>;
 
 // Dashboard Stats
 export interface AdminDashboardStats {
-  companies: {
+  organizations: {
     total: number;
     active: number;
   };

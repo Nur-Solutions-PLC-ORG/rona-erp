@@ -6,37 +6,38 @@ import { DataTable } from "@/components/custom/data-table";
 import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
 import { createColumns } from "@/lib/create-columns";
-import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
-import { useAdminCompanySettings } from "@/modules/features/admin/company-settings/hooks";
+import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
+import { useAdminOrganizationSettings } from "@/modules/features/admin/organization-settings/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import {
-  CompanySettingsDto,
-  CompanySettingsListSearchParamsSchema,
+  OrganizationSettingsDto,
+  OrganizationSettingsListSearchParamsSchema,
 } from "@rona/types/admin";
-import { companySettingsListSearchParamsSchema } from "@rona/validation/admin";
+import { organizationSettingsListSearchParamsSchema } from "@rona/validation/admin";
 import { FiPlus } from "react-icons/fi";
 
 const Client = () => {
   const customSearchParams =
-    useCustomSearchParams<CompanySettingsListSearchParamsSchema>();
+    useCustomSearchParams<OrganizationSettingsListSearchParamsSchema>();
   const { pagination, paginationData } = usePagination();
 
-  const { companySettings, isLoading, deleteMutation } =
-    useAdminCompanySettings(
+  const { organizationSettings, isLoading, deleteMutation } =
+    useAdminOrganizationSettings(
       customSearchParams.requestSearchParams,
       paginationData,
     );
-  const { companiesNameLookup } = useAdminCompanies();
+  const { organizationsNameLookup } = useAdminOrganizations();
 
-  const columns = createColumns<CompanySettingsDto>({
+  const columns = createColumns<OrganizationSettingsDto>({
     includeActions: true,
     searchQuery: customSearchParams.searchParams.searchQuery,
     extraColumns: [
       {
-        id: "company",
-        header: "Company",
+        id: "organization",
+        header: "Organization",
         isBold: true,
-        accessorFn: (settings) => companiesNameLookup[settings.organizationId],
+        accessorFn: (settings) =>
+          organizationsNameLookup[settings.organizationId],
       },
       { accessorKey: "currency", header: "Currency" },
     ],
@@ -48,7 +49,7 @@ const Client = () => {
           useModalStore
             .getState()
             .openModal(
-              "admin-company-settings",
+              "admin-organization-settings",
               { settings: row.original },
               true,
             ),
@@ -56,15 +57,15 @@ const Client = () => {
       {
         title: "Edit",
         onClick: (row) =>
-          useModalStore
-            .getState()
-            .openModal("admin-company-settings", { settings: row.original }),
+          useModalStore.getState().openModal("admin-organization-settings", {
+            settings: row.original,
+          }),
       },
       {
         title: "Delete",
         onClick: (row) =>
           useConfirmationModalStore.getState().openModal({
-            title: "delete company settings",
+            title: "delete organization settings",
             variant: "destructive",
             onClick: async () => {
               await deleteMutation.mutateAsync({
@@ -78,14 +79,14 @@ const Client = () => {
 
   return (
     <>
-      <DataHeader<CompanySettingsListSearchParamsSchema>
-        searchParamsSchema={companySettingsListSearchParamsSchema}
+      <DataHeader<OrganizationSettingsListSearchParamsSchema>
+        searchParamsSchema={organizationSettingsListSearchParamsSchema}
         {...customSearchParams}
         head={
           <CustomButton
             primary
             onClick={() =>
-              useModalStore.getState().openModal("admin-company-settings")
+              useModalStore.getState().openModal("admin-organization-settings")
             }
             icon={FiPlus}
           >
@@ -95,7 +96,7 @@ const Client = () => {
       />
       <DataTable
         columns={columns}
-        data={companySettings}
+        data={organizationSettings}
         loading={isLoading}
         pagination={pagination}
       />

@@ -24,15 +24,14 @@ import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiPatchBranch, ApiPostBranch } from "../api";
-import { useAdminCompanies } from "../../companies/hooks";
+import { useAdminOrganizations } from "../../organizations/hooks";
 
-const defaultValues: BranchSchema = { departmentId: "", name: "" };
+const defaultValues: BranchSchema = { organizationId: "", name: "" };
 
 const BranchModal = () => {
   const { open, data: rawData, closeModal, view } = useModalStore();
   const modalData = rawData as { branch?: BranchDto | undefined } | null;
-  const { departments } = useAdminDepartments();
-  const { companiesNameLookup } = useAdminCompanies();
+  const { organizations } = useAdminOrganizations();
 
   const form = useForm<BranchSchema>({
     resolver: zodResolver(branchSchema),
@@ -126,18 +125,17 @@ const BranchModal = () => {
           />
           <Controller
             control={form.control}
-            name="departmentId"
+            name="organizationId"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor={field.name + "-input"}>
-                  Department
+                  Organization
                 </FieldLabel>
                 <Dropdown
                   {...field}
-                  options={departments.map((department) => ({
-                    value: department.id,
-                    label: department.name,
-                    id: companiesNameLookup[department.organizationId],
+                  options={organizations.map((organization) => ({
+                    value: organization.id,
+                    label: organization.name,
                   }))}
                   disabled={!!view}
                   search

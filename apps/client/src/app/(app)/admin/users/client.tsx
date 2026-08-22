@@ -8,7 +8,7 @@ import { useCustomSearchParams } from "@/hooks/search-params";
 import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
 import { slugToString } from "@/lib/utils";
-import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
+import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
 import { useAdminUsers } from "@/modules/features/admin/users/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { UserListSearchParamsSchema } from "@rona/types/admin";
@@ -26,7 +26,7 @@ const Client = () => {
     paginationData,
   );
 
-  const { companiesNameLookup } = useAdminCompanies();
+  const { organizationsNameLookup } = useAdminOrganizations();
 
   const columns = createColumns<UserDto>({
     includeActions: true,
@@ -47,9 +47,10 @@ const Client = () => {
         },
       },
       {
-        id: "company",
-        header: "Company",
-        accessorFn: (user) => companiesNameLookup[user.organizationId || ""],
+        id: "organization",
+        header: "Organization",
+        accessorFn: (user) =>
+          organizationsNameLookup[user.organizationId || ""],
       },
       {
         accessorKey: "role.position",

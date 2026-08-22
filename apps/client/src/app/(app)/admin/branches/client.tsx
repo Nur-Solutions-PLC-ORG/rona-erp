@@ -1,14 +1,13 @@
 "use client";
 
-import DataHeader from "@/components/custom/data-header";
 import CustomButton from "@/components/custom/custom-button";
+import DataHeader from "@/components/custom/data-header";
 import { DataTable } from "@/components/custom/data-table";
 import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
 import { createColumns } from "@/lib/create-columns";
 import { useAdminBranches } from "@/modules/features/admin/branches/hooks";
-import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
-import { useAdminDepartments } from "@/modules/features/admin/departments/hooks";
+import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { BranchDto, BranchListSearchParamsSchema } from "@rona/types/admin";
 import { branchListSearchParamsSchema } from "@rona/validation/admin";
@@ -22,8 +21,7 @@ const Client = () => {
     customSearchParams.requestSearchParams,
     paginationData,
   );
-  const { companies } = useAdminCompanies();
-  const { departments } = useAdminDepartments();
+  const { organizations } = useAdminOrganizations();
 
   const columns = createColumns<BranchDto>({
     includeActions: true,
@@ -31,18 +29,11 @@ const Client = () => {
     extraColumns: [
       { accessorKey: "name", header: "Branch", isBold: true },
       {
-        id: "company",
-        header: "Company",
+        id: "organization",
+        header: "Organization",
         accessorFn: (branch) =>
-          companies.find((company) => company.id === branch.organizationId)
-            ?.name,
-      },
-      {
-        id: "department",
-        header: "Department",
-        accessorFn: (branch) =>
-          departments.find(
-            (department) => department.id === branch.departmentId,
+          organizations.find(
+            (organization) => organization.id === branch.organizationId,
           )?.name,
       },
     ],

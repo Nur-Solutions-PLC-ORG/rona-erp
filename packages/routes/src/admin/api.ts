@@ -20,35 +20,36 @@ export const API_ADMIN_USER_BY_ID_URL = "/api/admin/users/:id";
  * Response: ApiResponse<UserDto | never>
  */
 
-// Companies
-export const API_ADMIN_COMPANIES_URL = "/api/admin/companies";
+// Organizations
+export const API_ADMIN_COMPANIES_URL = "/api/admin/organizations";
 /**
  * Methods: GET, POST
- * Query: CompanyListSearchParamsSchema
- * RequestBody: CompanySchema
- * Response: ApiResponse<CompanyDto[] | CompanyDto>
+ * Query: OrganizationListSearchParamsSchema
+ * RequestBody: OrganizationSchema
+ * Response: ApiResponse<OrganizationDto[] | OrganizationDto>
  */
 
-export const API_ADMIN_COMPANY_BY_ID_URL = "/api/admin/companies/:id";
+export const API_ADMIN_ORGANIZATION_BY_ID_URL = "/api/admin/organizations/:id";
 /**
  * Methods: GET, PUT, DELETE
- * RequestBody: CompanySchema
- * Response: ApiResponse<CompanyDto | never>
+ * RequestBody: OrganizationSchema
+ * Response: ApiResponse<OrganizationDto | never>
  */
 
-export const API_ADMIN_COMPANY_SETTINGS_URL = "/api/admin/company-settings";
+export const API_ADMIN_ORGANIZATION_SETTINGS_URL =
+  "/api/admin/organization-settings";
 /**
  * Methods: GET, POST
- * RequestBody: CompanySettingsSchema
- * Response: ApiResponse<CompanySettingsDto[] | CompanySettingsDto>
+ * RequestBody: OrganizationSettingsSchema
+ * Response: ApiResponse<OrganizationSettingsDto[] | OrganizationSettingsDto>
  */
 
-export const API_ADMIN_COMPANY_SETTINGS_BY_ID_URL =
-  "/api/admin/company-settings/:id";
+export const API_ADMIN_ORGANIZATION_SETTINGS_BY_ID_URL =
+  "/api/admin/organization-settings/:id";
 /**
  * Methods: GET, PUT, DELETE
- * RequestBody: CompanySettingsSchema
- * Response: ApiResponse<CompanySettingsDto | never>
+ * RequestBody: OrganizationSettingsSchema
+ * Response: ApiResponse<OrganizationSettingsDto | never>
  */
 
 // Departments and branches

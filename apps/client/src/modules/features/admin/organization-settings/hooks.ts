@@ -2,17 +2,20 @@ import { PaginationData } from "@/hooks/pagination";
 import { useCreateMutation } from "@/hooks/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiDeleteCompanySettings, ApiGetCompanySettings } from "./api";
+import {
+  ApiDeleteOrganizationSettings,
+  ApiGetOrganizationSettings,
+} from "./api";
 import { RequestSearchParams } from "@/api";
 
-export const useAdminCompanySettings = (
+export const useAdminOrganizationSettings = (
   searchParams: RequestSearchParams = {},
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-company-settings", JSON.stringify(searchParams)],
+    queryKey: ["admin-organization-settings", JSON.stringify(searchParams)],
     queryFn: () =>
-      ApiGetCompanySettings({
+      ApiGetOrganizationSettings({
         searchParams: {
           ...searchParams,
           ...pagination,
@@ -23,10 +26,12 @@ export const useAdminCompanySettings = (
   const queryClient = useQueryClient();
 
   const deleteMutation = useCreateMutation(
-    ApiDeleteCompanySettings,
+    ApiDeleteOrganizationSettings,
     (data) => {
       toast.success(data.message);
-      queryClient.invalidateQueries({ queryKey: ["admin-company-settings"] });
+      queryClient.invalidateQueries({
+        queryKey: ["admin-organization-settings"],
+      });
     },
     (data) => {
       toast.error(data.message);
@@ -36,7 +41,7 @@ export const useAdminCompanySettings = (
   const items = data?.data ?? [];
 
   return {
-    companySettings: items,
+    organizationSettings: items,
     isLoading,
     deleteMutation,
   };

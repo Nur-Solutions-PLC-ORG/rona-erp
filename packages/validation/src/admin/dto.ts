@@ -1,6 +1,6 @@
 import z from "zod";
 import {
-  COMPANY_STATUS_LIST,
+  ORGANIZATION_STATUS_LIST,
   CURRENCY_LIST,
   EMPLOYEE_STATUS_LIST,
   GENDER_LIST,
@@ -9,18 +9,18 @@ import {
 } from "@rona/config/admin";
 import { MODULE_LIST } from "@rona/config/auth";
 
-export const companyDto = z.object({
+export const organizationDto = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
   email: z.string(),
   phone: z.string(),
   country: z.string(),
-  status: z.enum(COMPANY_STATUS_LIST),
+  status: z.enum(ORGANIZATION_STATUS_LIST),
   createdAt: z.date(),
 });
 
-export const companySettingsDto = z.object({
+export const organizationSettingsDto = z.object({
   id: z.string(),
   organizationId: z.string(),
   currency: z.enum(CURRENCY_LIST),

@@ -7,7 +7,7 @@ import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
 import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
-import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
+import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
 import { useAdminEmployees } from "@/modules/features/admin/employees/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { EmployeeDto, EmployeeListSearchParamsSchema } from "@rona/types/admin";
@@ -22,7 +22,7 @@ const Client = () => {
     customSearchParams.requestSearchParams,
     paginationData,
   );
-  const { companiesNameLookup } = useAdminCompanies();
+  const { organizationsNameLookup } = useAdminOrganizations();
 
   const columns = createColumns<EmployeeDto>({
     includeActions: true,
@@ -33,9 +33,10 @@ const Client = () => {
       { accessorKey: "email", header: "Email", highlight: true },
       { accessorKey: "phone", header: "Phone" },
       {
-        id: "company",
-        header: "Company",
-        accessorFn: (employee) => companiesNameLookup[employee.organizationId],
+        id: "organization",
+        header: "Organization",
+        accessorFn: (employee) =>
+          organizationsNameLookup[employee.organizationId],
       },
       { accessorKey: "gender", header: "Gender" },
       { accessorKey: "birthDate", header: "Birth Date", isDate: true },

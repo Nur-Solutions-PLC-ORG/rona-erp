@@ -7,7 +7,7 @@ import {
   date,
 } from 'drizzle-orm/pg-core';
 import {
-  COMPANY_STATUS_LIST,
+  ORGANIZATION_STATUS_LIST,
   CURRENCY_LIST,
   EMPLOYEE_STATUS_LIST,
   GENDER_LIST,
@@ -16,9 +16,9 @@ import {
 } from '@rona/config/admin';
 
 // ENUMS
-export const companyStatusList = pgEnum(
-  'company_status_list',
-  COMPANY_STATUS_LIST,
+export const organizationStatusList = pgEnum(
+  'organization_status_list',
+  ORGANIZATION_STATUS_LIST,
 );
 export const currencyList = pgEnum('currency_list', CURRENCY_LIST);
 export const employeeStatusList = pgEnum(
@@ -43,7 +43,7 @@ export const organizations = pgTable('organizations', {
   email: text('email').notNull(),
   phone: text('phone').notNull(),
   country: text('country').notNull(),
-  status: companyStatusList('status').default('active').notNull(),
+  status: organizationStatusList('status').default('active').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -53,7 +53,7 @@ export const organizations = pgTable('organizations', {
     .$onUpdate(() => new Date()),
 });
 
-export const companySettings = pgTable('company_settings', {
+export const organizationSettings = pgTable('organization_settings', {
   id: uuid('id').primaryKey().defaultRandom(),
   organizationId: uuid('organization_id')
     .references(() => organizations.id, { onDelete: 'cascade' })

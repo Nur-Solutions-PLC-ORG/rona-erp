@@ -16,8 +16,8 @@ const Client = () => {
       <div className="px-6 mt-6 grid grid-cols-2 h-fit gap-6">
         <div className="grid grid-cols-1 h-fit gap-6">
           <StatCard
-            title={"Total companies"}
-            value={stats?.companies.total}
+            title={"Total organizations"}
+            value={stats?.organizations.total}
             loading={isLoading}
             color="blue"
           />
