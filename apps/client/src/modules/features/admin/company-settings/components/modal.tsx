@@ -8,7 +8,7 @@ import SheetWrapper, {
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { useCreateMutation } from "@/hooks/utils";
 import { getDirtyValues } from "@/lib/form";
-import { useAdminCompanies } from "@/modules/features/platform/companies/hooks";
+import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
 import { useModalStore } from "@/store";
 import { CURRENCY_LIST } from "@rona/config/admin";
 import { CompanySettingsDto, CompanySettingsSchema } from "@rona/types/admin";
@@ -20,7 +20,10 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiPatchCompanySettings, ApiPostCompanySettings } from "../api";
 
-const defaultValues: CompanySettingsSchema = { tenantId: "", currency: "ETB" };
+const defaultValues: CompanySettingsSchema = {
+  organizationId: "",
+  currency: "ETB",
+};
 
 const CompanySettingsModal = () => {
   const { open, data, view, closeModal } = useModalStore();
@@ -110,7 +113,7 @@ const CompanySettingsModal = () => {
         <FieldGroup>
           <Controller
             control={form.control}
-            name="tenantId"
+            name="organizationId"
             render={({ field }) => (
               <Field>
                 <FieldLabel htmlFor={field.name + "-input"}>Company</FieldLabel>

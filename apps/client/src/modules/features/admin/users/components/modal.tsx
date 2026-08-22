@@ -43,7 +43,7 @@ const defaultValues: UserSchema = {
     position: "staff",
     modules: [],
   },
-  tenantId: "",
+  organizationId: "",
 };
 
 const UserModal = () => {
@@ -103,8 +103,8 @@ const UserModal = () => {
   const onSubmit = (values: UserSchema) => {
     if (view) return;
 
-    if (!values.tenantId) {
-      values.tenantId = undefined;
+    if (!values.organizationId) {
+      values.organizationId = undefined;
     }
 
     if (modalData) {
@@ -264,7 +264,7 @@ const UserModal = () => {
             />
             <Controller
               control={form.control}
-              name="tenantId"
+              name="organizationId"
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <div className="flex items-center gap-3 justify-between">

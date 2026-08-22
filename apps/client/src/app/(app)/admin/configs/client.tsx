@@ -6,7 +6,7 @@ import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
 import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
-import { useAdminPlatformConfigs } from "@/modules/features/platform/platform-configs/hooks";
+import { useAdminPlatformConfigs } from "@/modules/features/admin/platform-configs/hooks";
 import { useModalStore } from "@/store";
 import {
   ConfigsListSearchParamsSchema,

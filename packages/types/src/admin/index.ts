@@ -3,7 +3,7 @@ import {
   CURRENCY_LIST,
   EMPLOYEE_STATUS_LIST,
   GENDER_LIST,
-  PLATFORM_CONFIG_KEYS,
+  PLATFORM_CONFIG_KEY_LIST,
   PLATFORM_CONFIG_TYPE_LIST,
 } from "@rona/config/admin";
 import {
@@ -34,7 +34,7 @@ export type CompanyStatus = (typeof COMPANY_STATUS_LIST)[number];
 export type EmployeeStatus = (typeof EMPLOYEE_STATUS_LIST)[number];
 
 export type PlatformConfigType = (typeof PLATFORM_CONFIG_TYPE_LIST)[number];
-export type PlatformConfigKey = (typeof PLATFORM_CONFIG_KEYS)[number];
+export type PlatformConfigKey = (typeof PLATFORM_CONFIG_KEY_LIST)[number];
 
 export type Currency = (typeof CURRENCY_LIST)[number];
 export type Gender = (typeof GENDER_LIST)[number];

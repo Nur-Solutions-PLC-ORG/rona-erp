@@ -4,7 +4,7 @@ import {
   CURRENCY_LIST,
   EMPLOYEE_STATUS_LIST,
   GENDER_LIST,
-  PLATFORM_CONFIG_KEYS,
+  PLATFORM_CONFIG_KEY_LIST,
   PLATFORM_CONFIG_TYPE_LIST,
 } from "@rona/config/admin";
 import {
@@ -40,7 +40,7 @@ export const userSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters long"),
   email: z.email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters long"),
-  tenantId: z.string().optional(),
+  organizationId: z.string().optional(),
   status: z.enum(USER_STATUS_LIST),
   role: z.object({
     position: z.enum(POSITIONS_LIST),
@@ -61,24 +61,23 @@ export const companySchema = z.object({
 });
 
 export const companySettingsSchema = z.object({
-  tenantId: z.string().min(1, "Tenant ID is required"),
+  organizationId: z.string().min(1, "organization ID is required"),
   currency: z.enum(CURRENCY_LIST),
 });
 
 export const departmentSchema = z.object({
-  tenantId: z.string().min(1, "Tenant ID is required"),
+  organizationId: z.string().min(1, "organization ID is required"),
   name: z.string().min(2, "Department name is required"),
   module: z.array(z.enum(MODULE_LIST)),
 });
 
 export const branchSchema = z.object({
-  tenantId: z.string().min(1, "Tenant ID is required"),
-  departmentId: z.string().min(1, "Department is required"),
+  organizationId: z.string().min(1, "organization ID is required"),
   name: z.string().min(2, "Branch name is required"),
 });
 
 export const employeeSchema = z.object({
-  tenantId: z.string().min(1),
+  organizationId: z.string().min(1),
   eId: z.string().regex(/^\d{5}$/, "Employee ID must be exactly 5 digits"),
   fullName: z.string().min(2, "Full name is required"),
   phone: z.string().min(7, "Phone is required"),
@@ -89,7 +88,7 @@ export const employeeSchema = z.object({
 });
 
 export const platformConfigSchema = z.object({
-  key: z.enum(PLATFORM_CONFIG_KEYS),
+  key: z.enum(PLATFORM_CONFIG_KEY_LIST),
   value: z.string().min(1, "Value is required!"),
   type: z.enum(PLATFORM_CONFIG_TYPE_LIST),
 });

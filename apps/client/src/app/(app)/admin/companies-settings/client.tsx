@@ -6,8 +6,8 @@ import { DataTable } from "@/components/custom/data-table";
 import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
 import { createColumns } from "@/lib/create-columns";
-import { useAdminCompanies } from "@/modules/features/platform/companies/hooks";
-import { useAdminCompanySettings } from "@/modules/features/platform/company-settings/hooks";
+import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
+import { useAdminCompanySettings } from "@/modules/features/admin/company-settings/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import {
   CompanySettingsDto,
@@ -36,7 +36,7 @@ const Client = () => {
         id: "company",
         header: "Company",
         isBold: true,
-        accessorFn: (settings) => companiesNameLookup[settings.tenantId],
+        accessorFn: (settings) => companiesNameLookup[settings.organizationId],
       },
       { accessorKey: "currency", header: "Currency" },
     ],

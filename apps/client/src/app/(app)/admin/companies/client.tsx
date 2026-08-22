@@ -7,7 +7,7 @@ import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
 import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
-import { useAdminCompanies } from "@/modules/features/platform/companies/hooks";
+import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { CompanyDto, CompanyListSearchParamsSchema } from "@rona/types/admin";
 import { companyListSearchParamsSchema } from "@rona/validation/admin";

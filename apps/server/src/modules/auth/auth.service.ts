@@ -9,7 +9,7 @@ import {
   UserNotFoundException,
   UserRoleNotFoundException,
   WaitForResendException,
-} from '@/exceptions/auth/auth.exception';
+} from '@/modules/auth/auth.exception';
 import { getGoogleAuthUrl, getGoogleUserProfile } from '@/google/o-auth';
 import { redisClient } from '@/redis';
 import { BadRequestException, Injectable } from '@nestjs/common';

@@ -8,8 +8,8 @@ import { useCustomSearchParams } from "@/hooks/search-params";
 import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
 import { slugToString } from "@/lib/utils";
-import { useAdminCompanies } from "@/modules/features/platform/companies/hooks";
-import { useAdminUsers } from "@/modules/features/platform/users/hooks";
+import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
+import { useAdminUsers } from "@/modules/features/admin/users/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { UserListSearchParamsSchema } from "@rona/types/admin";
 import { UserDto } from "@rona/types/auth";
@@ -49,7 +49,7 @@ const Client = () => {
       {
         id: "company",
         header: "Company",
-        accessorFn: (user) => companiesNameLookup[user.tenantId || ""],
+        accessorFn: (user) => companiesNameLookup[user.organizationId || ""],
       },
       {
         accessorKey: "role.position",

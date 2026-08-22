@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { ApiException } from '../api.exception';
+import { ApiException } from '../../exceptions/api.exception';
 
 export class InvalidCodeException extends ApiException {
   constructor() {

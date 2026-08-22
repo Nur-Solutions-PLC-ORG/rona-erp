@@ -18,7 +18,7 @@ export const CURRENCY_LIST = ["ETB", "USD"] as const;
 
 export const GENDER_LIST = ["M", "F"] as const;
 
-export const PLATFORM_CONFIG_KEYS = [
+export const PLATFORM_CONFIG_KEY_LIST = [
   "maintenance_mode",
   "name",
   "contact_phone",

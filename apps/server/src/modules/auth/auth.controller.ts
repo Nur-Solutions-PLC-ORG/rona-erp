@@ -40,8 +40,7 @@ import { CLIENT_AUTH_GOOGLE_CALLBACK_PAGE } from '@rona/routes/auth';
 import { ApiResponse } from '@rona/types/api';
 import { Session, SignInResponseData } from '@rona/types/auth';
 
-// ROUTE: api/auth
-@Controller('api/auth')
+@Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

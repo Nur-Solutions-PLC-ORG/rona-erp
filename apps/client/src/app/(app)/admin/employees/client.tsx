@@ -7,8 +7,8 @@ import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
 import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
-import { useAdminCompanies } from "@/modules/features/platform/companies/hooks";
-import { useAdminEmployees } from "@/modules/features/platform/employees/hooks";
+import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
+import { useAdminEmployees } from "@/modules/features/admin/employees/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { EmployeeDto, EmployeeListSearchParamsSchema } from "@rona/types/admin";
 import { employeeListSearchParamsSchema } from "@rona/validation/admin";
@@ -35,7 +35,7 @@ const Client = () => {
       {
         id: "company",
         header: "Company",
-        accessorFn: (employee) => companiesNameLookup[employee.tenantId],
+        accessorFn: (employee) => companiesNameLookup[employee.organizationId],
       },
       { accessorKey: "gender", header: "Gender" },
       { accessorKey: "birthDate", header: "Birth Date", isDate: true },

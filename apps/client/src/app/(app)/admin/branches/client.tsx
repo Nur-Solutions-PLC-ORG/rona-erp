@@ -6,9 +6,9 @@ import { DataTable } from "@/components/custom/data-table";
 import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
 import { createColumns } from "@/lib/create-columns";
-import { useAdminBranches } from "@/modules/features/platform/branches/hooks";
-import { useAdminCompanies } from "@/modules/features/platform/companies/hooks";
-import { useAdminDepartments } from "@/modules/features/platform/departments/hooks";
+import { useAdminBranches } from "@/modules/features/admin/branches/hooks";
+import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
+import { useAdminDepartments } from "@/modules/features/admin/departments/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { BranchDto, BranchListSearchParamsSchema } from "@rona/types/admin";
 import { branchListSearchParamsSchema } from "@rona/validation/admin";
@@ -34,7 +34,8 @@ const Client = () => {
         id: "company",
         header: "Company",
         accessorFn: (branch) =>
-          companies.find((company) => company.id === branch.tenantId)?.name,
+          companies.find((company) => company.id === branch.organizationId)
+            ?.name,
       },
       {
         id: "department",

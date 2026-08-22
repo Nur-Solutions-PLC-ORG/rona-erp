@@ -11,6 +11,8 @@ import {
   POSITIONS_LIST,
   USER_STATUS_LIST,
 } from '@rona/config/auth';
+import { organizations } from './admin';
+import { relations } from 'drizzle-orm';
 
 // ENUMS
 export const modulesList = pgEnum('modules_list', MODULE_LIST);
@@ -20,6 +22,9 @@ export const statusesList = pgEnum('statuses_list', USER_STATUS_LIST);
 // TABLES
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: uuid('organization_id').references(() => organizations.id, {
+    onDelete: 'set null',
+  }),
 
   fullName: text('full_name').notNull(),
   email: text('email').notNull().unique(),
@@ -56,3 +61,15 @@ export const userRoles = pgTable('user_roles', {
     .notNull()
     .$onUpdate(() => new Date()),
 });
+
+// RELATIONS
+export const organizationsRelations = relations(organizations, ({ many }) => ({
+  users: many(users),
+}));
+
+export const usersRelations = relations(users, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [users.organizationId],
+    references: [organizations.id],
+  }),
+}));

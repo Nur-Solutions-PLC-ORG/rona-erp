@@ -11,7 +11,7 @@ Built In: Nest.js
 ## Tools
 
 - Nest.js for Framework
-- Drizzle for orm
+- Drizzle for ORM (w/Drizzle Kit)
 - Neon Postgres for database
 - Upstash redis for caching
 - bcrypt for encryptions
@@ -19,3 +19,10 @@ Built In: Nest.js
 - Cookie parser for managing cookies
 - Google Auth Library for Google O-auth
 - Resend for emails
+
+## Architecture
+
+- Global configs, db, emails, exceptions, google, redis... etc goes to their respective directories inside of `src`
+- `src/modules` includes layered separated Nestjs logic (.controller, .service, .repository...) for each feature
+- `src/modules/feature` contains features for each of the modules under their own directories. (example, admin modules features goes to 'src/modules/features/admin/')
+- For each feature/module create the essentials like controllers, services, modules, repositories, exceptions. NOTE: Don't create directories for each unless its needed. Single Files are enough for most cases

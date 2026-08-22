@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ApiGetDashboard } from "../api";
+import { ApiGetDashboard } from "./api";
 
 export const useAdminDashboard = () => {
   const { data, isLoading } = useQuery({

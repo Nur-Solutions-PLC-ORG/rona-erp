@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { useCreateMutation } from "@/hooks/utils";
 import { getDirtyValues } from "@/lib/form";
 import { slugToString } from "@/lib/utils";
-import { useAdminCompanies } from "@/modules/features/platform/companies/hooks";
+import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
 import { useModalStore } from "@/store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MODULE_LIST } from "@rona/config/auth";
@@ -29,7 +29,11 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiPatchDepartment, ApiPostDepartment } from "../api";
 
-const defaultValues: DepartmentSchema = { tenantId: "", name: "", module: [] };
+const defaultValues: DepartmentSchema = {
+  organizationId: "",
+  name: "",
+  module: [],
+};
 
 const DepartmentModal = () => {
   const { open, data: rawData, closeModal, view } = useModalStore();
@@ -135,7 +139,7 @@ const DepartmentModal = () => {
             />
             <Controller
               control={form.control}
-              name="tenantId"
+              name="organizationId"
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name + "-input"}>

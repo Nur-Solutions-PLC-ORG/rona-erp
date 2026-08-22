@@ -28,7 +28,7 @@ export interface SessionUser {
   id: string;
   email: string;
   name: string;
-  tenantId?: string | undefined;
+  organizationId?: string | undefined;
 }
 
 export interface Session {

@@ -7,8 +7,8 @@ import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
 import { createColumns } from "@/lib/create-columns";
 import { slugToString } from "@/lib/utils";
-import { useAdminCompanies } from "@/modules/features/platform/companies/hooks";
-import { useAdminDepartments } from "@/modules/features/platform/departments/hooks";
+import { useAdminCompanies } from "@/modules/features/admin/companies/hooks";
+import { useAdminDepartments } from "@/modules/features/admin/departments/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import {
   DepartmentDto,
@@ -36,7 +36,8 @@ const Client = () => {
         id: "company",
         header: "Company",
         accessorFn: (department) =>
-          companies.find((company) => company.id === department.tenantId)?.name,
+          companies.find((company) => company.id === department.organizationId)
+            ?.name,
       },
       {
         accessorKey: "module",

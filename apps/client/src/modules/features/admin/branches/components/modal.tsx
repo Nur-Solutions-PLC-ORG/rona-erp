@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useCreateMutation } from "@/hooks/utils";
 import { getDirtyValues } from "@/lib/form";
-import { useAdminDepartments } from "@/modules/features/platform/departments/hooks";
+import { useAdminDepartments } from "@/modules/features/admin/departments/hooks";
 import { useModalStore } from "@/store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BranchDto, BranchSchema } from "@rona/types/admin";
@@ -67,7 +67,7 @@ const BranchModal = () => {
   useEffect(() => {
     if (modalData && modalData.branch) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, tenantId, createdAt, ...values } = modalData.branch;
+      const { id, organizationId, createdAt, ...values } = modalData.branch;
       form.reset(values);
     } else form.reset(defaultValues);
   }, [open, modalData, form]);
@@ -137,7 +137,7 @@ const BranchModal = () => {
                   options={departments.map((department) => ({
                     value: department.id,
                     label: department.name,
-                    id: companiesNameLookup[department.tenantId],
+                    id: companiesNameLookup[department.organizationId],
                   }))}
                   disabled={!!view}
                   search

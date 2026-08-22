@@ -1,4 +1,4 @@
-import { SessionNotFoundException } from '@/exceptions/auth/auth.exception';
+import { SessionNotFoundException } from '@/modules/auth/auth.exception';
 import { AuthService } from '@/modules/auth/auth.service';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { COOKIE_NAME } from '@rona/config/auth';

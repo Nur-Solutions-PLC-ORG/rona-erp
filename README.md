@@ -17,3 +17,10 @@ packages: (Shared between different app workspaces)
 - `packages/types`: Schema Types, DTO types
 - `packages/validation`: Form Schema validations, DTO Schema, SearchParams schemas
 - `packages/routes`: Api Routes data (with Methods, Body, Response, SearchParams details as comments)
+
+## Modules & Fetures
+
+- Modules are general platform scopes like
+  - "auth", "admin", "workforce", "payroll", "inventory", "production", "sales", "accounting", ...etc
+- Feautures are sepecific under each module (generally represented by tables) like
+  - "users", "roles", "departments", "employees", "payrolls", "inventories", "products", "sales", "accounts", ...etc

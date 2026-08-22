@@ -32,7 +32,7 @@ import { useAdminCompanies } from "../../companies/hooks";
 import { DatePickerInput } from "@/components/custom/date-picker-input";
 
 const defaultValues: EmployeeSchema = {
-  tenantId: "",
+  organizationId: "",
   eId: "",
   fullName: "",
   phone: "",
@@ -187,7 +187,7 @@ const EmployeeModal = () => {
           <ControllerGroup>
             <Controller
               control={form.control}
-              name="tenantId"
+              name="organizationId"
               render={({ field }) => (
                 <Field>
                   <FieldLabel htmlFor={field.name + "-input"}>
