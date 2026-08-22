@@ -49,7 +49,7 @@ const Client = () => {
   );
 
   const onSubmit = (values: ForgotPasswordSchema) => {
-    forgotPasswordMutation.mutate(values);
+    forgotPasswordMutation.mutate({ body: values });
   };
 
   return (

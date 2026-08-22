@@ -104,7 +104,7 @@ const Client = () => {
   }, [resendIn]);
 
   const handleContinueWithGoogleClick = () => {
-    googleMutation.mutate();
+    googleMutation.mutate({});
   };
 
   const onSubmit = (values: SignInSchema) => {
@@ -119,7 +119,7 @@ const Client = () => {
       return;
     }
 
-    signInMutation.mutate(body);
+    signInMutation.mutate({ body });
   };
 
   return (
@@ -238,7 +238,7 @@ const Client = () => {
                                 email: emailValue,
                               };
 
-                              resendVerificationCodeMutation.mutate(body);
+                              resendVerificationCodeMutation.mutate({ body });
                             }
                           }}
                           size={"sm"}

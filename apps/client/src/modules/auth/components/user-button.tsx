@@ -50,7 +50,7 @@ const UserButton = () => {
         <DropdownMenuGroup>
           <DropdownMenuItem
             onClick={() => {
-              signOutMutation.mutate();
+              signOutMutation.mutate({});
 
               toast.info("Signing out...");
             }}

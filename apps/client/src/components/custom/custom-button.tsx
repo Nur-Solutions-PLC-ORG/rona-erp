@@ -1,7 +1,8 @@
 import { VariantProps } from "class-variance-authority";
-import { Button, buttonVariants } from "../ui/button";
-import { FiLoader } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
+import { RiLoader5Fill } from "react-icons/ri";
+import { Button, buttonVariants } from "../ui/button";
+import { cn } from "@/lib/utils";
 
 const CustomButton = ({
   className,
@@ -12,6 +13,7 @@ const CustomButton = ({
   disabled,
   children,
   icon: Icon,
+  primary,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
@@ -19,10 +21,16 @@ const CustomButton = ({
   } & {
     isPending?: boolean;
     icon?: IconType | (() => React.ReactNode);
+    primary?: boolean;
   }) => {
   return (
     <Button
-      className={className}
+      className={cn(
+        primary &&
+          "h-10 px-4 rounded-xl bg-transparent cursor-pointer bg-linear-to-tr! from-primary to-primary via-primary/75",
+        className,
+        isPending && "bg-zinc-500",
+      )}
       variant={variant}
       size={size}
       asChild={asChild}
@@ -30,7 +38,7 @@ const CustomButton = ({
       {...props}
     >
       {isPending ? (
-        <FiLoader className="animate-spin" />
+        <RiLoader5Fill className="animate-spin" />
       ) : Icon ? (
         <Icon />
       ) : null}

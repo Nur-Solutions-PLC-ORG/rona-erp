@@ -72,9 +72,11 @@ export class AuthController {
     }
 
     const token = this.authService.createSession({
-      ...user,
+      id: user.id,
+      email: user.email,
       name: user.fullName,
     });
+
     const isProduction = process.env.NODE_ENV === 'production';
 
     res.cookie(COOKIE_NAME, token, {

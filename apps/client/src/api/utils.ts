@@ -1,42 +1,31 @@
-import type { ApiResponse } from "@rona/types/api";
-import { apiClient } from ".";
+import { ApiResponse } from "@rona/types/api";
 
-export function Request<T>(
-  type: "get",
-  route: string,
-): () => Promise<ApiResponse<T>>;
+export type Primitive = string | number | boolean;
 
-export function Request<T>(
-  type: "post",
-  route: string,
-): () => Promise<ApiResponse<T>>;
+export type RequestSearchParams = Record<
+  string,
+  Primitive | Primitive[] | undefined
+>;
 
-export function Request<T, TBody>(
-  type: "post",
-  route: string,
-): (data: TBody) => Promise<ApiResponse<T>>;
+export type RequestSlugReplacement = Record<string, Primitive>;
 
-export function Request<T, TBody>(type: "get" | "post", route: string) {
-  switch (type) {
-    case "post":
-      return async (data: TBody): Promise<ApiResponse<T>> => {
-        const { data: responseData } = await apiClient.post<ApiResponse<T>>(
-          route,
-          data,
-        );
+export type Options = {
+  slugReplacement?: RequestSlugReplacement;
+};
 
-        return responseData;
-      };
+export function buildRoute(route: string, options?: Options) {
+  let finalRoute = route;
 
-    case "get":
-    default:
-      return async (): Promise<ApiResponse<T>> => {
-        const { data: responseData } =
-          await apiClient.get<ApiResponse<T>>(route);
-
-        return responseData;
-      };
+  if (options?.slugReplacement) {
+    for (const [key, value] of Object.entries(options.slugReplacement)) {
+      finalRoute = finalRoute.replace(
+        `:${key}`,
+        encodeURIComponent(String(value)),
+      );
+    }
   }
+
+  return finalRoute;
 }
 
 export function TryCatchNullWrap<T>(func: () => Promise<ApiResponse<T>>) {

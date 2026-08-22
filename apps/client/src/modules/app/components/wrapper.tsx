@@ -14,13 +14,15 @@ import {
   CLIENT_AUTH_RESET_PASSWORD_PAGE,
   CLIENT_AUTH_SIGNIN_PAGE,
 } from "@rona/routes/auth";
+import { CLIENT_ADMIN_DASHBOARD_PAGE } from "@rona/routes/admin";
+import { ConfirmationModal } from "./confirmation-modal";
 
 interface Props {
   children?: React.ReactNode;
 }
 
 export default function AppWrapper({ children }: Props) {
-  const { data: session, isLoading } = useSession();
+  const { data: session, isLoading, isAdmin } = useSession();
 
   const pathname = usePathname();
   const router = useRouter();
@@ -44,8 +46,23 @@ export default function AppWrapper({ children }: Props) {
 
     if (pathname === CLIENT_AUTH_SIGNIN_PAGE) {
       router.replace(CLIENT_APP_DASHBOARD_PAGE);
+      return;
     }
-  }, [session, isLoading, pathname, router]);
+
+    if (isAdmin) {
+      if (!pathname.startsWith("/admin")) {
+        router.replace(CLIENT_ADMIN_DASHBOARD_PAGE);
+        return;
+      }
+    }
+
+    if (!isAdmin) {
+      if (pathname.startsWith("/admin")) {
+        router.replace(CLIENT_APP_DASHBOARD_PAGE);
+        return;
+      }
+    }
+  }, [session, isLoading, pathname, router, isAdmin]);
 
   if (isLoading) {
     return <LoaderPage />;
@@ -54,7 +71,9 @@ export default function AppWrapper({ children }: Props) {
   return (
     <>
       {children}
+
       <Toaster />
+      <ConfirmationModal />
     </>
   );
 }
