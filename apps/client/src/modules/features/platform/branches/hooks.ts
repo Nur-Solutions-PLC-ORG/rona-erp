@@ -3,7 +3,7 @@ import { PaginationData } from "@/hooks/pagination";
 import { useCreateMutation } from "@/hooks/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiDeleteBranch, ApiGetBranches } from "../api";
+import { ApiDeleteBranch, ApiGetBranches } from "./api";
 
 export const useAdminBranches = (
   searchParams: RequestSearchParams = {},

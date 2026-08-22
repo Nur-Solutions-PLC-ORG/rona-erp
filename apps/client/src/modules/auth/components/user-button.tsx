@@ -6,6 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
@@ -36,17 +37,20 @@ const UserButton = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar>
-          <AvatarFallback className="bg-primary shadow-inner">
-            <FaUser className="size-6 absolute bottom-0 right-0 opacity-50 text-white" />
+        <Avatar className=" cursor-pointer hover:ring-2  hover:ring-border">
+          <AvatarFallback className="bg-purple-800 shadow-inner relative overflow-hidden">
+            <FaUser className="size-6 absolute bottom-0 text-white/50" />
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="mx-2 min-w-52 max-w-64">
-        <div className="flex flex-col p-2">
-          <span className="text-sm">{user?.email}</span>
+        <div className="flex flex-col text-sm items-center justify-center py-2 opacity-90">
+          <span className="font-bold">{user?.name}</span>
+          <span>{user?.email}</span>
         </div>
-        <Separator />
+        <DropdownMenuSeparator />
+        <div></div>
+        <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem
             onClick={() => {

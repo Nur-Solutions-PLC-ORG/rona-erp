@@ -103,7 +103,7 @@ const Client = () => {
     return () => clearInterval(intervalID);
   }, [resendIn]);
 
-  const handleContinueWithGoogleClick = () => {
+  const handleContinueWithGoogleClick = async () => {
     googleMutation.mutate({});
   };
 

@@ -1,7 +1,7 @@
 import QueryClientWrapper from "@/components/query-client-wrapper";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Poppins, Roboto } from "next/font/google";
+import { Poppins, Lato } from "next/font/google";
 import "./globals.css";
 
 const fontHeading = Poppins({
@@ -11,8 +11,9 @@ const fontHeading = Poppins({
   variable: "--font-heading",
 });
 
-const font = Roboto({
+const font = Lato({
   subsets: ["latin"],
+  weight: ["100", "300", "400", "700", "900"],
   variable: "--font-sans",
 });
 
