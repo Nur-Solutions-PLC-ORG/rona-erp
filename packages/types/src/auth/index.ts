@@ -9,7 +9,6 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   signInSchema,
-  userDto,
 } from "@rona/validation/auth";
 import z from "zod";
 
@@ -50,6 +49,3 @@ export type ResendVerificationCodeSchema = z.infer<
 export type RegisterSchema = z.infer<typeof registerSchema>;
 export type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>;
-
-// dtos
-export type UserDto = z.infer<typeof userDto>;

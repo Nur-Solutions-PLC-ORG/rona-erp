@@ -15,7 +15,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { useCreateMutation } from "@/hooks/utils";
 import { getDirtyValues } from "@/lib/form";
-import { generateCombinations } from "@/lib/passwords";
 import { slugToString } from "@/lib/utils";
 import { useModalStore } from "@/store";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,7 +24,7 @@ import {
   USER_STATUS_LIST,
 } from "@rona/config/auth";
 import { UserSchema } from "@rona/types/admin";
-import { UserDto } from "@rona/types/auth";
+import { UserDto } from "@rona/types/admin";
 import { userSchema } from "@rona/validation/admin";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -37,7 +36,6 @@ import { ApiPatchUser, ApiPostUser } from "../api";
 const defaultValues: UserSchema = {
   fullName: "",
   email: "",
-  password: "",
   status: "active",
   role: {
     position: "staff",
@@ -71,6 +69,11 @@ const UserModal = () => {
     (result) => {
       toast.success(result.message);
       concludeMutation();
+      if (result.data) {
+        useModalStore
+          .getState()
+          .openModal("admin-user-credentials", { credentials: result.data });
+      }
     },
     (result) => {
       toast.error(result.message);
@@ -91,9 +94,10 @@ const UserModal = () => {
   useEffect(() => {
     if (modalData && modalData.user) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, ...values } = modalData.user;
+      const { id, organizationId, ...values } = modalData.user;
       form.reset({
         ...values,
+        organizationId: organizationId || "",
       });
     } else {
       form.reset(defaultValues);
@@ -113,8 +117,9 @@ const UserModal = () => {
         return;
       }
 
+      const body = getDirtyValues(values, form.formState.dirtyFields);
       editMutation.mutate({
-        body: getDirtyValues(values, form.formState.dirtyFields),
+        body,
         slugReplacement: {
           id: modalData.user.id,
         },
@@ -183,62 +188,25 @@ const UserModal = () => {
             />
           </ControllerGroup>
 
-          <ControllerGroup>
-            <Controller
-              control={form.control}
-              name="email"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name + "-input"}>Email</FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name + "-input"}
-                    type="email"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="johndoe@gmail.com"
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-            <Controller
-              control={form.control}
-              name="password"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <div className="flex items-center justify-between">
-                    <FieldLabel htmlFor={field.name + "-input"}>
-                      Password
-                    </FieldLabel>
-
-                    {!view && (
-                      <Button
-                        type="button"
-                        variant={"link"}
-                        onClick={() => {
-                          form.setValue("password", generateCombinations());
-                        }}
-                        size={"sm"}
-                        className="h-0 cursor-pointer"
-                      >
-                        Generate password
-                      </Button>
-                    )}
-                  </div>
-                  <Input
-                    {...field}
-                    id={field.name + "-input"}
-                    aria-invalid={fieldState.invalid}
-                  />
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
-          </ControllerGroup>
+          <Controller
+            control={form.control}
+            name="email"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name + "-input"}>Email</FieldLabel>
+                <Input
+                  {...field}
+                  id={field.name + "-input"}
+                  type="email"
+                  aria-invalid={fieldState.invalid}
+                  placeholder="johndoe@gmail.com"
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
 
           <ControllerGroup>
             <Controller

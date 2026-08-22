@@ -8,6 +8,25 @@ import {
   PLATFORM_CONFIG_TYPE_LIST,
 } from "@rona/config/admin";
 import { MODULE_LIST } from "@rona/config/auth";
+import { POSITIONS_LIST, USER_STATUS_LIST } from "@rona/config/auth";
+
+export const userDto = z.object({
+  id: z.string(),
+  fullName: z.string(),
+  email: z.string(),
+  organizationId: z.string().nullable(),
+  status: z.enum(USER_STATUS_LIST),
+  role: z.object({
+    position: z.enum(POSITIONS_LIST),
+    modules: z.array(z.enum(MODULE_LIST)),
+  }),
+  createdAt: z.date(),
+});
+
+export const userCredentialsDto = z.object({
+  email: z.email(),
+  password: z.string(),
+});
 
 export const organizationDto = z.object({
   id: z.string(),

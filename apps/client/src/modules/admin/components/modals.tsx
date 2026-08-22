@@ -6,6 +6,7 @@ import DepartmentModal from "@/modules/features/admin/departments/components/mod
 import EmployeeModal from "@/modules/features/admin/employees/components/modal";
 import PlatformConfigModal from "@/modules/features/admin/platform-configs/components/modal";
 import UserModal from "@/modules/features/admin/users/components/modal";
+import UserCredentialsModal from "@/modules/features/admin/users/components/credentials-modal";
 
 const AdminModals = () => {
   const mounted = useHydrated();
@@ -15,6 +16,7 @@ const AdminModals = () => {
   return (
     <>
       <UserModal />
+      <UserCredentialsModal />
       <OrganizationModal />
       <DepartmentModal />
       <BranchModal />

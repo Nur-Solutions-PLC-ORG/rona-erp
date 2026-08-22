@@ -3,7 +3,7 @@ import { PaginationData } from "@/hooks/pagination";
 import { useCreateMutation } from "@/hooks/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ApiDeleteUser, ApiGetUsers } from "./api";
+import { ApiDeleteUser, ApiGetUsers, ApiPostResetUserPassword } from "./api";
 
 export const useAdminUsers = (
   searchParams: RequestSearchParams = {},
@@ -33,11 +33,22 @@ export const useAdminUsers = (
     },
   );
 
+  const resetPasswordMutation = useCreateMutation(
+    ApiPostResetUserPassword,
+    (data) => {
+      toast.success(data.message);
+    },
+    (data) => {
+      toast.error(data.message);
+    },
+  );
+
   const items = data?.data ?? [];
 
   return {
     users: items,
     isLoading,
     deleteMutation,
+    resetPasswordMutation,
   };
 };

@@ -15,6 +15,13 @@
       "when": 1785233512620,
       "tag": "0001_medical_otto_octavius",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787399257803,
+      "tag": "0002_curved_terror",
+      "breakpoints": true
     }
   ]
 }

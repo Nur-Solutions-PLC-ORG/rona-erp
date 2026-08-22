@@ -66,7 +66,7 @@ const BranchModal = () => {
   useEffect(() => {
     if (modalData && modalData.branch) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, organizationId, createdAt, ...values } = modalData.branch;
+      const { id, createdAt, ...values } = modalData.branch;
       form.reset(values);
     } else form.reset(defaultValues);
   }, [open, modalData, form]);

@@ -6,8 +6,8 @@ import {
 import z from "zod";
 
 export const paginationSearchParamsSchema = z.object({
-  page: z.number().int().positive().optional(),
-  limit: z
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce
     .number()
     .int()
     .positive()

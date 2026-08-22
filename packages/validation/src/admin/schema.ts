@@ -17,7 +17,6 @@ import {
 export const userSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters long"),
   email: z.email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
   organizationId: z.string().optional(),
   status: z.enum(USER_STATUS_LIST),
   role: z.object({
@@ -25,6 +24,7 @@ export const userSchema = z.object({
     modules: z.array(z.enum(MODULE_LIST)),
   }),
 });
+export const userUpdateSchema = userSchema.partial();
 
 export const organizationSchema = z.object({
   name: z.string().min(2, "Organization name is required"),

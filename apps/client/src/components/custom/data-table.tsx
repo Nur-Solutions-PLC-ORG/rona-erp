@@ -75,7 +75,7 @@ export function DataTable<TData, TValue>({
           className="flex w-full flex-col"
         >
           {/* Table */}
-          <ScrollArea className="max-w-[calc(100vw-2.5rem)]">
+          <ScrollArea className="max-w-[calc(100vw-2.5rem)] md:max-w-[calc(100vw-17.5rem)]">
             <Table>
               <TableHeader className="border-b-2! border-black/5!">
                 {table.getHeaderGroups().map((headerGroup) => (

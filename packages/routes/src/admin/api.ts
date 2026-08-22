@@ -1,11 +1,3 @@
-export const API_ADMIN_USERS_URL = "/api/admin/users";
-/**
- * Methods: GET, POST
- * Query: UserListSearchParamsSchema
- * RequestBody: UserCreateSchema
- * Response: ApiResponse<UserDto[] | UserDto>
- */
-
 // Dashboard
 export const API_ADMIN_DASHBOARD_URL = "/api/admin/dashboard";
 /**
@@ -13,11 +5,27 @@ export const API_ADMIN_DASHBOARD_URL = "/api/admin/dashboard";
  * Response: ApiResponse<AdminDashboardStats>
  */
 
+// Users
+export const API_ADMIN_USERS_URL = "/api/admin/users";
+/**
+ * Methods: GET, POST
+ * Query: UserListSearchParamsSchema
+ * RequestBody: UserSchema
+ * Response: GET ApiResponse<UserDto[]>; POST ApiResponse<UserCredentialsDto>
+ */
+
 export const API_ADMIN_USER_BY_ID_URL = "/api/admin/users/:id";
 /**
- * Methods: GET, PUT, DELETE
- * RequestBody: UserSchema
+ * Methods: GET, PATCH, DELETE
+ * RequestBody: UserUpdateSchema
  * Response: ApiResponse<UserDto | never>
+ */
+
+export const API_ADMIN_USER_RESET_PASSWORD_URL =
+  "/api/admin/users/:id/reset-password";
+/**
+ * Method: POST
+ * Response: ApiResponse<UserCredentialsDto>
  */
 
 // Organizations
@@ -31,7 +39,7 @@ export const API_ADMIN_COMPANIES_URL = "/api/admin/organizations";
 
 export const API_ADMIN_ORGANIZATION_BY_ID_URL = "/api/admin/organizations/:id";
 /**
- * Methods: GET, PUT, DELETE
+ * Methods: GET, PATCH, DELETE
  * RequestBody: OrganizationSchema
  * Response: ApiResponse<OrganizationDto | never>
  */
@@ -47,7 +55,7 @@ export const API_ADMIN_ORGANIZATION_SETTINGS_URL =
 export const API_ADMIN_ORGANIZATION_SETTINGS_BY_ID_URL =
   "/api/admin/organization-settings/:id";
 /**
- * Methods: GET, PUT, DELETE
+ * Methods: GET, PATCH, DELETE
  * RequestBody: OrganizationSettingsSchema
  * Response: ApiResponse<OrganizationSettingsDto | never>
  */
@@ -63,7 +71,7 @@ export const API_ADMIN_DEPARTMENTS_URL = "/api/admin/departments";
 
 export const API_ADMIN_DEPARTMENT_BY_ID_URL = "/api/admin/departments/:id";
 /**
- * Methods: GET, PUT, DELETE
+ * Methods: GET, PATCH, DELETE
  * RequestBody: DepartmentSchema
  * Response: ApiResponse<DepartmentDto | never>
  */
@@ -78,7 +86,7 @@ export const API_ADMIN_BRANCHES_URL = "/api/admin/branches";
 
 export const API_ADMIN_BRANCH_BY_ID_URL = "/api/admin/branches/:id";
 /**
- * Methods: GET, PUT, DELETE
+ * Methods: GET, PATCH, DELETE
  * RequestBody: BranchSchema
  * Response: ApiResponse<BranchDto | never>
  */
@@ -94,7 +102,7 @@ export const API_ADMIN_EMPLOYEES_URL = "/api/admin/employees";
 
 export const API_ADMIN_EMPLOYEE_BY_ID_URL = "/api/admin/employees/:id";
 /**
- * Methods: GET, PUT, DELETE
+ * Methods: GET, PATCH, DELETE
  * RequestBody: EmployeeSchema
  * Response: ApiResponse<EmployeeDto | never>
  */
@@ -102,7 +110,7 @@ export const API_ADMIN_EMPLOYEE_BY_ID_URL = "/api/admin/employees/:id";
 // Platform configuration
 export const API_ADMIN_PLATFORM_CONFIGS_URL = "/api/admin/platform-configs";
 /**
- * Methods: GET, PUT
+ * Methods: GET, PATCH
  * RequestBody: PlatformConfigSchema
  * Response: ApiResponse<PlatformConfigDto[] | PlatformConfigDto>
  */
@@ -110,7 +118,7 @@ export const API_ADMIN_PLATFORM_CONFIGS_URL = "/api/admin/platform-configs";
 export const API_ADMIN_PLATFORM_CONFIG_BY_KEY_URL =
   "/api/admin/platform-configs/:key";
 /**
- * Methods: GET, PUT
+ * Methods: GET, PATCH
  * RequestBody: PlatformConfigSchema
  * Response: ApiResponse<PlatformConfigDto>
  */

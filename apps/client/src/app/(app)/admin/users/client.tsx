@@ -12,7 +12,7 @@ import { useAdminOrganizations } from "@/modules/features/admin/organizations/ho
 import { useAdminUsers } from "@/modules/features/admin/users/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { UserListSearchParamsSchema } from "@rona/types/admin";
-import { UserDto } from "@rona/types/auth";
+import { UserDto } from "@rona/types/admin";
 import { userListSearchParamsSchema } from "@rona/validation/admin";
 import { FiPlus } from "react-icons/fi";
 
@@ -21,10 +21,11 @@ const Client = () => {
     useCustomSearchParams<UserListSearchParamsSchema>();
 
   const { paginationData, pagination } = usePagination();
-  const { users, deleteMutation, isLoading } = useAdminUsers(
-    customSearchParams.requestSearchParams,
-    paginationData,
-  );
+  const { users, deleteMutation, resetPasswordMutation, isLoading } =
+    useAdminUsers(
+      customSearchParams.requestSearchParams,
+      paginationData,
+    );
 
   const { organizationsNameLookup } = useAdminOrganizations();
 
@@ -102,6 +103,30 @@ const Client = () => {
               });
             },
             variant: "destructive",
+          });
+        },
+      },
+      {
+        title: "Reset password",
+        onClick: (row) => {
+          useConfirmationModalStore.getState().openModal({
+            title: `reset ${row.original.fullName}'s password`,
+            description:
+              "replace the user's current password with a new temporary password",
+            onClick: async () => {
+              const result = await resetPasswordMutation.mutateAsync({
+                slugReplacement: { id: row.original.id },
+              });
+
+              if (result.success && result.data) {
+                useModalStore
+                  .getState()
+                  .openModal("admin-user-credentials", {
+                    credentials: result.data,
+                    title: "Password reset successfully",
+                  });
+              }
+            },
           });
         },
       },

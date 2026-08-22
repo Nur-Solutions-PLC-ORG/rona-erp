@@ -108,7 +108,7 @@ export class AuthController {
 
   @Post('register')
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles('admin')
+  @Roles('super_admin')
   @UsePipes(new ZodValidationPipe(registerSchema))
   async register(@Body() body: RegisterSchema): Promise<ApiResponse<never>> {
     console.log('sjd');
