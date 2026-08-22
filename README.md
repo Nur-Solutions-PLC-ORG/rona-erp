@@ -16,7 +16,9 @@ packages: (Shared between different app workspaces)
 - `packages/config`: Configuration data
 - `packages/types`: Schema Types, DTO types
 - `packages/validation`: Form Schema validations, DTO Schema, SearchParams schemas
-- `packages/routes`: Api Routes data (with Methods, Body, Response, SearchParams details as comments)
+- `packages/routes`: Api Routes data (with Methods, Body, Response, SearchParams details as comments) which includes essential insights
+
+REMEMBER: `packages/routes` contains essential and helpful insights that greatly help during 'apps/server' development, So read accordingly while working on specific module.
 
 ## Modules & Fetures
 

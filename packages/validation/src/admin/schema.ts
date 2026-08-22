@@ -12,28 +12,6 @@ import {
   POSITIONS_LIST,
   USER_STATUS_LIST,
 } from "@rona/config/auth";
-import { paginationSearchParamsSchema } from "../global/schema.js";
-
-export const userListSearchParamsSchema = paginationSearchParamsSchema.extend({
-  status: z.enum(USER_STATUS_LIST).optional(),
-  position: z.enum(POSITIONS_LIST).optional(),
-});
-
-export const organizationListSearchParamsSchema =
-  paginationSearchParamsSchema.extend({
-    status: z.enum(ORGANIZATION_STATUS_LIST).optional(),
-  });
-
-export const employeeListSearchParamsSchema =
-  paginationSearchParamsSchema.extend({
-    status: z.enum(EMPLOYEE_STATUS_LIST).optional(),
-  });
-
-export const departmentListSearchParamsSchema = paginationSearchParamsSchema;
-export const branchListSearchParamsSchema = paginationSearchParamsSchema;
-export const configsListSearchParamsSchema = paginationSearchParamsSchema;
-export const organizationSettingsListSearchParamsSchema =
-  paginationSearchParamsSchema;
 
 // Tables schema
 export const userSchema = z.object({

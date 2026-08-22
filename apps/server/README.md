@@ -26,3 +26,7 @@ Built In: Nest.js
 - `src/modules` includes layered separated Nestjs logic (.controller, .service, .repository...) for each feature
 - `src/modules/feature` contains features for each of the modules under their own directories. (example, admin modules features goes to 'src/modules/features/admin/')
 - For each feature/module create the essentials like controllers, services, modules, repositories, exceptions. NOTE: Don't create directories for each unless its needed. Single Files are enough for most cases
+
+# NOTES
+
+- `packages/routes` contains essential and helpful insights that greatly help during development, So read accordingly while working on specific module. It contains all required Methods, Body, Response, SearchParams details as comments that other workspaces use.
