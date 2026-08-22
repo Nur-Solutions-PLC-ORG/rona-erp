@@ -1,5 +1,3 @@
-import { db } from '@/db';
-import { userRoles, users } from '@/db/schema';
 import { sendPasswordResetEmail, sendVerificationEmail } from '@/emails/resend';
 import {
   InvalidCodeException,
@@ -13,6 +11,7 @@ import {
 import { getGoogleAuthUrl, getGoogleUserProfile } from '@/google/o-auth';
 import { redisClient } from '@/redis';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { AuthRepository } from './auth.repository';
 import {
   OPT_RESEND_DELAY_DURATION_MS,
   CODE_EXPIRY_MS,
@@ -21,23 +20,19 @@ import {
 import type { RegisterSchema } from '@rona/types/auth';
 import { Session, SessionUser, UserRole } from '@rona/types/auth';
 import * as bcrypt from 'bcrypt';
-import { eq } from 'drizzle-orm';
 import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
+  constructor(private readonly authRepository: AuthRepository) {}
+
   // gets user by email
   async validateUserByEmail(email: string) {
-    const userRecords = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email));
+    const userRecord = await this.authRepository.findUserByEmail(email);
 
-    if (userRecords.length === 0) {
+    if (!userRecord) {
       throw new InvalidCredentialsException();
     }
-
-    const userRecord = userRecords[0];
 
     return userRecord;
   }
@@ -45,6 +40,7 @@ export class AuthService {
   // get user with matching email and password
   async validateCredentials(email: string, password: string) {
     const user = await this.validateUserByEmail(email);
+
     const isMatch = await bcrypt.compare(password, user.passwordHash);
 
     if (!isMatch) {
@@ -57,16 +53,19 @@ export class AuthService {
   // Random verification code generator
   generateRandomCode(): string {
     const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
     let code = '';
     for (let i = 0; i < CODE_LENGTH; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
+
     return code;
   }
 
   // Sends verification code
   async sendVerificationCode(email: string) {
     const lastSendKey = `auth:last_send:${email}`;
+
     const lastSend = await redisClient.get<number>(lastSendKey);
 
     if (lastSend && Date.now() - lastSend < OPT_RESEND_DELAY_DURATION_MS) {
@@ -74,6 +73,7 @@ export class AuthService {
     }
 
     const code = this.generateRandomCode();
+
     const codeKey = `auth:code:${email}`;
 
     await redisClient.set(codeKey, code, { px: CODE_EXPIRY_MS });
@@ -107,16 +107,12 @@ export class AuthService {
     const cachedRoles = await redisClient.get<UserRole>(roleKey);
     if (cachedRoles) return cachedRoles;
 
-    const roleRecords = await db
-      .select()
-      .from(userRoles)
-      .where(eq(userRoles.userId, userId));
+    const role = await this.authRepository.findUserRoleByUserId(userId);
 
-    if (roleRecords.length === 0) {
+    if (!role) {
       throw new UserRoleNotFoundException();
     }
 
-    const role = roleRecords[0];
     const userRole: UserRole = {
       position: role.position,
       modules: role.module,
@@ -160,11 +156,8 @@ export class AuthService {
 
   // registers a platform user
   async registerUser(data: RegisterSchema) {
-    const existing = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, data.email));
-    if (existing.length > 0) {
+    const existing = await this.authRepository.findUserByEmail(data.email);
+    if (existing) {
       throw new BadRequestException({
         success: false,
         message: 'Email already exists',
@@ -173,20 +166,15 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(data.password, 10);
 
-    const newUserRecord = await db
-      .insert(users)
-      .values({
-        fullName: data.fullName,
-        email: data.email,
-        passwordHash,
-        tfaEnabled: data.tfaEnabled,
-        isEmailVerified: true,
-      })
-      .returning();
+    const newUser = await this.authRepository.createUser({
+      fullName: data.fullName,
+      email: data.email,
+      passwordHash,
+      tfaEnabled: data.tfaEnabled,
+      isEmailVerified: true,
+    });
 
-    const newUser = newUserRecord[0];
-
-    await db.insert(userRoles).values({
+    await this.authRepository.createUserRole({
       userId: newUser.id,
       position: data.role.position,
       module: data.role.modules,
@@ -214,16 +202,11 @@ export class AuthService {
 
   // forgot-password: validates email, generates a secure one-time token, stores it in Redis, and sends a reset email
   async forgotPassword(email: string) {
-    const userRecords = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email));
+    const user = await this.authRepository.findUserByEmail(email);
 
-    if (userRecords.length === 0) {
+    if (!user) {
       throw new UserNotFoundException();
     }
-
-    const user = userRecords[0];
 
     const token = this.generateRandomCode();
 
@@ -259,7 +242,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    await db.update(users).set({ passwordHash }).where(eq(users.id, userId));
+    await this.authRepository.updateUserPassword(userId, passwordHash);
 
     await redisClient.del(foundKey);
   }
