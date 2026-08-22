@@ -27,7 +27,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiPatchEmployee, ApiPostEmployee } from "../api";
 import { Button } from "@/components/ui/button";
-import { generateCombinations } from "@/lib/passwords";
+import { generateCombinations } from "@/lib/combinations";
 import { useAdminOrganizations } from "../../organizations/hooks";
 import { DatePickerInput } from "@/components/custom/date-picker-input";
 

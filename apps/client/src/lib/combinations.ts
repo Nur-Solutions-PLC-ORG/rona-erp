@@ -15,12 +15,6 @@ export function generateCombinations(options: PasswordOptions = {}): string {
     includeSymbols = false,
   } = options;
 
-  if (length < 4) {
-    throw new Error(
-      "Password length should be at least 4 characters for adequate security.",
-    );
-  }
-
   const UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
   const NUMBERS = "0123456789";
@@ -60,13 +54,11 @@ export function generateCombinations(options: PasswordOptions = {}): string {
   return shuffleString(password);
 }
 
-/** Helper: Get a random character from a string */
 function getRandomChar(str: string): string {
   const randomIndex = Math.floor(Math.random() * str.length);
   return str[randomIndex];
 }
 
-/** Helper: Cryptographically unbiased Fisher-Yates shuffle */
 function shuffleString(str: string): string {
   const arr = str.split("");
   for (let i = arr.length - 1; i > 0; i--) {

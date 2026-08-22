@@ -1,3 +1,4 @@
+import CustomButton from "@/components/custom/custom-button";
 import DialogWrapper from "@/components/custom/dialog-wrapper";
 import { Button } from "@/components/ui/button";
 import { DialogClose } from "@/components/ui/dialog";
@@ -26,21 +27,19 @@ export function ConfirmationModal() {
       }
       open={open}
       onOpen={() => closeModal()}
-      light
       footer={
         <>
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button
-            disabled={isLoading}
+          <CustomButton
+            isPending={isLoading}
             onClick={handleClick ?? undefined}
             variant={variant}
             type="button"
           >
-            {isLoading && <Loader2 className="size-4 animate-spin" />}
             Confirm
-          </Button>
+          </CustomButton>
         </>
       }
     />

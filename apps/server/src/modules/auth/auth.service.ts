@@ -16,11 +16,13 @@ import {
   OPT_RESEND_DELAY_DURATION_MS,
   CODE_EXPIRY_MS,
   CODE_LENGTH,
+  SESSION_DURATION,
 } from '@rona/config/auth';
 import type { RegisterSchema } from '@rona/types/auth';
 import { Session, SessionUser, UserRole } from '@rona/types/auth';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
+import { generateCombinations } from '@/lib/combinations';
 
 @Injectable()
 export class AuthService {
@@ -52,14 +54,13 @@ export class AuthService {
 
   // Random verification code generator
   generateRandomCode(): string {
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-    let code = '';
-    for (let i = 0; i < CODE_LENGTH; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-
-    return code;
+    return generateCombinations({
+      length: CODE_LENGTH,
+      includeUppercase: false,
+      includeLowercase: false,
+      includeNumbers: true,
+      includeSymbols: false,
+    });
   }
 
   // Sends verification code
@@ -118,7 +119,7 @@ export class AuthService {
       modules: role.module,
     };
 
-    await redisClient.set(roleKey, userRole, { ex: 30 }); // cache for 30s
+    await redisClient.set(roleKey, userRole, { ex: SESSION_DURATION / 1000 });
     return userRole;
   }
 
@@ -127,7 +128,9 @@ export class AuthService {
     try {
       const payload = { user };
 
-      return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '7d' });
+      return jwt.sign(payload, process.env.JWT_SECRET!, {
+        expiresIn: SESSION_DURATION / 1000,
+      });
     } catch (e) {
       console.log('session encoding error: ', e);
       throw new SessionException();

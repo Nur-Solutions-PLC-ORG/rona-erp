@@ -18,7 +18,7 @@ import { RolesGuard } from './guards/roles.guard';
 import { AuthService } from './auth.service';
 
 import { ZodValidationPipe } from '@/modules/app/pipes/zod-validation.pipe';
-import { COOKIE_MAX_AGE, COOKIE_NAME } from '@rona/config/auth';
+import { COOKIE_NAME, SESSION_DURATION } from '@rona/config/auth';
 import {
   ForgotPasswordSchema,
   RegisterSchema,
@@ -82,7 +82,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'strict' : 'lax',
-      maxAge: COOKIE_MAX_AGE,
+      maxAge: SESSION_DURATION,
     });
 
     return {
@@ -167,7 +167,7 @@ export class AuthController {
         httpOnly: true,
         secure: isProduction,
         sameSite: isProduction ? 'strict' : 'lax',
-        maxAge: COOKIE_MAX_AGE,
+        maxAge: SESSION_DURATION,
       });
 
       res.redirect(`${clientUrl}${CLIENT_AUTH_GOOGLE_CALLBACK_PAGE}`);

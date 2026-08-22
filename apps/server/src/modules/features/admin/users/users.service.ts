@@ -1,7 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
-import { randomInt } from 'crypto';
+import { generateCombinations } from '@/lib/combinations';
 import { redisClient } from '@/redis';
+import { Injectable } from '@nestjs/common';
 import type {
   UserCredentialsDto,
   UserDto,
@@ -9,6 +8,7 @@ import type {
   UserSchema,
   UserUpdateSchema,
 } from '@rona/types/admin';
+import * as bcrypt from 'bcrypt';
 import {
   AdminUserEmailExistsException,
   AdminUserNotFoundException,
@@ -46,7 +46,7 @@ export class UsersService {
     const existingUser = await this.usersRepository.findByEmail(data.email);
     if (existingUser) throw new AdminUserEmailExistsException();
 
-    const password = this.generateTemporaryPassword();
+    const password = this.generatePassword();
     const passwordHash = await bcrypt.hash(password, 10);
     await this.usersRepository.create(
       {
@@ -69,7 +69,7 @@ export class UsersService {
     const user = await this.usersRepository.findById(id);
     if (!user) throw new AdminUserNotFoundException();
 
-    const password = this.generateTemporaryPassword();
+    const password = this.generatePassword();
     const passwordHash = await bcrypt.hash(password, 10);
     await this.usersRepository.update(id, { passwordHash });
 
@@ -139,30 +139,13 @@ export class UsersService {
     };
   }
 
-  private generateTemporaryPassword(): string {
-    const characterGroups = [
-      'ABCDEFGHJKLMNPQRSTUVWXYZ',
-      'abcdefghijkmnopqrstuvwxyz',
-      '23456789',
-      '!@#$%*_-+=',
-    ];
-    const allCharacters = characterGroups.join('');
-    const password = characterGroups.map((characters) =>
-      characters[randomInt(characters.length)],
-    );
-
-    while (password.length < 16) {
-      password.push(allCharacters[randomInt(allCharacters.length)]);
-    }
-
-    for (let index = password.length - 1; index > 0; index--) {
-      const randomIndex = randomInt(index + 1);
-      [password[index], password[randomIndex]] = [
-        password[randomIndex],
-        password[index],
-      ];
-    }
-
-    return password.join('');
+  private generatePassword(): string {
+    return generateCombinations({
+      length: 10,
+      includeNumbers: true,
+      includeUppercase: true,
+      includeLowercase: true,
+      includeSymbols: false,
+    });
   }
 }

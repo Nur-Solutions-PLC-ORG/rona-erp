@@ -39,17 +39,15 @@ const DialogWrapper: React.FC<DialogWrapperProps> = ({
         className={cn(className)}
       >
         <DialogHeader>
-          <DialogTitle
-            className={cn(
-              !light ? "text-lg leading-[1.2] font-semibold" : "text-base",
-            )}
-          >
+          <DialogTitle className={cn(light ? "text-base" : "text-lg")}>
             {title}
           </DialogTitle>
           {info && <p className="text-base opacity-80">{info}</p>}
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
-        {children && <div className="overflow-auto px-5 pb-5">{children}</div>}
+
+        {children && <div className="overflow-auto pb-5">{children}</div>}
+
         {footer && <DialogFooter>{footer}</DialogFooter>}
       </DialogContent>
     </Dialog>
