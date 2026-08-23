@@ -2,7 +2,7 @@
 export const API_ADMIN_DASHBOARD_URL = "/api/admin/dashboard";
 /**
  * Method: GET
- * Response: ApiResponse<AdminDashboardStats>
+ * Response: ApiResponse<AdminDashboardStatus>
  */
 
 // Users

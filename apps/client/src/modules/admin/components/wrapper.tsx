@@ -22,7 +22,7 @@ const AdminWrapper = ({ children }: Props) => {
             Icon: GoHome,
           },
           {
-            header: "Tables",
+            header: "Management",
             title: "Users",
             href: "/admin/users",
             Icon: FaUsers,

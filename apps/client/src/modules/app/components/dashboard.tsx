@@ -42,7 +42,8 @@ const DashboardWrapper = ({ children, options }: Props) => {
             pathname={pathname}
             isMobile={isMobile}
           />
-          <div className="flex-1 w-full flex flex-col bg-secondary/50">
+
+          <div className="flex-1 w-full flex flex-col bg-secondary/25">
             {children}
           </div>
         </div>
@@ -61,7 +62,7 @@ type NavProps = {
 
 const DashboardNav = ({ isMobile, options, pathname }: NavProps) => {
   return (
-    <nav className="border-b h-20 shadow">
+    <nav className="border-b h-20">
       <div className="px-8 flex h-full items-center gap-4">
         {isMobile && (
           <Button
@@ -125,7 +126,10 @@ const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
               {option.Icon ? (
                 <option.Icon className={cn("size-4", isActive && "")} />
               ) : (
-                <span className="size-4" />
+                <span className="size-4 relative opacity-30">
+                  <span className="border-l absolute h-3 w-2 bottom-full right-0" />
+                  <span className="size-2 absolute top-0 right-0 border-l border-b" />
+                </span>
               )}
               <span>{option.title}</span>
             </Link>
@@ -157,4 +161,12 @@ const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
   );
 };
 
-export { DashboardNav, DashboardWrapper };
+interface RowProps {
+  children: React.ReactNode;
+}
+
+const Row = ({ children }: RowProps) => {
+  return <div className="flex flex-col gap-4 px-6 py-4">{children}</div>;
+};
+
+export { DashboardNav, DashboardWrapper, Row };

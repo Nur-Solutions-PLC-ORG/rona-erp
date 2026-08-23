@@ -1,21 +1,22 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 import { useAdminDashboard } from "@/modules/admin/hooks";
-import { StatCard, HomeHeader } from "@/modules/app/components/home";
+import { InfoCard, StatCard } from "@/modules/app/components/home";
 import Link from "next/link";
+import { FaUsers } from "react-icons/fa6";
+import { LuBuilding2 } from "react-icons/lu";
 
 const Client = () => {
   const { stats, isLoading } = useAdminDashboard();
 
   return (
     <>
-      <HomeHeader />
-
       <div className="px-6 mt-6 grid grid-cols-2 h-fit gap-6">
         <div className="grid grid-cols-1 h-fit gap-6">
           <StatCard
+            icon={LuBuilding2}
             title={"Total organizations"}
             value={stats?.organizations.total}
             loading={isLoading}
@@ -39,6 +40,7 @@ const Client = () => {
 
           <StatCard
             title={"Total employees"}
+            icon={FaUsers}
             value={stats?.employees.total}
             loading={isLoading}
             color="red"
@@ -47,32 +49,34 @@ const Client = () => {
 
         <div className="grid grid-cols-1 h-fit gap-6">
           <StatCard
+            icon={FaUsers}
             title={"Total users"}
             value={stats?.users.total}
             loading={isLoading}
           />
 
-          <div className={cn("flex flex-col h-full gap-6")}>
-            <div className="flex items-center justify-between">
-              <p>Platform Configs</p>
-
-              <Button variant={"link"} asChild>
-                <Link href={"/admin/configs"}>Details</Link>
-              </Button>
-            </div>
-
-            <div className="flex flex-col">
-              {stats?.platformConfigs.configs.map((item) => (
-                <div
-                  key={item.key}
-                  className="flex items-center justify-between"
-                >
-                  <p>{item.key}</p>
+          <InfoCard
+            title="Platform Configs"
+            items={stats?.platformConfigs.configs.map((item) => ({
+              key: item.key,
+              value:
+                item.type === "boolean" ? (
+                  <Switch checked={item.value === "true"} disabled />
+                ) : item.type === "number" ? (
+                  <span className="font-mono">
+                    {Number(item.value).toLocaleString()}
+                  </span>
+                ) : (
                   <span className="font-mono">{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+                ),
+            }))}
+            loading={isLoading}
+            action={
+              <Button variant="link" asChild>
+                <Link href="/admin/configs">Details</Link>
+              </Button>
+            }
+          />
         </div>
       </div>
     </>
