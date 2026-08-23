@@ -10,7 +10,7 @@ export const ApiGetPlatformConfigs = Request<PlatformConfigDto[]>(
   "get",
   API_ADMIN_PLATFORM_CONFIGS_URL,
 );
-export const ApiPutPlatformConfig = Request<
+export const ApiPatchPlatformConfig = Request<
   PlatformConfigDto,
   Partial<PlatformConfigSchema>
->("put", API_ADMIN_PLATFORM_CONFIG_BY_KEY_URL);
+>("patch", API_ADMIN_PLATFORM_CONFIG_BY_KEY_URL);

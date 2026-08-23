@@ -46,7 +46,7 @@ const AdminWrapper = ({ children }: Props) => {
           },
           {
             header: "Settings",
-            title: "Org. Settings",
+            title: "Organization Settings",
             href: "/admin/organization-settings",
             Icon: LuSettings,
           },

@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "db:push": "drizzle-kit generate && drizzle-kit push"
+    "db:push": "drizzle-kit generate && drizzle-kit push",
+    "db:seed:platform-configs": "ts-node -r tsconfig-paths/register --project tsconfig.json src/scripts/populate-platform-configs.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

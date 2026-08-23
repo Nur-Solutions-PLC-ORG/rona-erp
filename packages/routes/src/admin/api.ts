@@ -110,15 +110,15 @@ export const API_ADMIN_EMPLOYEE_BY_ID_URL = "/api/admin/employees/:id";
 // Platform configuration
 export const API_ADMIN_PLATFORM_CONFIGS_URL = "/api/admin/platform-configs";
 /**
- * Methods: GET
- * RequestBody: PlatformConfigSchema
+ * Methods: GET, POST
+ * POST resets all values to the predefined defaults.
  * Response: ApiResponse<PlatformConfigDto[]>
  */
 
 export const API_ADMIN_PLATFORM_CONFIG_BY_KEY_URL =
   "/api/admin/platform-configs/:key";
 /**
- * Methods: GET, PATCH
+ * Methods: GET, PATCH, PUT
  * RequestBody: PlatformConfigSchema
  * Response: ApiResponse<PlatformConfigDto>
  */

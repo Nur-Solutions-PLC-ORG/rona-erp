@@ -9,7 +9,8 @@
     "build:packages": "pnpm i && turbo run build --filter=@rona/config --filter=@rona/types --filter=@rona/validation --filter=@rona/routes && pnpm i",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:seed:platform-configs": "pnpm --filter server db:seed:platform-configs"
   },
   "keywords": [],
   "author": "",
