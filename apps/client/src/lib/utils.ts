@@ -5,6 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const parseDate = (d: string | Date) => new Date(d);
+
 export function slugToString(slug: string): string {
   if (!slug) return "";
 

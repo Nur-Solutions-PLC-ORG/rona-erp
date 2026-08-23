@@ -28,7 +28,13 @@ const Client = () => {
     includeActions: true,
     searchQuery: customSearchParams.searchParams.searchQuery,
     extraColumns: [
-      { accessorKey: "eId", header: "Employee ID", isBold: true },
+      {
+        accessorKey: "eId",
+        header: "EID",
+        isRaw: true,
+        isBold: true,
+        isMono: true,
+      },
       { accessorKey: "fullName", header: "Name", isBold: true },
       { accessorKey: "email", header: "Email", highlight: true },
       { accessorKey: "phone", header: "Phone" },

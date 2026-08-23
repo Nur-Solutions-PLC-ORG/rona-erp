@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { getDirtyValues } from "@/lib/form";
-import { slugToString } from "@/lib/utils";
+import { parseDate, slugToString } from "@/lib/utils";
 import { useCreateMutation } from "@/hooks/utils";
 import { useModalStore } from "@/store";
 import { EMPLOYEE_STATUS_LIST, GENDER_LIST } from "@rona/config/admin";
@@ -84,8 +84,8 @@ const EmployeeModal = () => {
   useEffect(() => {
     if (modalData && modalData.employee) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { id, createdAt, ...values } = modalData.employee;
-      form.reset(values);
+      const { id, createdAt, birthDate, ...values } = modalData.employee;
+      form.reset({ ...values, birthDate: parseDate(birthDate) });
     } else form.reset(defaultValues);
   }, [open, modalData, form]);
 
@@ -110,6 +110,7 @@ const EmployeeModal = () => {
       createMutation.mutate({ body: values });
     }
   };
+
   return (
     <SheetWrapper
       title={
@@ -153,25 +154,27 @@ const EmployeeModal = () => {
                   <div className="flex items-center justify-between">
                     <FieldLabel htmlFor={field.name + "-input"}>EID</FieldLabel>
 
-                    <Button
-                      type="button"
-                      variant={"link"}
-                      onClick={() => {
-                        form.setValue(
-                          "eId",
-                          generateCombinations({
-                            includeLowercase: false,
-                            includeSymbols: false,
-                            includeUppercase: false,
-                            length: 5,
-                          }),
-                        );
-                      }}
-                      size={"sm"}
-                      className="h-0 cursor-pointer"
-                    >
-                      Generate EID
-                    </Button>
+                    {!modalData?.employee && (
+                      <Button
+                        type="button"
+                        variant={"link"}
+                        onClick={() => {
+                          form.setValue(
+                            "eId",
+                            generateCombinations({
+                              includeLowercase: false,
+                              includeSymbols: false,
+                              includeUppercase: false,
+                              length: 5,
+                            }),
+                          );
+                        }}
+                        size={"sm"}
+                        className="h-0 cursor-pointer"
+                      >
+                        Generate EID
+                      </Button>
+                    )}
                   </div>
                   <Input
                     {...field}
@@ -188,7 +191,7 @@ const EmployeeModal = () => {
             <Controller
               control={form.control}
               name="organizationId"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <Field>
                   <FieldLabel htmlFor={field.name + "-input"}>
                     Organization
@@ -201,13 +204,16 @@ const EmployeeModal = () => {
                     }))}
                     disabled={!!view}
                   />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
             <Controller
               control={form.control}
               name="status"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <Field>
                   <FieldLabel htmlFor={field.name + "-input"}>
                     Status
@@ -220,6 +226,9 @@ const EmployeeModal = () => {
                     }))}
                     disabled={!!view}
                   />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -249,7 +258,9 @@ const EmployeeModal = () => {
               name={"email"}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name + "-input"}>Email</FieldLabel>
+                  <FieldLabel htmlFor={field.name + "-input"}>
+                    Email (optional)
+                  </FieldLabel>
                   <Input
                     {...field}
                     id={field.name + "-input"}

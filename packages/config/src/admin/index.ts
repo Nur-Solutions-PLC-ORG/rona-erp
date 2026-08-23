@@ -28,3 +28,5 @@ export const PLATFORM_CONFIG_KEY_LIST = [
   "contact_phone",
   "contact_email",
 ] as const;
+
+export const EID_LENGTH = 5;

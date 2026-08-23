@@ -149,23 +149,25 @@ const OrganizationModal = () => {
                       Slug
                     </FieldLabel>
 
-                    <Button
-                      type="button"
-                      variant={"link"}
-                      onClick={() => {
-                        const name = form.getValues("name");
-                        if (!name) {
-                          toast.info("Please provide name first.");
-                          return;
-                        }
+                    {!modalData?.organization && (
+                      <Button
+                        type="button"
+                        variant={"link"}
+                        onClick={() => {
+                          const name = form.getValues("name");
+                          if (!name) {
+                            toast.info("Please provide name first.");
+                            return;
+                          }
 
-                        form.setValue("slug", stringToSlug(name));
-                      }}
-                      size={"sm"}
-                      className="h-0 cursor-pointer"
-                    >
-                      Generate slug
-                    </Button>
+                          form.setValue("slug", stringToSlug(name));
+                        }}
+                        size={"sm"}
+                        className="h-0 cursor-pointer"
+                      >
+                        Generate slug
+                      </Button>
+                    )}
                   </div>
                   <Input
                     {...field}

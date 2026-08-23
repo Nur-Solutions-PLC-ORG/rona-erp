@@ -1,0 +1,1 @@
+ALTER TABLE "organization_settings" ADD CONSTRAINT "organization_settings_organization_id_unique" UNIQUE("organization_id");

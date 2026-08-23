@@ -316,7 +316,7 @@ export function createColumns<T>({
             <DropdownMenuContent
               alignOffset={12}
               align="center"
-              className="w-52"
+              className="w-52 mx-2"
             >
               {actionsItems.map((item, index) => {
                 const dropDownItem = (

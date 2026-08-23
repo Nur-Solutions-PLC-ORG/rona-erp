@@ -1,5 +1,5 @@
 import { db, pooledDb } from '@/db';
-import { userRoles, users } from '@/db/schema';
+import { userRoles, users } from '@/db/schemas/auth';
 import { Injectable } from '@nestjs/common';
 import {
   and,

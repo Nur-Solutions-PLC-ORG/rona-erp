@@ -5,6 +5,7 @@ import {
   timestamp,
   uuid,
   date,
+  unique,
 } from 'drizzle-orm/pg-core';
 import {
   ORGANIZATION_STATUS_LIST,
@@ -53,20 +54,28 @@ export const organizations = pgTable('organizations', {
     .$onUpdate(() => new Date()),
 });
 
-export const organizationSettings = pgTable('organization_settings', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  organizationId: uuid('organization_id')
-    .references(() => organizations.id, { onDelete: 'cascade' })
-    .notNull(),
-  currency: currencyList('currency').default('ETB').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-});
+export const organizationSettings = pgTable(
+  'organization_settings',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    organizationId: uuid('organization_id')
+      .references(() => organizations.id, { onDelete: 'cascade' })
+      .notNull(),
+    currency: currencyList('currency').default('ETB').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    unique('organization_settings_organization_id_unique').on(
+      table.organizationId,
+    ),
+  ],
+);
 
 export const departments = pgTable('departments', {
   id: uuid('id').primaryKey().defaultRandom(),

@@ -93,7 +93,7 @@ export class AuthService {
   // Verifies code
   async verifyCode(email: string, code: string) {
     const codeKey = `auth:code:${email}`;
-    const storedCode = await redisClient.get<string>(codeKey);
+    const storedCode = String(await redisClient.get<string>(codeKey));
 
     if (!storedCode || storedCode !== code) {
       throw new InvalidCodeException();
@@ -230,7 +230,7 @@ export class AuthService {
     let foundKey: string | null = null;
 
     for (const key of keys) {
-      const storedToken = await redisClient.get<string>(key);
+      const storedToken = String(await redisClient.get<string>(key));
       if (storedToken === token) {
         foundKey = key;
         break;

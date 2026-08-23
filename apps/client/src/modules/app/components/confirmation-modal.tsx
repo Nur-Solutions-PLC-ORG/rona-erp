@@ -3,7 +3,6 @@ import DialogWrapper from "@/components/custom/dialog-wrapper";
 import { Button } from "@/components/ui/button";
 import { DialogClose } from "@/components/ui/dialog";
 import { useConfirmationModalStore } from "@/store";
-import { Loader2 } from "lucide-react";
 
 export function ConfirmationModal() {
   const {

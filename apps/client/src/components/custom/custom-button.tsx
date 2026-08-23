@@ -29,7 +29,9 @@ const CustomButton = ({
         primary &&
           "h-10 px-4 rounded-xl bg-transparent cursor-pointer bg-linear-to-tr! from-primary to-primary via-primary/75",
         className,
-        isPending && "bg-zinc-400",
+        isPending &&
+          (variant == "destructive" ? "bg-red-200/50" : "bg-zinc-300"),
+        variant == "destructive" && "border border-red-700/25",
       )}
       variant={variant}
       size={size}

@@ -13,14 +13,18 @@ import {
   organizationDto,
   organizationListSearchParamsSchema,
   organizationSchema,
+  organizationUpdateSchema,
   organizationSettingsDto,
   organizationSettingsSchema,
+  organizationSettingsUpdateSchema,
   departmentDto,
   departmentListSearchParamsSchema,
   departmentSchema,
+  departmentUpdateSchema,
   employeeDto,
   employeeListSearchParamsSchema,
   employeeSchema,
+  employeeUpdateSchema,
   platformConfigDto,
   platformConfigSchema,
   userDto,
@@ -28,6 +32,7 @@ import {
   userListSearchParamsSchema,
   userSchema,
   userUpdateSchema,
+  branchUpdateSchema,
   organizationSettingsListSearchParamsSchema,
   configsListSearchParamsSchema,
 } from "@rona/validation/admin";
@@ -68,12 +73,19 @@ export type OrganizationSettingsListSearchParamsSchema = z.infer<
 export type UserSchema = z.infer<typeof userSchema>;
 export type UserUpdateSchema = z.infer<typeof userUpdateSchema>;
 export type OrganizationSchema = z.infer<typeof organizationSchema>;
+export type OrganizationUpdateSchema = z.infer<typeof organizationUpdateSchema>;
 export type OrganizationSettingsSchema = z.infer<
   typeof organizationSettingsSchema
 >;
+export type OrganizationSettingsUpdateSchema = z.infer<
+  typeof organizationSettingsUpdateSchema
+>;
 export type DepartmentSchema = z.infer<typeof departmentSchema>;
+export type DepartmentUpdateSchema = z.infer<typeof departmentUpdateSchema>;
 export type BranchSchema = z.infer<typeof branchSchema>;
+export type BranchUpdateSchema = z.infer<typeof branchUpdateSchema>;
 export type EmployeeSchema = z.infer<typeof employeeSchema>;
+export type EmployeeUpdateSchema = z.infer<typeof employeeUpdateSchema>;
 export type PlatformConfigSchema = z.infer<typeof platformConfigSchema>;
 
 // DTOs
