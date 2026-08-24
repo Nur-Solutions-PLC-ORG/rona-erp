@@ -16,7 +16,7 @@ export default function SearchInput({
       <IoIosSearch className="absolute top-1/2 -translate-y-1/2 opacity-25 ml-2.5 size-5" />
       <Input
         className={cn(
-          "pl-10",
+          "pl-10 h-8!",
           translucent && "bg-white/75 border-none",
           className,
         )}

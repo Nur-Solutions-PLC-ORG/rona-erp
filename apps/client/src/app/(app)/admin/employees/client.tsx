@@ -22,7 +22,10 @@ const Client = () => {
     customSearchParams.requestSearchParams,
     paginationData,
   );
-  const { organizationsNameLookup } = useAdminOrganizations();
+  const {
+    organizationsNameLookup,
+    organizationsFilter,
+  } = useAdminOrganizations();
 
   const columns = createColumns<EmployeeDto>({
     includeActions: true,
@@ -91,6 +94,9 @@ const Client = () => {
       <DataHeader<EmployeeListSearchParamsSchema>
         searchParamsSchema={employeeListSearchParamsSchema}
         {...customSearchParams}
+        replacements={{
+          orgId: organizationsFilter,
+        }}
         head={
           <>
             <CustomButton

@@ -6,14 +6,23 @@ import Dropdown from "./dropdown";
 import { slugToString } from "@/lib/utils";
 import { Button } from "../ui/button";
 
+type FilterOption = { label: string; value: string };
+
+type FilterReplacement = {
+  label?: string;
+  options: FilterOption[];
+};
+
 type Props<TSearchParams> = {
   head?: React.ReactNode;
   searchParamsSchema?: z.ZodObject;
+  replacements?: Record<string, FilterReplacement>;
 } & UseCustomSearchParamsReturn<TSearchParams>;
 
 function DataHeader<TSearchParams>({
   head,
   searchParamsSchema,
+  replacements = {},
   searchParams,
   updateParams,
   clearParams,
@@ -56,8 +65,18 @@ function DataHeader<TSearchParams>({
 
         {/* Dropdowns */}
         <div className="flex items-center gap-4">
-          {Object.keys(schemaInfo.keyValueLists).map((key) => {
-            const options = schemaInfo.keyValueLists[key];
+          {[
+            ...Object.keys(schemaInfo.keyValueLists),
+            ...Object.keys(replacements).filter(
+              (key) => !schemaInfo.keyValueLists[key],
+            ),
+          ].map((key) => {
+            const replacement = replacements[key];
+            const options = replacement?.options ??
+              schemaInfo.keyValueLists[key].map((item) => ({
+                label: slugToString(item),
+                value: item,
+              }));
             const value = searchParams[
               key as keyof TSearchParams
             ] as unknown as string;
@@ -65,15 +84,23 @@ function DataHeader<TSearchParams>({
             return (
               <div key={key}>
                 <Dropdown
-                  placeholder={"Select " + slugToString(key)}
+                  placeholder={
+                    "Select " + (replacement?.label ?? slugToString(key))
+                  }
                   value={value}
                   onChange={(newValue) => {
-                    updateParams({ [key]: newValue } as Partial<TSearchParams>);
+                    if (!newValue) {
+                      removeParams([key as keyof TSearchParams]);
+                      return;
+                    }
+                    updateParams({
+                      [key]: newValue,
+                    } as unknown as Partial<TSearchParams>);
                   }}
-                  options={options.map((item) => ({
-                    label: slugToString(item),
-                    value: item,
-                  }))}
+                  options={[
+                    { label: "All", value: "" },
+                    ...options,
+                  ]}
                 ></Dropdown>
               </div>
             );

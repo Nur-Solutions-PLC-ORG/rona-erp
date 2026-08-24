@@ -51,8 +51,11 @@ export class DepartmentsRepository {
     return Boolean(records[0]);
   }
   private listConditions(params: DepartmentListSearchParamsSchema): SQL[] {
-    return params.searchQuery
-      ? [ilike(departments.name, `%${params.searchQuery}%`)]
-      : [];
+    const conditions: SQL[] = [];
+    if (params.orgId)
+      conditions.push(eq(departments.organizationId, params.orgId));
+    if (params.searchQuery)
+      conditions.push(ilike(departments.name, `%${params.searchQuery}%`));
+    return conditions;
   }
 }

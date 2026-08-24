@@ -137,6 +137,7 @@ export class UsersRepository {
   private listConditions(params: UserListSearchParamsSchema): SQL[] {
     const conditions: SQL[] = [];
 
+    if (params.orgId) conditions.push(eq(users.organizationId, params.orgId));
     if (params.status) conditions.push(eq(users.status, params.status));
     if (params.position)
       conditions.push(eq(userRoles.position, params.position));

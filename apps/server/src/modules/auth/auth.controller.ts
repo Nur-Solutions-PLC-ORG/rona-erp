@@ -145,8 +145,8 @@ export class AuthController {
   }
 
   @Get('google/url')
-  getGoogleUrl(): ApiResponse<string> {
-    const url = this.authService.getGoogleAuthUrl();
+  getGoogleUrl(@Query('redirect') redirect?: string): ApiResponse<string> {
+    const url = this.authService.getGoogleAuthUrl(redirect);
     return {
       success: true,
       statusCode: HttpStatus.OK,
@@ -156,7 +156,11 @@ export class AuthController {
   }
 
   @Get('google/callback')
-  async googleCallback(@Query('code') code: string, @Res() res: Response) {
+  async googleCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Res() res: Response,
+  ) {
     const clientUrl = process.env.CLIENT_URL || DEFAULT_CLIENT_URL;
     try {
       if (!code) throw new Error('No code provided');
@@ -170,7 +174,12 @@ export class AuthController {
         maxAge: SESSION_DURATION,
       });
 
-      res.redirect(`${clientUrl}${CLIENT_AUTH_GOOGLE_CALLBACK_PAGE}`);
+      const redirectQuery = state
+        ? `?redirect=${encodeURIComponent(state)}`
+        : '';
+      res.redirect(
+        `${clientUrl}${CLIENT_AUTH_GOOGLE_CALLBACK_PAGE}${redirectQuery}`,
+      );
     } catch (e: any) {
       if (e instanceof Error && e.message) {
         res.redirect(

@@ -26,7 +26,7 @@ import { ResendVerificationCodeSchema, SignInSchema } from "@rona/types/auth";
 import { signInSchema } from "@rona/validation/auth";
 import { RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
@@ -37,8 +37,25 @@ const defaultValues: SignInSchema = {
   password: "",
 };
 
+const getSafeRedirectPath = (redirectPath: string | null) => {
+  if (
+    !redirectPath ||
+    !redirectPath.startsWith("/") ||
+    redirectPath.startsWith("//")
+  ) {
+    return null;
+  }
+
+  return redirectPath;
+};
+
 const Client = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const redirectPath =
+    getSafeRedirectPath(searchParams.get("redirect")) ??
+    CLIENT_APP_DASHBOARD_PAGE;
 
   const form = useForm<SignInSchema>({
     resolver: zodResolver(signInSchema),
@@ -73,7 +90,7 @@ const Client = () => {
         setTFAEnabled(true);
         setResendIn(60);
       } else {
-        router.push(CLIENT_APP_DASHBOARD_PAGE);
+        router.push(redirectPath);
         location.reload();
       }
     },
@@ -104,7 +121,7 @@ const Client = () => {
   }, [resendIn]);
 
   const handleContinueWithGoogleClick = async () => {
-    googleMutation.mutate({});
+    googleMutation.mutate({ searchParams: { redirect: redirectPath } });
   };
 
   const onSubmit = (values: SignInSchema) => {

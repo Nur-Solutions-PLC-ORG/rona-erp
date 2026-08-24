@@ -63,6 +63,8 @@ export class EmployeesRepository {
   }
   private listConditions(params: EmployeeListSearchParamsSchema): SQL[] {
     const conditions: SQL[] = [];
+    if (params.orgId)
+      conditions.push(eq(employees.organizationId, params.orgId));
     if (params.status) conditions.push(eq(employees.status, params.status));
     if (params.searchQuery)
       conditions.push(ilike(employees.fullName, `%${params.searchQuery}%`));

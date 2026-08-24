@@ -27,7 +27,10 @@ const Client = () => {
       paginationData,
     );
 
-  const { organizationsNameLookup } = useAdminOrganizations();
+  const {
+    organizationsNameLookup,
+    organizationsFilter,
+  } = useAdminOrganizations();
 
   const columns = createColumns<UserDto>({
     includeActions: true,
@@ -149,6 +152,9 @@ const Client = () => {
           </>
         }
         {...customSearchParams}
+        replacements={{
+          orgId: organizationsFilter,
+        }}
       />
       <DataTable
         columns={columns}

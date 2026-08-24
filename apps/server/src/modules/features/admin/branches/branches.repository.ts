@@ -53,8 +53,11 @@ export class BranchesRepository {
   }
 
   private listConditions(params: BranchListSearchParamsSchema): SQL[] {
-    return params.searchQuery
-      ? [ilike(branches.name, `%${params.searchQuery}%`)]
-      : [];
+    const conditions: SQL[] = [];
+    if (params.orgId)
+      conditions.push(eq(branches.organizationId, params.orgId));
+    if (params.searchQuery)
+      conditions.push(ilike(branches.name, `%${params.searchQuery}%`));
+    return conditions;
   }
 }

@@ -21,7 +21,7 @@ const Client = () => {
     customSearchParams.requestSearchParams,
     paginationData,
   );
-  const { organizations } = useAdminOrganizations();
+  const { organizations, organizationsFilter } = useAdminOrganizations();
 
   const columns = createColumns<BranchDto>({
     includeActions: true,
@@ -73,6 +73,9 @@ const Client = () => {
     <>
       <DataHeader<BranchListSearchParamsSchema>
         searchParamsSchema={branchListSearchParamsSchema}
+        replacements={{
+          orgId: organizationsFilter,
+        }}
         head={
           <CustomButton
             primary

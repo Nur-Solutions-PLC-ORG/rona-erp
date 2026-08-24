@@ -185,8 +185,8 @@ export class AuthService {
   }
 
   // generates google auth url
-  getGoogleAuthUrl() {
-    return getGoogleAuthUrl();
+  getGoogleAuthUrl(state?: string) {
+    return getGoogleAuthUrl(state);
   }
 
   // handles google callback
