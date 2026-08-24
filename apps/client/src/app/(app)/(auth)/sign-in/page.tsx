@@ -1,5 +1,7 @@
 import { Metadata } from "next";
 import Client from "./client";
+import { Suspense } from "react";
+import LoaderPage from "@/components/custom/loader-page";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -7,7 +9,11 @@ export const metadata: Metadata = {
 };
 
 const Page = () => {
-  return <Client />;
+  return (
+    <Suspense fallback={<LoaderPage />}>
+      <Client />
+    </Suspense>
+  );
 };
 
 export default Page;

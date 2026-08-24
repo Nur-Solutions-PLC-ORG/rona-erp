@@ -5,6 +5,7 @@ import type {
   DepartmentSchema,
   DepartmentUpdateSchema,
 } from '@rona/types/admin';
+import { departmentDto } from '@rona/validation/admin';
 import { AdminDepartmentNotFoundException } from './departments.exception';
 import { DepartmentsRepository } from './departments.repository';
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
@@ -61,12 +62,11 @@ export class DepartmentsService {
   private toDto(
     department: Awaited<ReturnType<DepartmentsRepository['findById']>>,
   ): DepartmentDto {
-    return {
-      id: department!.id,
-      organizationId: department!.organizationId,
-      name: department!.name,
-      module: department!.modules as DepartmentDto['module'],
-      createdAt: department!.createdAt,
-    };
+    const { modules, ...dto } = department;
+
+    return departmentDto.parse({
+      ...dto,
+      module: modules as DepartmentDto['module'],
+    });
   }
 }

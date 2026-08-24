@@ -11,7 +11,7 @@ import { useSidebarStore } from "@/store";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { FiChevronDown, FiChevronLeft, FiMenu } from "react-icons/fi";
+import { FiChevronDown, FiMenu } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
 
 type SidebarOption = {
@@ -131,7 +131,7 @@ const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
       <div className="flex flex-col">
         {options.map((option, i) => {
           const isActive = pathname == option.href;
-          const isExpanded = expandedItems[option.href] ?? true;
+          const isExpanded = expandedItems[option.href] ?? false;
 
           const link = (
             <div key={option.href + i.toString()} className="flex items-center">

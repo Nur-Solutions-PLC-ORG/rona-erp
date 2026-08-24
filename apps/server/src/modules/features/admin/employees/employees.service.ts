@@ -6,6 +6,7 @@ import type {
   EmployeeSchema,
   EmployeeUpdateSchema,
 } from '@rona/types/admin';
+import { employeeDto } from '@rona/validation/admin';
 import {
   AdminEmployeeIdExistsException,
   AdminEmployeeNotFoundException,
@@ -81,17 +82,13 @@ export class EmployeesService {
   private toDto(
     employee: Awaited<ReturnType<EmployeesRepository['findById']>>,
   ): EmployeeDto {
-    return {
-      id: employee!.id,
-      organizationId: employee!.organizationId,
-      eId: employee!.eid,
-      fullName: employee!.fullName,
-      phone: employee!.phone,
-      ...(employee!.email ? { email: employee!.email } : {}),
-      gender: employee!.gender,
-      birthDate: new Date(`${employee!.birthDate}T00:00:00.000Z`),
-      status: employee!.status,
-      createdAt: employee!.createdAt,
-    };
+    const { eid, birthDate, email, ...dto } = employee;
+
+    return employeeDto.parse({
+      ...dto,
+      eId: eid,
+      ...(email ? { email } : {}),
+      birthDate: new Date(`${birthDate}T00:00:00.000Z`),
+    });
   }
 }

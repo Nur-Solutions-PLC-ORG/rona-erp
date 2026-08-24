@@ -8,6 +8,7 @@ import type {
   UserSchema,
   UserUpdateSchema,
 } from '@rona/types/admin';
+import { userDto } from '@rona/validation/admin';
 import * as bcrypt from 'bcrypt';
 import {
   AdminUserEmailExistsException,
@@ -118,26 +119,16 @@ export class UsersService {
     await redisClient.del(`auth:role:${id}`);
   }
 
-  private toUserDto(record: {
-    user: {
-      id: string;
-      fullName: string;
-      email: string;
-      organizationId: string | null;
-      status: UserDto['status'];
-      createdAt: Date;
-    };
-    role: UserDto['role'];
-  }): UserDto {
-    return {
-      id: record.user.id,
-      fullName: record.user.fullName,
-      email: record.user.email,
-      organizationId: record.user.organizationId,
-      status: record.user.status,
+  private toUserDto(
+    record: Awaited<ReturnType<UsersRepository['findById']>>,
+  ): UserDto {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash, ...user } = record.user;
+
+    return userDto.parse({
+      ...user,
       role: record.role,
-      createdAt: record.user.createdAt,
-    };
+    });
   }
 
   private generatePassword(): string {

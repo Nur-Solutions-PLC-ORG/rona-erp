@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Client from "./client";
 import { Suspense } from "react";
+import LoaderPage from "@/components/custom/loader-page";
 
 export const metadata: Metadata = {
   title: "Error Occurred",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 
 const Page = () => {
   return (
-    <Suspense>
+    <Suspense fallback={<LoaderPage />}>
       <Client />
     </Suspense>
   );
