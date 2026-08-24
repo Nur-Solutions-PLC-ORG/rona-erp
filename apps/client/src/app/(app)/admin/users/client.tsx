@@ -21,16 +21,11 @@ const Client = () => {
     useCustomSearchParams<UserListSearchParamsSchema>();
 
   const { paginationData, pagination } = usePagination();
-  const { users, deleteMutation, resetPasswordMutation, isLoading } =
-    useAdminUsers(
-      customSearchParams.requestSearchParams,
-      paginationData,
-    );
+  const { users, deleteMutation, resetPasswordMutation, isLoading, meta } =
+    useAdminUsers(customSearchParams.requestSearchParams, paginationData);
 
-  const {
-    organizationsNameLookup,
-    organizationsFilter,
-  } = useAdminOrganizations();
+  const { organizationsNameLookup, organizationsFilter } =
+    useAdminOrganizations();
 
   const columns = createColumns<UserDto>({
     includeActions: true,
@@ -122,12 +117,10 @@ const Client = () => {
               });
 
               if (result.success && result.data) {
-                useModalStore
-                  .getState()
-                  .openModal("admin-user-credentials", {
-                    credentials: result.data,
-                    title: "Password reset successfully",
-                  });
+                useModalStore.getState().openModal("admin-user-credentials", {
+                  credentials: result.data,
+                  title: "Password reset successfully",
+                });
               }
             },
           });
@@ -161,6 +154,7 @@ const Client = () => {
         data={users}
         loading={isLoading}
         pagination={pagination}
+        responseMeta={meta}
       />
     </>
   );

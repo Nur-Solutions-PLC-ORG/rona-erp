@@ -17,7 +17,7 @@ const Client = () => {
   const customSearchParams =
     useCustomSearchParams<BranchListSearchParamsSchema>();
   const { pagination, paginationData } = usePagination();
-  const { branches, isLoading, deleteMutation } = useAdminBranches(
+  const { branches, isLoading, deleteMutation, meta } = useAdminBranches(
     customSearchParams.requestSearchParams,
     paginationData,
   );
@@ -92,6 +92,7 @@ const Client = () => {
         data={branches}
         loading={isLoading}
         pagination={pagination}
+        responseMeta={meta}
       />
     </>
   );

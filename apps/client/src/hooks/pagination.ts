@@ -6,9 +6,7 @@ export type PaginationData = {
   limit: number;
 };
 
-export type Pagination = {
-  page: number;
-  limit: number;
+export type Pagination = PaginationData & {
   setPage: (value: number) => void;
   setLimit: (value: number) => void;
 };
@@ -21,6 +19,7 @@ export const usePagination = () => {
     page,
     limit,
   };
+
   return {
     pagination: {
       ...paginationData,

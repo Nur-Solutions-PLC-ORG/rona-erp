@@ -21,7 +21,7 @@ const Client = () => {
   const customSearchParams =
     useCustomSearchParams<DepartmentListSearchParamsSchema>();
   const { pagination, paginationData } = usePagination();
-  const { departments, isLoading, deleteMutation } = useAdminDepartments(
+  const { departments, isLoading, deleteMutation, meta } = useAdminDepartments(
     customSearchParams.requestSearchParams,
     paginationData,
   );
@@ -103,6 +103,7 @@ const Client = () => {
         data={departments}
         loading={isLoading}
         pagination={pagination}
+        responseMeta={meta}
       />
     </>
   );

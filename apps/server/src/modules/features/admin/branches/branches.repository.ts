@@ -3,12 +3,13 @@ import { branches } from '@/db/schemas/admin';
 import { Injectable } from '@nestjs/common';
 import { and, count, desc, eq, ilike, type SQL } from 'drizzle-orm';
 import type { BranchListSearchParamsSchema } from '@rona/types/admin';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 @Injectable()
 export class BranchesRepository {
   async findMany(params: BranchListSearchParamsSchema) {
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 25;
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
     const conditions = this.listConditions(params);
     const where = conditions.length ? and(...conditions) : undefined;
     const [records, totalResult] = await Promise.all([

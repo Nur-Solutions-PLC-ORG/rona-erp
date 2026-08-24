@@ -3,15 +3,28 @@ import type {
   PlatformConfigDto,
   PlatformConfigKey,
   PlatformConfigSchema,
+  ConfigsListSearchParamsSchema,
 } from '@rona/types/admin';
 import { PlatformConfigsRepository } from './platform-configs.repository';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 @Injectable()
 export class PlatformConfigsService {
   constructor(private readonly repository: PlatformConfigsRepository) {}
 
-  async list(): Promise<PlatformConfigDto[]> {
-    return this.repository.findMany();
+  async list(params: ConfigsListSearchParamsSchema) {
+    const { records, total } = await this.repository.findMany(params);
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
+    return {
+      configs: records,
+      meta: {
+        page,
+        limit,
+        totalItems: total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async get(key: PlatformConfigKey): Promise<PlatformConfigDto | undefined> {

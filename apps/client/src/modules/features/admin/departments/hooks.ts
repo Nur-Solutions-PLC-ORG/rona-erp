@@ -10,7 +10,7 @@ export const useAdminDepartments = (
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-departments", JSON.stringify(searchParams)],
+    queryKey: ["admin-departments", JSON.stringify(searchParams), pagination],
     queryFn: () =>
       ApiGetDepartments({
         searchParams: {
@@ -39,5 +39,6 @@ export const useAdminDepartments = (
     departments: items,
     isLoading,
     deleteMutation,
+    meta: data?.meta,
   };
 };

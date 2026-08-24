@@ -108,7 +108,7 @@ export function DataTable<TData, TValue>({
                   <TableRow>
                     <TableCell
                       colSpan={table.getAllColumns().length}
-                      className="h-14 opacity-25 animate-pulse px-6"
+                      className="h-12 opacity-25 animate-pulse px-6"
                     >
                       <RiLoader5Fill className="size-5 animate-spin inline mr-2" />
                       Loading...
@@ -125,7 +125,7 @@ export function DataTable<TData, TValue>({
                               : cellIdx === arr.length - 1
                                 ? "pr-6"
                                 : "px-6",
-                            "h-14",
+                            "h-12",
                           )}
                           key={cell.id}
                         >
@@ -141,7 +141,7 @@ export function DataTable<TData, TValue>({
                   <TableRow>
                     <TableCell
                       colSpan={table.getAllColumns().length}
-                      className="h-14 px-6 opacity-50"
+                      className="h-12 px-6 opacity-50"
                     >
                       No results.
                     </TableCell>
@@ -152,11 +152,12 @@ export function DataTable<TData, TValue>({
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </div>
+
         {pagination && (
           <div className="flex px-6 mt-auto h-16 border-t border-border/25">
-            <div className="flex items-center gap-6">
+            <div className="flex flex-1 items-center gap-6">
               <div className="pl-2 h-9 rounded-md gap-2 flex items-center">
-                <p className="my-auto text-sm opacity-75">Per Page</p>
+                <p className="my-auto text-sm opacity-75">Showing</p>
                 <Dropdown
                   className="min-w-0 w-20! max-w-20! h-8"
                   options={PAGE_SIZE_OPTIONS}
@@ -164,8 +165,13 @@ export function DataTable<TData, TValue>({
                   value={pagination.limit?.toString() || ""}
                   onChange={(e) => pagination.setLimit(Number(e))}
                 />
+                <p className="my-auto text-sm opacity-75">
+                  of <span>{responseMeta?.totalItems}</span> item
+                  {(responseMeta?.totalItems || 0) > 1 ? "s" : ""}
+                </p>
               </div>
-              <div className="pl-2 h-9 rounded-md gap-2 flex items-center">
+
+              <div className="pl-2 h-9 rounded-md gap-2 flex items-center ml-auto">
                 <p className="my-auto text-sm opacity-75">Page</p>
                 <div className="flex border rounded-md h-8">
                   <FiChevronLeft

@@ -10,7 +10,7 @@ export const useAdminBranches = (
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-branches", JSON.stringify(searchParams)],
+    queryKey: ["admin-branches", JSON.stringify(searchParams), pagination],
     queryFn: () =>
       ApiGetBranches({
         searchParams: {
@@ -39,5 +39,6 @@ export const useAdminBranches = (
     branches: items,
     isLoading,
     deleteMutation,
+    meta: data?.meta,
   };
 };

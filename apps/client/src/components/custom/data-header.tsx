@@ -5,6 +5,7 @@ import { getSchemaInfo } from "@/lib/zod";
 import Dropdown from "./dropdown";
 import { slugToString } from "@/lib/utils";
 import { Button } from "../ui/button";
+import { useEffect, useRef, useState } from "react";
 
 type FilterOption = { label: string; value: string };
 
@@ -31,6 +32,19 @@ function DataHeader<TSearchParams>({
   const schemaInfo = getSchemaInfo(searchParamsSchema ?? z.object({}));
   const SEARCH_QUERY_KEY = "searchQuery";
   const includeSearchQuery = schemaInfo.hasKey(SEARCH_QUERY_KEY);
+  const searchQuery = (searchParams[SEARCH_QUERY_KEY as keyof TSearchParams] ||
+    "") as string;
+  const [searchQueryInput, setSearchQueryInput] = useState(searchQuery);
+  const searchQueryTimeout = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    return () => window.clearTimeout(searchQueryTimeout.current);
+  }, []);
+
+  const handleClearParams = () => {
+    setSearchQueryInput("");
+    clearParams();
+  };
 
   return (
     <div id="data-header" className="flex flex-col py-4 gap-5">
@@ -44,18 +58,22 @@ function DataHeader<TSearchParams>({
       <div className="px-5 flex flex-col md:flex-row gap-4 md:items-center">
         {includeSearchQuery && (
           <SearchInput
-            value={
-              (searchParams[SEARCH_QUERY_KEY as keyof TSearchParams] ||
-                "") as string
-            }
+            value={searchQueryInput}
             onChange={(e) => {
-              if (!e.target.value) {
+              const value = e.target.value;
+              setSearchQueryInput(value);
+              window.clearTimeout(searchQueryTimeout.current);
+
+              if (!value) {
                 removeParams([SEARCH_QUERY_KEY as keyof TSearchParams]);
                 return;
               }
-              updateParams({
-                [SEARCH_QUERY_KEY as keyof TSearchParams]: e.target.value,
-              } as Partial<TSearchParams>);
+
+              searchQueryTimeout.current = window.setTimeout(() => {
+                updateParams({
+                  [SEARCH_QUERY_KEY as keyof TSearchParams]: value,
+                } as Partial<TSearchParams>);
+              }, 600);
             }}
             className="h-9 bg-white"
             containerClassName="flex-1"
@@ -72,7 +90,8 @@ function DataHeader<TSearchParams>({
             ),
           ].map((key) => {
             const replacement = replacements[key];
-            const options = replacement?.options ??
+            const options =
+              replacement?.options ??
               schemaInfo.keyValueLists[key].map((item) => ({
                 label: slugToString(item),
                 value: item,
@@ -97,17 +116,14 @@ function DataHeader<TSearchParams>({
                       [key]: newValue,
                     } as unknown as Partial<TSearchParams>);
                   }}
-                  options={[
-                    { label: "All", value: "" },
-                    ...options,
-                  ]}
+                  options={[...options]}
                 ></Dropdown>
               </div>
             );
           })}
 
           {!!Object.values(searchParams as object).length && (
-            <Button onClick={() => clearParams()} variant="outline">
+            <Button onClick={handleClearParams} variant="outline">
               Clear
             </Button>
           )}

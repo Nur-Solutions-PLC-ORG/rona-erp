@@ -10,7 +10,7 @@ export const useAdminUsers = (
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-users", JSON.stringify(searchParams)],
+    queryKey: ["admin-users", JSON.stringify(searchParams), pagination],
     queryFn: () =>
       ApiGetUsers({
         searchParams: {
@@ -49,6 +49,7 @@ export const useAdminUsers = (
     users: items,
     isLoading,
     deleteMutation,
+    meta: data?.meta,
     resetPasswordMutation,
   };
 };

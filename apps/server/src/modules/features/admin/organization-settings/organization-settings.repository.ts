@@ -3,12 +3,13 @@ import { organizationSettings } from '@/db/schemas/admin';
 import { Injectable } from '@nestjs/common';
 import { and, count, desc, eq, ne, type SQL } from 'drizzle-orm';
 import type { OrganizationSettingsListSearchParamsSchema } from '@rona/types/admin';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 @Injectable()
 export class OrganizationSettingsRepository {
   async findMany(params: OrganizationSettingsListSearchParamsSchema) {
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 25;
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
     const where = this.listConditions(params).length
       ? and(...this.listConditions(params))
       : undefined;

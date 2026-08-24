@@ -8,7 +8,11 @@ export const useAdminPlatformConfigs = (
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-platform-configs", JSON.stringify(searchParams)],
+    queryKey: [
+      "admin-platform-configs",
+      JSON.stringify(searchParams),
+      pagination,
+    ],
     queryFn: () =>
       ApiGetPlatformConfigs({
         searchParams: {
@@ -23,5 +27,6 @@ export const useAdminPlatformConfigs = (
   return {
     platformConfigs: items,
     isLoading,
+    meta: data?.meta,
   };
 };

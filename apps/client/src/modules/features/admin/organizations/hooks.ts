@@ -11,7 +11,7 @@ export const useAdminOrganizations = (
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-organizations", JSON.stringify(searchParams)],
+    queryKey: ["admin-organizations", JSON.stringify(searchParams), pagination],
     queryFn: () =>
       ApiGetOrganizations({
         searchParams: {
@@ -49,6 +49,7 @@ export const useAdminOrganizations = (
     organizations: items,
     isLoading,
     deleteMutation,
+    meta: data?.meta,
     organizationsNameLookup,
     organizationsFilter,
   };

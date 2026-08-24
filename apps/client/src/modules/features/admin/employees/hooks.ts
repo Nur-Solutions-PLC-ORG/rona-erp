@@ -10,7 +10,7 @@ export const useAdminEmployees = (
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-employees", JSON.stringify(searchParams)],
+    queryKey: ["admin-employees", JSON.stringify(searchParams), pagination],
     queryFn: () =>
       ApiGetEmployees({
         searchParams: {
@@ -39,5 +39,6 @@ export const useAdminEmployees = (
     employees: items,
     isLoading,
     deleteMutation,
+    meta: data?.meta,
   };
 };

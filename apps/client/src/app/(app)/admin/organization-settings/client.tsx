@@ -21,7 +21,7 @@ const Client = () => {
     useCustomSearchParams<OrganizationSettingsListSearchParamsSchema>();
   const { pagination, paginationData } = usePagination();
 
-  const { organizationSettings, isLoading, deleteMutation } =
+  const { organizationSettings, isLoading, deleteMutation, meta } =
     useAdminOrganizationSettings(
       customSearchParams.requestSearchParams,
       paginationData,
@@ -99,6 +99,7 @@ const Client = () => {
         data={organizationSettings}
         loading={isLoading}
         pagination={pagination}
+        responseMeta={meta}
       />
     </>
   );

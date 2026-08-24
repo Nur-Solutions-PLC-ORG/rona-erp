@@ -14,6 +14,7 @@ import {
   AdminUserNotFoundException,
 } from './users.exception';
 import { UsersRepository } from './users.repository';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 @Injectable()
 export class UsersService {
@@ -21,8 +22,8 @@ export class UsersService {
 
   async listUsers(params: UserListSearchParamsSchema) {
     const { records, total } = await this.usersRepository.findMany(params);
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 25;
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
 
     return {
       users: records.map((record) => this.toUserDto(record)),

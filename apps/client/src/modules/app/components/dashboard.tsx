@@ -11,15 +11,33 @@ import { useSidebarStore } from "@/store";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { FiMenu } from "react-icons/fi";
+import { FiChevronDown, FiChevronLeft, FiMenu } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
 
-type SidebarOptions = {
+type SidebarOption = {
   header?: string;
   title: string;
   href: string;
   Icon?: IconType | (() => React.ReactNode);
-}[];
+  children?: SidebarOption[];
+};
+
+type SidebarOptions = SidebarOption[];
+
+const findSidebarOption = (
+  options: SidebarOptions,
+  pathname: string,
+): SidebarOption | undefined => {
+  for (const option of options) {
+    if (option.href === pathname) return option;
+
+    const childOption =
+      option.children && findSidebarOption(option.children, pathname);
+    if (childOption) return childOption;
+  }
+
+  return undefined;
+};
 
 type Props = {
   children: React.ReactNode;
@@ -75,11 +93,9 @@ const DashboardNav = ({ isMobile, options, pathname }: NavProps) => {
         )}
 
         {options && (
-          <div>
-            <h1 className="text-2xl font-heading font-medium">
-              {options.find((item) => item.href == pathname)?.title}
-            </h1>
-          </div>
+          <h1 className="text-2xl font-heading font-medium">
+            {findSidebarOption(options, pathname)?.title}
+          </h1>
         )}
         <span className="ml-auto" />
         <UserButton />
@@ -97,9 +113,17 @@ type SidebarProps = {
 const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
   const { open, setOpen } = useSidebarStore();
   const { isAdmin } = useSession();
+  const [expandedItems, setExpandedItems] = React.useState<
+    Record<string, boolean>
+  >({});
 
   const sidebar = (
-    <div className="max-w-60 border-r bg-sidebar flex-1 flex flex-col">
+    <div
+      className={cn(
+        "border-r bg-sidebar flex flex-col transition-[width] duration-200",
+        "w-60",
+      )}
+    >
       <div className="flex h-20 px-4 gap-3 justify-center border-b border-border/10 items-center">
         <Logo admin={isAdmin} />
       </div>
@@ -107,32 +131,91 @@ const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
       <div className="flex flex-col">
         {options.map((option, i) => {
           const isActive = pathname == option.href;
+          const isExpanded = expandedItems[option.href] ?? true;
 
           const link = (
-            <Link
-              key={option.href + i.toString()}
-              onClick={() => {
-                if (sheet) setOpen(false);
-              }}
-              href={option.href}
-              className={cn(
-                "flex items-center gap-4  cursor-pointer ",
-                "px-4 py-2 hover:opacity-90 rounded-l-xl ml-2",
-                isActive
-                  ? "bg-secondary/10 text-white"
-                  : "hover:bg-secondary/10 text-white/50 hover:text-white/75",
-              )}
-            >
-              {option.Icon ? (
-                <option.Icon className={cn("size-4", isActive && "")} />
-              ) : (
-                <span className="size-4 relative opacity-30">
-                  <span className="border-l absolute h-3 w-2 bottom-full right-0" />
-                  <span className="size-2 absolute top-0 right-0 border-l border-b" />
-                </span>
-              )}
-              <span>{option.title}</span>
-            </Link>
+            <div key={option.href + i.toString()} className="flex items-center">
+              <Link
+                onClick={() => {
+                  if (sheet) setOpen(false);
+                }}
+                href={option.href}
+                className={cn(
+                  "flex flex-1 items-center gap-4 cursor-pointer",
+                  "px-4 py-2 hover:opacity-90 rounded-l-xl ml-2",
+                  "relative",
+                  isActive
+                    ? "bg-secondary/10 text-white"
+                    : "hover:bg-secondary/10 text-white/50 hover:text-white/75",
+                )}
+              >
+                {option.Icon ? (
+                  <option.Icon className={cn("size-4", isActive && "")} />
+                ) : (
+                  <></>
+                )}
+                <span>{option.title}</span>
+                {option.children && (
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+
+                      setExpandedItems((previous) => ({
+                        ...previous,
+                        [option.href]: !isExpanded,
+                      }));
+                    }}
+                    size="icon-sm"
+                    variant="ghost"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 hover:bg-secondary/3 hover:text-white"
+                  >
+                    <FiChevronDown
+                      className={cn(
+                        "size-4 transition-transform",
+                        isExpanded && "rotate-180",
+                      )}
+                    />
+                  </Button>
+                )}
+              </Link>
+            </div>
+          );
+
+          const children = option.children && isExpanded && (
+            <div className="flex flex-col">
+              {option.children.map((child, ic) => {
+                const childIsActive = pathname === child.href;
+
+                return (
+                  <Link
+                    key={child.href}
+                    onClick={() => {
+                      if (sheet) setOpen(false);
+                    }}
+                    href={child.href}
+                    className={cn(
+                      "flex items-center gap-4 cursor-pointer px-4 py-2 hover:opacity-90 rounded-l-xl ml-2",
+                      childIsActive
+                        ? "bg-secondary/10 text-white"
+                        : "hover:bg-secondary/10 text-white/50 hover:text-white/75",
+                    )}
+                  >
+                    <span className="size-4 relative opacity-15">
+                      <span
+                        className={cn(
+                          "border-l absolute h-3 w-2 bottom-full right-0",
+                          ic == 0 ? "h-3" : "h-8",
+                        )}
+                      />
+                      <span className="size-2 absolute top-0 right-0 border-l border-b" />
+                      <span className="w-1.5 h-2 absolute top-0 left-full border-b" />
+                    </span>
+                    <span>{child.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
           );
 
           return option.header ? (
@@ -141,9 +224,13 @@ const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
                 {option.header}
               </span>
               {link}
+              {children}
             </div>
           ) : (
-            link
+            <React.Fragment key={option.href}>
+              {link}
+              {children}
+            </React.Fragment>
           );
         })}
       </div>

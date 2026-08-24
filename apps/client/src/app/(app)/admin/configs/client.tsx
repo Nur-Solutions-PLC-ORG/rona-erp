@@ -18,7 +18,7 @@ const Client = () => {
   const customSearchParams =
     useCustomSearchParams<ConfigsListSearchParamsSchema>();
   const { pagination, paginationData } = usePagination();
-  const { platformConfigs, isLoading } = useAdminPlatformConfigs(
+  const { platformConfigs, isLoading, meta } = useAdminPlatformConfigs(
     customSearchParams.requestSearchParams,
     paginationData,
   );
@@ -76,6 +76,7 @@ const Client = () => {
         data={platformConfigs}
         loading={isLoading}
         pagination={pagination}
+        responseMeta={meta}
       />
     </>
   );

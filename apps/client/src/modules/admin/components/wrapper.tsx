@@ -31,18 +31,11 @@ const AdminWrapper = ({ children }: Props) => {
             title: "Organizations",
             href: "/admin/organizations",
             Icon: LuBuilding2,
-          },
-          {
-            title: "Departments",
-            href: "/admin/departments",
-          },
-          {
-            title: "Branches",
-            href: "/admin/branches",
-          },
-          {
-            title: "Employees",
-            href: "/admin/employees",
+            children: [
+              { title: "Departments", href: "/admin/departments" },
+              { title: "Branches", href: "/admin/branches" },
+              { title: "Employees", href: "/admin/employees" },
+            ],
           },
           {
             header: "Settings",

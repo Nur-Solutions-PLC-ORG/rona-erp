@@ -10,3 +10,6 @@ export const PAGE_SIZE_OPTIONS = [
   { label: "75", value: "75" },
   { label: "100", value: "100" },
 ];
+
+export const DEFAULT_PAGE_SIZE = 25;
+export const DEFAULT_PAGE = 1;

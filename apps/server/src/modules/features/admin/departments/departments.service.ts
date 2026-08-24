@@ -7,14 +7,15 @@ import type {
 } from '@rona/types/admin';
 import { AdminDepartmentNotFoundException } from './departments.exception';
 import { DepartmentsRepository } from './departments.repository';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 @Injectable()
 export class DepartmentsService {
   constructor(private readonly repository: DepartmentsRepository) {}
   async listDepartments(params: DepartmentListSearchParamsSchema) {
     const { records, total } = await this.repository.findMany(params);
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 25;
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
     return {
       departments: records.map((record) => this.toDto(record)),
       meta: {

@@ -18,14 +18,12 @@ const Client = () => {
   const customSearchParams =
     useCustomSearchParams<EmployeeListSearchParamsSchema>();
   const { pagination, paginationData } = usePagination();
-  const { employees, isLoading, deleteMutation } = useAdminEmployees(
+  const { employees, isLoading, deleteMutation, meta } = useAdminEmployees(
     customSearchParams.requestSearchParams,
     paginationData,
   );
-  const {
-    organizationsNameLookup,
-    organizationsFilter,
-  } = useAdminOrganizations();
+  const { organizationsNameLookup, organizationsFilter } =
+    useAdminOrganizations();
 
   const columns = createColumns<EmployeeDto>({
     includeActions: true,
@@ -116,6 +114,7 @@ const Client = () => {
         data={employees}
         loading={isLoading}
         pagination={pagination}
+        responseMeta={meta}
       />
     </>
   );

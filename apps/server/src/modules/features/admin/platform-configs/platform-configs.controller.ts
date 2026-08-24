@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Put,
   UseGuards,
 } from '@nestjs/common';
@@ -14,8 +15,12 @@ import type {
   PlatformConfigDto,
   PlatformConfigKey,
   PlatformConfigSchema,
+  ConfigsListSearchParamsSchema,
 } from '@rona/types/admin';
-import { platformConfigSchema } from '@rona/validation/admin';
+import {
+  configsListSearchParamsSchema,
+  platformConfigSchema,
+} from '@rona/validation/admin';
 import { AuthGuard } from '@/modules/auth/guards/auth.guard';
 import { Roles } from '@/modules/auth/guards/roles.decorator';
 import { RolesGuard } from '@/modules/auth/guards/roles.guard';
@@ -29,12 +34,17 @@ export class PlatformConfigsController {
   constructor(private readonly service: PlatformConfigsService) {}
 
   @Get()
-  async list(): Promise<ApiResponse<PlatformConfigDto[]>> {
+  async list(
+    @Query(new ZodValidationPipe(configsListSearchParamsSchema))
+    query: ConfigsListSearchParamsSchema,
+  ): Promise<ApiResponse<PlatformConfigDto[]>> {
+    const { configs, meta } = await this.service.list(query);
     return {
       success: true,
       statusCode: HttpStatus.OK,
       message: 'Platform configurations retrieved successfully.',
-      data: await this.service.list(),
+      data: configs,
+      meta,
     };
   }
 

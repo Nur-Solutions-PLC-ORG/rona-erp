@@ -20,10 +20,11 @@ const Client = () => {
   const customSearchParams =
     useCustomSearchParams<OrganizationListSearchParamsSchema>();
   const { pagination, paginationData } = usePagination();
-  const { organizations, isLoading, deleteMutation } = useAdminOrganizations(
-    customSearchParams.requestSearchParams,
-    paginationData,
-  );
+  const { organizations, isLoading, deleteMutation, meta } =
+    useAdminOrganizations(
+      customSearchParams.requestSearchParams,
+      paginationData,
+    );
 
   const columns = createColumns<OrganizationDto>({
     includeActions: true,
@@ -98,6 +99,7 @@ const Client = () => {
         data={organizations}
         loading={isLoading}
         pagination={pagination}
+        responseMeta={meta}
       />
     </>
   );
