@@ -1,7 +1,14 @@
 "use client";
 
 import { DashboardWrapper } from "@/modules/app/components/dashboard";
-import { LuBuilding2, LuSettings, LuWrench } from "react-icons/lu";
+import {
+  LuBuilding2,
+  LuGitBranch,
+  LuNetwork,
+  LuSettings,
+  LuUsersRound,
+  LuWrench,
+} from "react-icons/lu";
 
 import { FaUsers } from "react-icons/fa6";
 import { GoHome } from "react-icons/go";
@@ -28,21 +35,30 @@ const AdminWrapper = ({ children }: Props) => {
             Icon: FaUsers,
           },
           {
-            title: "Organizations",
-            href: "/admin/organizations",
+            title: "Organization",
             Icon: LuBuilding2,
-          },
-          {
-            title: "Departments",
-            href: "/admin/departments",
-          },
-          {
-            title: "Branches",
-            href: "/admin/branches",
-          },
-          {
-            title: "Employees",
-            href: "/admin/employees",
+            children: [
+              {
+                title: "Organizations",
+                href: "/admin/organizations",
+                Icon: LuBuilding2,
+              },
+              {
+                title: "Departments",
+                href: "/admin/departments",
+                Icon: LuNetwork,
+              },
+              {
+                title: "Branches",
+                href: "/admin/branches",
+                Icon: LuGitBranch,
+              },
+              {
+                title: "Employees",
+                href: "/admin/employees",
+                Icon: LuUsersRound,
+              },
+            ],
           },
           {
             header: "Settings",

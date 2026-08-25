@@ -1,4 +1,5 @@
 import { RequestSearchParams } from "@/api";
+import { buildListQueryKey } from "@/hooks/list-query";
 import { PaginationData } from "@/hooks/pagination";
 import { useCreateMutation } from "@/hooks/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,7 +12,7 @@ export const useAdminOrganizations = (
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-organizations", JSON.stringify(searchParams)],
+    queryKey: buildListQueryKey("admin-organizations", searchParams, pagination),
     queryFn: () =>
       ApiGetOrganizations({
         searchParams: {
@@ -40,6 +41,7 @@ export const useAdminOrganizations = (
 
   return {
     organizations: items,
+    meta: data?.meta,
     isLoading,
     deleteMutation,
     organizationsNameLookup,

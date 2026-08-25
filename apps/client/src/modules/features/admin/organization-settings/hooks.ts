@@ -1,3 +1,5 @@
+import { RequestSearchParams } from "@/api";
+import { buildListQueryKey } from "@/hooks/list-query";
 import { PaginationData } from "@/hooks/pagination";
 import { useCreateMutation } from "@/hooks/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -6,14 +8,17 @@ import {
   ApiDeleteOrganizationSettings,
   ApiGetOrganizationSettings,
 } from "./api";
-import { RequestSearchParams } from "@/api";
 
 export const useAdminOrganizationSettings = (
   searchParams: RequestSearchParams = {},
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-organization-settings", JSON.stringify(searchParams)],
+    queryKey: buildListQueryKey(
+      "admin-organization-settings",
+      searchParams,
+      pagination,
+    ),
     queryFn: () =>
       ApiGetOrganizationSettings({
         searchParams: {
@@ -42,6 +47,7 @@ export const useAdminOrganizationSettings = (
 
   return {
     organizationSettings: items,
+    meta: data?.meta,
     isLoading,
     deleteMutation,
   };

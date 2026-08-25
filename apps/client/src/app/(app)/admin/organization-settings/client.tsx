@@ -3,8 +3,8 @@
 import CustomButton from "@/components/custom/custom-button";
 import DataHeader from "@/components/custom/data-header";
 import { DataTable } from "@/components/custom/data-table";
-import { usePagination } from "@/hooks/pagination";
-import { useCustomSearchParams } from "@/hooks/search-params";
+import { useAccumulatedList } from "@/hooks/use-accumulated-list";
+import { useListPage } from "@/hooks/list-page";
 import { createColumns } from "@/lib/create-columns";
 import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
 import { useAdminOrganizationSettings } from "@/modules/features/admin/organization-settings/hooks";
@@ -14,23 +14,50 @@ import {
   OrganizationSettingsListSearchParamsSchema,
 } from "@rona/types/admin";
 import { organizationSettingsListSearchParamsSchema } from "@rona/validation/admin";
+import { useCallback, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 const Client = () => {
-  const customSearchParams =
-    useCustomSearchParams<OrganizationSettingsListSearchParamsSchema>();
-  const { pagination, paginationData } = usePagination();
+  const {
+    pagination,
+    paginationData,
+    searchParams,
+    requestSearchParams,
+    updateParams,
+    clearParams,
+    removeParams,
+  } = useListPage<OrganizationSettingsListSearchParamsSchema>();
+  const [localSearch, setLocalSearch] = useState("");
 
-  const { organizationSettings, isLoading, deleteMutation } =
-    useAdminOrganizationSettings(
-      customSearchParams.requestSearchParams,
-      paginationData,
-    );
+  const { organizationSettings, isLoading, deleteMutation, meta } =
+    useAdminOrganizationSettings(requestSearchParams, paginationData);
   const { organizationsNameLookup } = useAdminOrganizations();
+
+  const getSearchableText = useCallback(
+    (settings: OrganizationSettingsDto) =>
+      [
+        organizationsNameLookup[settings.organizationId] || "",
+        settings.currency,
+      ].join(" "),
+    [organizationsNameLookup],
+  );
+
+  const list = useAccumulatedList({
+    items: organizationSettings,
+    meta,
+    pagination,
+    serverFilterKey: JSON.stringify({
+      ...requestSearchParams,
+      limit: paginationData.limit,
+    }),
+    localSearch,
+    getSearchableText,
+    isLoading,
+  });
 
   const columns = createColumns<OrganizationSettingsDto>({
     includeActions: true,
-    searchQuery: customSearchParams.searchParams.searchQuery,
+    searchQuery: localSearch || searchParams.searchQuery,
     extraColumns: [
       {
         id: "organization",
@@ -81,7 +108,6 @@ const Client = () => {
     <>
       <DataHeader<OrganizationSettingsListSearchParamsSchema>
         searchParamsSchema={organizationSettingsListSearchParamsSchema}
-        {...customSearchParams}
         head={
           <CustomButton
             primary
@@ -93,12 +119,34 @@ const Client = () => {
             Add Settings
           </CustomButton>
         }
+        searchParams={searchParams}
+        updateParams={updateParams}
+        clearParams={() => {
+          setLocalSearch("");
+          clearParams();
+        }}
+        removeParams={removeParams}
+        localSearch={localSearch}
+        onLocalSearchChange={setLocalSearch}
+        onSearchServer={(value) => {
+          setLocalSearch(value);
+          if (value) updateParams({ searchQuery: value });
+          else removeParams(["searchQuery"]);
+          pagination.setPage(1);
+        }}
       />
       <DataTable
         columns={columns}
-        data={organizationSettings}
+        data={list.items}
         loading={isLoading}
         pagination={pagination}
+        responseMeta={meta}
+        loadMore={{
+          hasMore: list.hasMore,
+          onLoadMore: list.loadMore,
+          cachedCount: list.cachedCount,
+          isFilteringLocally: list.isFilteringLocally,
+        }}
       />
     </>
   );

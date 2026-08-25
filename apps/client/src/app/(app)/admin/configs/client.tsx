@@ -2,8 +2,8 @@
 
 import DataHeader from "@/components/custom/data-header";
 import { DataTable } from "@/components/custom/data-table";
-import { usePagination } from "@/hooks/pagination";
-import { useCustomSearchParams } from "@/hooks/search-params";
+import { useAccumulatedList } from "@/hooks/use-accumulated-list";
+import { useListPage } from "@/hooks/list-page";
 import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
 import { useAdminPlatformConfigs } from "@/modules/features/admin/platform-configs/hooks";
@@ -13,19 +13,47 @@ import {
   PlatformConfigDto,
 } from "@rona/types/admin";
 import { configsListSearchParamsSchema } from "@rona/validation/admin";
+import { useCallback, useState } from "react";
 
 const Client = () => {
-  const customSearchParams =
-    useCustomSearchParams<ConfigsListSearchParamsSchema>();
-  const { pagination, paginationData } = usePagination();
-  const { platformConfigs, isLoading } = useAdminPlatformConfigs(
-    customSearchParams.requestSearchParams,
+  const {
+    pagination,
+    paginationData,
+    searchParams,
+    requestSearchParams,
+    updateParams,
+    clearParams,
+    removeParams,
+  } = useListPage<ConfigsListSearchParamsSchema>();
+  const [localSearch, setLocalSearch] = useState("");
+
+  const { platformConfigs, isLoading, meta } = useAdminPlatformConfigs(
+    requestSearchParams,
     paginationData,
   );
 
+  const getSearchableText = useCallback(
+    (config: PlatformConfigDto) =>
+      [config.key, config.value, config.type].join(" "),
+    [],
+  );
+
+  const list = useAccumulatedList({
+    items: platformConfigs,
+    meta,
+    pagination,
+    serverFilterKey: JSON.stringify({
+      ...requestSearchParams,
+      limit: paginationData.limit,
+    }),
+    localSearch,
+    getSearchableText,
+    isLoading,
+  });
+
   const columns = createColumns<PlatformConfigDto>({
     includeActions: true,
-    searchQuery: customSearchParams.searchParams.searchQuery,
+    searchQuery: localSearch || searchParams.searchQuery,
     extraColumns: [
       {
         accessorKey: "key",
@@ -68,14 +96,35 @@ const Client = () => {
   return (
     <>
       <DataHeader<ConfigsListSearchParamsSchema>
-        {...customSearchParams}
         searchParamsSchema={configsListSearchParamsSchema}
+        searchParams={searchParams}
+        updateParams={updateParams}
+        clearParams={() => {
+          setLocalSearch("");
+          clearParams();
+        }}
+        removeParams={removeParams}
+        localSearch={localSearch}
+        onLocalSearchChange={setLocalSearch}
+        onSearchServer={(value) => {
+          setLocalSearch(value);
+          if (value) updateParams({ searchQuery: value });
+          else removeParams(["searchQuery"]);
+          pagination.setPage(1);
+        }}
       />
       <DataTable
         columns={columns}
-        data={platformConfigs}
+        data={list.items}
         loading={isLoading}
         pagination={pagination}
+        responseMeta={meta}
+        loadMore={{
+          hasMore: list.hasMore,
+          onLoadMore: list.loadMore,
+          cachedCount: list.cachedCount,
+          isFilteringLocally: list.isFilteringLocally,
+        }}
       />
     </>
   );

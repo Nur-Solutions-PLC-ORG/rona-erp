@@ -23,6 +23,8 @@ import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Dropdown from "./dropdown";
 import { Pagination } from "@/hooks/pagination";
 import { ResponseMeta } from "@rona/types/api";
+import { Button } from "../ui/button";
+import { useSidebarStore } from "@/store";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -32,6 +34,14 @@ interface DataTableProps<TData, TValue> {
 
   pagination?: Pagination;
   responseMeta?: ResponseMeta;
+
+  /** Accumulated list mode: show Load more instead of page arrows */
+  loadMore?: {
+    hasMore: boolean;
+    onLoadMore: () => void;
+    cachedCount: number;
+    isFilteringLocally?: boolean;
+  };
 }
 
 export function DataTable<TData, TValue>({
@@ -40,14 +50,28 @@ export function DataTable<TData, TValue>({
   loading,
   responseMeta,
   pagination,
+  loadMore,
 }: DataTableProps<TData, TValue>) {
+  const collapsed = useSidebarStore((s) => s.collapsed);
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
   const hasNextPage =
     responseMeta &&
     pagination &&
-    responseMeta.totalPages &&
+    responseMeta.totalPages > 0 &&
     pagination.page < responseMeta.totalPages;
+
+  const hasPrevPage = pagination && pagination.page > 1;
+
+  const totalPages = responseMeta?.totalPages ?? 1;
+  const totalItems = responseMeta?.totalItems ?? 0;
+  const currentPage = pagination?.page ?? 1;
+  const pageSize = responseMeta?.limit ?? pagination?.limit ?? 0;
+  const rangeStart =
+    totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const rangeEnd =
+    totalItems === 0 ? 0 : Math.min(currentPage * pageSize, totalItems);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -64,8 +88,8 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="px-5 flex-1 flex pb-6">
-      <div className="flex flex-1 bg-white rounded-lg shadow flex-col">
+    <div className="px-5 flex-1 flex pb-6 min-w-0">
+      <div className="flex flex-1 bg-white rounded-lg shadow flex-col min-w-0">
         <div
           style={
             {
@@ -74,8 +98,14 @@ export function DataTable<TData, TValue>({
           }
           className="flex w-full flex-col"
         >
-          {/* Table */}
-          <ScrollArea className="max-w-[calc(100vw-2.5rem)] md:max-w-[calc(100vw-17.5rem)]">
+          <ScrollArea
+            className={cn(
+              "max-w-[calc(100vw-2.5rem)]",
+              collapsed
+                ? "md:max-w-[calc(100vw-6.75rem)]"
+                : "md:max-w-[calc(100vw-17.5rem)]",
+            )}
+          >
             <Table>
               <TableHeader className="border-b-2! border-black/5!">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -104,7 +134,7 @@ export function DataTable<TData, TValue>({
                 ))}
               </TableHeader>
               <TableBody>
-                {loading ? (
+                {loading && data.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={table.getAllColumns().length}
@@ -153,8 +183,8 @@ export function DataTable<TData, TValue>({
           </ScrollArea>
         </div>
         {pagination && (
-          <div className="flex px-6 mt-auto h-16 border-t border-border/25">
-            <div className="flex items-center gap-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 mt-auto min-h-16 py-3 border-t border-border/25">
+            <div className="flex items-center gap-6 flex-wrap">
               <div className="pl-2 h-9 rounded-md gap-2 flex items-center">
                 <p className="my-auto text-sm opacity-75">Per Page</p>
                 <Dropdown
@@ -165,49 +195,87 @@ export function DataTable<TData, TValue>({
                   onChange={(e) => pagination.setLimit(Number(e))}
                 />
               </div>
-              <div className="pl-2 h-9 rounded-md gap-2 flex items-center">
-                <p className="my-auto text-sm opacity-75">Page</p>
-                <div className="flex border rounded-md h-8">
-                  <FiChevronLeft
-                    onClick={() => {
-                      if (pagination.page && pagination.page - 1 > 0) {
-                        pagination.setPage(pagination.page - 1);
-                      }
-                    }}
-                    className={cn(
-                      "h-full px-2 w-8 rounded-md hover:bg-secondary/5 active:bg-secondary/10 duration-200 transition-all cursor-pointer",
-                      // disable
-                      pagination.page == 1 && "opacity-25",
-                    )}
-                  />
 
-                  <span
-                    className={cn(
-                      "h-full px-3 font-medium border-x text-base flex items-center",
-                      !pagination.page && "opacity-50",
-                    )}
-                  >
-                    {pagination.page || "Page"}
-                  </span>
+              {loadMore ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={!loadMore.hasMore || loading}
+                  onClick={loadMore.onLoadMore}
+                  className="gap-2"
+                >
+                  {loading ? (
+                    <RiLoader5Fill className="size-4 animate-spin" />
+                  ) : null}
+                  {loadMore.hasMore ? "Load more" : "All loaded"}
+                </Button>
+              ) : (
+                <div className="pl-2 h-9 rounded-md gap-2 flex items-center">
+                  <p className="my-auto text-sm opacity-75">Page</p>
+                  <div className="flex border rounded-md h-8">
+                    <FiChevronLeft
+                      onClick={() => {
+                        if (hasPrevPage) {
+                          pagination.setPage(pagination.page - 1);
+                        }
+                      }}
+                      className={cn(
+                        "h-full px-2 w-8 rounded-md hover:bg-secondary/5 active:bg-secondary/10 duration-200 transition-all cursor-pointer",
+                        !hasPrevPage && "opacity-25 pointer-events-none",
+                      )}
+                    />
 
-                  <FiChevronRight
-                    onClick={() => {
-                      if (pagination.page) {
+                    <span
+                      className={cn(
+                        "h-full px-3 font-medium border-x text-base flex items-center",
+                        !pagination.page && "opacity-50",
+                      )}
+                    >
+                      {pagination.page || "Page"}
+                    </span>
+
+                    <FiChevronRight
+                      onClick={() => {
                         if (hasNextPage) {
                           pagination.setPage(pagination.page + 1);
                         }
-                      } else {
-                        pagination.setPage(1);
-                      }
-                    }}
-                    className={cn(
-                      "h-full px-2 w-8 rounded-md hover:bg-secondary/5 active:bg-secondary/10 duration-200 transition-all cursor-pointer",
-                      // disable
-                      !hasNextPage && "opacity-25",
-                    )}
-                  />
+                      }}
+                      className={cn(
+                        "h-full px-2 w-8 rounded-md hover:bg-secondary/5 active:bg-secondary/10 duration-200 transition-all cursor-pointer",
+                        !hasNextPage && "opacity-25 pointer-events-none",
+                      )}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
+            </div>
+
+            <div className="text-sm opacity-75 text-right">
+              {loadMore ? (
+                <>
+                  <p>
+                    {loadMore.isFilteringLocally
+                      ? `${data.length} match${data.length === 1 ? "" : "es"} in ${loadMore.cachedCount} loaded`
+                      : `${loadMore.cachedCount} loaded`}
+                    {totalItems > 0 ? ` · ${totalItems} total` : ""}
+                  </p>
+                  <p>
+                    Page {currentPage} of {totalPages}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    Page {currentPage} of {totalPages}
+                  </p>
+                  <p>
+                    {totalItems === 0
+                      ? "0 items"
+                      : `Showing ${rangeStart}–${rangeEnd} of ${totalItems}`}
+                  </p>
+                </>
+              )}
             </div>
           </div>
         )}

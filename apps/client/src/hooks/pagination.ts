@@ -15,7 +15,12 @@ export type Pagination = {
 
 export const usePagination = () => {
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(PAGE_LIMIT_MINIMUM);
+  const [limit, setLimitState] = useState(PAGE_LIMIT_MINIMUM);
+
+  const setLimit = (value: number) => {
+    setLimitState(value);
+    setPage(1);
+  };
 
   const paginationData: PaginationData = {
     page,

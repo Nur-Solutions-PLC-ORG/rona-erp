@@ -3,8 +3,8 @@
 import DataHeader from "@/components/custom/data-header";
 import CustomButton from "@/components/custom/custom-button";
 import { DataTable } from "@/components/custom/data-table";
-import { usePagination } from "@/hooks/pagination";
-import { useCustomSearchParams } from "@/hooks/search-params";
+import { useAccumulatedList } from "@/hooks/use-accumulated-list";
+import { useListPage } from "@/hooks/list-page";
 import { createColumns } from "@/lib/create-columns";
 import { slugToString } from "@/lib/utils";
 import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
@@ -15,21 +15,53 @@ import {
   DepartmentListSearchParamsSchema,
 } from "@rona/types/admin";
 import { departmentListSearchParamsSchema } from "@rona/validation/admin";
+import { useCallback, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 const Client = () => {
-  const customSearchParams =
-    useCustomSearchParams<DepartmentListSearchParamsSchema>();
-  const { pagination, paginationData } = usePagination();
-  const { departments, isLoading, deleteMutation } = useAdminDepartments(
-    customSearchParams.requestSearchParams,
+  const {
+    pagination,
+    paginationData,
+    searchParams,
+    requestSearchParams,
+    updateParams,
+    clearParams,
+    removeParams,
+  } = useListPage<DepartmentListSearchParamsSchema>();
+  const [localSearch, setLocalSearch] = useState("");
+
+  const { departments, isLoading, deleteMutation, meta } = useAdminDepartments(
+    requestSearchParams,
     paginationData,
   );
   const { organizations } = useAdminOrganizations();
 
+  const getSearchableText = useCallback(
+    (department: DepartmentDto) => {
+      const orgName =
+        organizations.find((o) => o.id === department.organizationId)?.name ||
+        "";
+      return [department.name, orgName, ...(department.module || [])].join(" ");
+    },
+    [organizations],
+  );
+
+  const list = useAccumulatedList({
+    items: departments,
+    meta,
+    pagination,
+    serverFilterKey: JSON.stringify({
+      ...requestSearchParams,
+      limit: paginationData.limit,
+    }),
+    localSearch,
+    getSearchableText,
+    isLoading,
+  });
+
   const columns = createColumns<DepartmentDto>({
     includeActions: true,
-    searchQuery: customSearchParams.searchParams.searchQuery,
+    searchQuery: localSearch || searchParams.searchQuery,
     extraColumns: [
       { accessorKey: "name", header: "Department", isBold: true },
       {
@@ -93,13 +125,34 @@ const Client = () => {
             Add Department
           </CustomButton>
         }
-        {...customSearchParams}
+        searchParams={searchParams}
+        updateParams={updateParams}
+        clearParams={() => {
+          setLocalSearch("");
+          clearParams();
+        }}
+        removeParams={removeParams}
+        localSearch={localSearch}
+        onLocalSearchChange={setLocalSearch}
+        onSearchServer={(value) => {
+          setLocalSearch(value);
+          if (value) updateParams({ searchQuery: value });
+          else removeParams(["searchQuery"]);
+          pagination.setPage(1);
+        }}
       />
       <DataTable
         columns={columns}
-        data={departments}
+        data={list.items}
         loading={isLoading}
         pagination={pagination}
+        responseMeta={meta}
+        loadMore={{
+          hasMore: list.hasMore,
+          onLoadMore: list.loadMore,
+          cachedCount: list.cachedCount,
+          isFilteringLocally: list.isFilteringLocally,
+        }}
       />
     </>
   );
