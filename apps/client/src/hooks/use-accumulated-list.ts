@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Pagination } from "./pagination";
 import { ResponseMeta } from "@rona/types/api";
 
@@ -18,6 +18,24 @@ type Options<T extends Identifiable> = {
   isLoading?: boolean;
 };
 
+const EMPTY_ITEMS: Identifiable[] = [];
+
+function mergePage<T extends Identifiable>(
+  prev: T[],
+  items: T[],
+  page: number,
+): T[] {
+  if (page <= 1) {
+    return Array.from(new Map(items.map((item) => [item.id, item])).values());
+  }
+
+  const map = new Map(prev.map((item) => [item.id, item]));
+  for (const item of items) {
+    map.set(item.id, item);
+  }
+  return Array.from(map.values());
+}
+
 export function useAccumulatedList<T extends Identifiable>({
   items,
   meta,
@@ -28,35 +46,37 @@ export function useAccumulatedList<T extends Identifiable>({
   isLoading,
 }: Options<T>) {
   const [cache, setCache] = useState<T[]>([]);
-  const prevFilterKey = useRef(serverFilterKey);
+  const [appliedFilterKey, setAppliedFilterKey] = useState(serverFilterKey);
+  const [appliedItems, setAppliedItems] = useState(items);
+  const [appliedPage, setAppliedPage] = useState(pagination.page);
+  const [wasLoading, setWasLoading] = useState(!!isLoading);
+  // Stabilize `data?.data ?? []` so a fresh empty array each render cannot loop.
+  const resolvedItems = (
+    items.length === 0 ? EMPTY_ITEMS : items
+  ) as T[];
 
-  useEffect(() => {
-    if (prevFilterKey.current !== serverFilterKey) {
-      prevFilterKey.current = serverFilterKey;
-      setCache([]);
-      if (pagination.page !== 1) {
-        pagination.setPage(1);
-      }
+  if (serverFilterKey !== appliedFilterKey) {
+    setAppliedFilterKey(serverFilterKey);
+    setCache([]);
+    setAppliedItems(resolvedItems);
+    setAppliedPage(pagination.page);
+    setWasLoading(!!isLoading);
+    if (pagination.page !== 1) {
+      pagination.setPage(1);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serverFilterKey]);
-
-  useEffect(() => {
-    if (isLoading) return;
-
-    setCache((prev) => {
-      if (pagination.page <= 1) {
-        const map = new Map(items.map((item) => [item.id, item]));
-        return Array.from(map.values());
-      }
-
-      const map = new Map(prev.map((item) => [item.id, item]));
-      for (const item of items) {
-        map.set(item.id, item);
-      }
-      return Array.from(map.values());
-    });
-  }, [items, isLoading, pagination.page]);
+  } else if (
+    !isLoading &&
+    (resolvedItems !== appliedItems ||
+      pagination.page !== appliedPage ||
+      wasLoading)
+  ) {
+    setAppliedItems(resolvedItems);
+    setAppliedPage(pagination.page);
+    setWasLoading(false);
+    setCache((prev) => mergePage(prev, resolvedItems, pagination.page));
+  } else if (!!isLoading !== wasLoading) {
+    setWasLoading(!!isLoading);
+  }
 
   const displayedItems = useMemo(() => {
     const query = localSearch.trim().toLowerCase();

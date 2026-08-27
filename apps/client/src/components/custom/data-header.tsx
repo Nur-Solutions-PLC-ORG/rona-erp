@@ -5,7 +5,7 @@ import { getSchemaInfo } from "@/lib/zod";
 import Dropdown from "./dropdown";
 import { slugToString } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Search } from "lucide-react";
 
 type FilterOption = { label: string; value: string };
@@ -45,20 +45,25 @@ function DataHeader<TSearchParams>({
   const externalSearchValue =
     (searchParams[SEARCH_QUERY_KEY as keyof TSearchParams] || "") as string;
 
-  const [searchInput, setSearchInput] = useState(
-    localSearch ?? externalSearchValue,
+  const isLocallyControlled = localSearch !== undefined;
+  const [draftSearch, setDraftSearch] = useState(
+    () => localSearch ?? externalSearchValue,
   );
+  const [prevExternalSearch, setPrevExternalSearch] =
+    useState(externalSearchValue);
 
-  useEffect(() => {
-    if (localSearch !== undefined) {
-      setSearchInput(localSearch);
-      return;
-    }
-    setSearchInput(externalSearchValue);
-  }, [localSearch, externalSearchValue]);
+  // Sync draft from URL when the input is not controlled by localSearch.
+  if (!isLocallyControlled && externalSearchValue !== prevExternalSearch) {
+    setPrevExternalSearch(externalSearchValue);
+    setDraftSearch(externalSearchValue);
+  }
+
+  const searchInput = isLocallyControlled ? localSearch : draftSearch;
 
   const handleSearchInput = (value: string) => {
-    setSearchInput(value);
+    if (!isLocallyControlled) {
+      setDraftSearch(value);
+    }
     onLocalSearchChange?.(value);
   };
 
