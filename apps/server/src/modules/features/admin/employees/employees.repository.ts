@@ -3,12 +3,13 @@ import { employees } from '@/db/schemas/admin';
 import { Injectable } from '@nestjs/common';
 import { and, count, desc, eq, ilike, ne, type SQL } from 'drizzle-orm';
 import type { EmployeeListSearchParamsSchema } from '@rona/types/admin';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 @Injectable()
 export class EmployeesRepository {
   async findMany(params: EmployeeListSearchParamsSchema) {
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 25;
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
     const conditions = this.listConditions(params);
     const where = conditions.length ? and(...conditions) : undefined;
     const [records, totalResult] = await Promise.all([
@@ -63,6 +64,8 @@ export class EmployeesRepository {
   }
   private listConditions(params: EmployeeListSearchParamsSchema): SQL[] {
     const conditions: SQL[] = [];
+    if (params.orgId)
+      conditions.push(eq(employees.organizationId, params.orgId));
     if (params.status) conditions.push(eq(employees.status, params.status));
     if (params.searchQuery)
       conditions.push(ilike(employees.fullName, `%${params.searchQuery}%`));

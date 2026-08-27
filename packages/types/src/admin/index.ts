@@ -98,8 +98,8 @@ export type BranchDto = z.infer<typeof branchDto>;
 export type EmployeeDto = z.infer<typeof employeeDto>;
 export type PlatformConfigDto = z.infer<typeof platformConfigDto>;
 
-// Dashboard Stats
-export interface AdminDashboardStats {
+// Dashboard status
+export interface AdminDashboardStatus {
   organizations: {
     total: number;
     active: number;
@@ -124,3 +124,5 @@ export interface AdminDashboardStats {
     configs: PlatformConfigDto[];
   };
 }
+
+export type AdminDashboardStats = AdminDashboardStatus;

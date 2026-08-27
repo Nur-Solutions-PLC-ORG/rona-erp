@@ -159,7 +159,7 @@ export function createColumns<T>({
               col.isMono && "font-mono!",
             )}
           >
-            {highlightSearchMatch(String(value), searchQuery)}
+            <span>{highlightSearchMatch(String(value), searchQuery)}</span>
           </Badge>
         );
       }
@@ -209,10 +209,12 @@ export function createColumns<T>({
               col.isMono && "font-mono!",
             )}
           >
-            {highlightSearchMatch(
-              col.onRender ? slugToString(String(value)) : String(value),
-              searchQuery,
-            )}
+            <span>
+              {highlightSearchMatch(
+                col.onRender ? slugToString(String(value)) : String(value),
+                searchQuery,
+              )}
+            </span>
           </Badge>
         );
       }

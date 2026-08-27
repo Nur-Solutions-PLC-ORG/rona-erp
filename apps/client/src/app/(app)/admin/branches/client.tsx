@@ -30,7 +30,7 @@ const Client = () => {
     requestSearchParams,
     paginationData,
   );
-  const { organizations } = useAdminOrganizations();
+  const { organizations, organizationsFilter } = useAdminOrganizations();
 
   const getSearchableText = useCallback(
     (branch: BranchDto) => {
@@ -104,6 +104,9 @@ const Client = () => {
     <>
       <DataHeader<BranchListSearchParamsSchema>
         searchParamsSchema={branchListSearchParamsSchema}
+        replacements={{
+          orgId: organizationsFilter,
+        }}
         head={
           <CustomButton
             primary

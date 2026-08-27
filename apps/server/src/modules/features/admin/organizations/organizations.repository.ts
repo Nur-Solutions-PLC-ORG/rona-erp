@@ -4,12 +4,13 @@ import { Injectable } from '@nestjs/common';
 import { CURRENCY_LIST } from '@rona/config/admin';
 import { and, count, desc, eq, ilike, ne, type SQL } from 'drizzle-orm';
 import type { OrganizationListSearchParamsSchema } from '@rona/types/admin';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 @Injectable()
 export class OrganizationsRepository {
   async findMany(params: OrganizationListSearchParamsSchema) {
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 25;
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
     const conditions = this.listConditions(params);
     const where = conditions.length ? and(...conditions) : undefined;
 
@@ -48,8 +49,16 @@ export class OrganizationsRepository {
   }
 
   async create(data: typeof organizations.$inferInsert) {
-    const records = await db.insert(organizations).values(data).returning();
-    return records[0];
+    return pooledDb.transaction(async (tx) => {
+      const records = await tx.insert(organizations).values(data).returning();
+      const organization = records[0];
+
+      await tx
+        .insert(organizationSettings)
+        .values({ organizationId: organization.id });
+
+      return organization;
+    });
   }
 
   async createWithDefaultSettings(

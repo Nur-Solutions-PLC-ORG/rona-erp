@@ -25,6 +25,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 import { ApiPatchEmployee, ApiPostEmployee } from "../api";
 import { Button } from "@/components/ui/button";
 import { generateCombinations } from "@/lib/combinations";
@@ -42,12 +43,14 @@ const defaultValues: EmployeeSchema = {
   status: "active",
 };
 
+type EmployeeFormInput = z.input<typeof employeeSchema>;
+
 const EmployeeModal = () => {
   const { open, data: rawData, closeModal, view } = useModalStore();
   const modalData = rawData as { employee?: EmployeeDto | undefined } | null;
 
   const { organizations } = useAdminOrganizations();
-  const form = useForm<EmployeeSchema>({
+  const form = useForm<EmployeeFormInput, unknown, EmployeeSchema>({
     resolver: zodResolver(employeeSchema),
     defaultValues,
     disabled: !!view,
@@ -306,7 +309,12 @@ const EmployeeModal = () => {
                   <FieldLabel htmlFor={field.name + "-input"}>
                     Birth Date (GC)
                   </FieldLabel>
-                  <DatePickerInput {...field} />
+                  <DatePickerInput
+                    {...field}
+                    value={
+                      field.value instanceof Date ? field.value : undefined
+                    }
+                  />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}

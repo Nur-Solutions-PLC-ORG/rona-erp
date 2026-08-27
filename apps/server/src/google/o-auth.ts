@@ -15,9 +15,10 @@ const client = new OAuth2Client(
   getRedirectUri(),
 );
 
-export const getGoogleAuthUrl = () => {
+export const getGoogleAuthUrl = (state?: string) => {
   return client.generateAuthUrl({
     access_type: 'offline',
+    ...(state ? { state } : {}),
     scope: [
       'https://www.googleapis.com/auth/userinfo.profile',
       'https://www.googleapis.com/auth/userinfo.email',

@@ -8,12 +8,14 @@ import type {
   UserSchema,
   UserUpdateSchema,
 } from '@rona/types/admin';
+import { userDto } from '@rona/validation/admin';
 import * as bcrypt from 'bcrypt';
 import {
   AdminUserEmailExistsException,
   AdminUserNotFoundException,
 } from './users.exception';
 import { UsersRepository } from './users.repository';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 @Injectable()
 export class UsersService {
@@ -21,8 +23,8 @@ export class UsersService {
 
   async listUsers(params: UserListSearchParamsSchema) {
     const { records, total } = await this.usersRepository.findMany(params);
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 25;
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
 
     return {
       users: records.map((record) => this.toUserDto(record)),
@@ -117,26 +119,16 @@ export class UsersService {
     await redisClient.del(`auth:role:${id}`);
   }
 
-  private toUserDto(record: {
-    user: {
-      id: string;
-      fullName: string;
-      email: string;
-      organizationId: string | null;
-      status: UserDto['status'];
-      createdAt: Date;
-    };
-    role: UserDto['role'];
-  }): UserDto {
-    return {
-      id: record.user.id,
-      fullName: record.user.fullName,
-      email: record.user.email,
-      organizationId: record.user.organizationId,
-      status: record.user.status,
+  private toUserDto(
+    record: Awaited<ReturnType<UsersRepository['findById']>>,
+  ): UserDto {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash, ...user } = record.user;
+
+    return userDto.parse({
+      ...user,
       role: record.role,
-      createdAt: record.user.createdAt,
-    };
+    });
   }
 
   private generatePassword(): string {

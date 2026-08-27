@@ -6,19 +6,21 @@ import type {
   EmployeeSchema,
   EmployeeUpdateSchema,
 } from '@rona/types/admin';
+import { employeeDto } from '@rona/validation/admin';
 import {
   AdminEmployeeIdExistsException,
   AdminEmployeeNotFoundException,
 } from './employees.exception';
 import { EmployeesRepository } from './employees.repository';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 @Injectable()
 export class EmployeesService {
   constructor(private readonly repository: EmployeesRepository) {}
   async listEmployees(params: EmployeeListSearchParamsSchema) {
     const { records, total } = await this.repository.findMany(params);
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 25;
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
     return {
       employees: records.map((record) => this.toDto(record)),
       meta: {
@@ -40,7 +42,10 @@ export class EmployeesService {
     const employee = await this.repository.create(this.toRecord(data));
     return this.toDto(employee);
   }
-  async updateEmployee(id: string, data: EmployeeUpdateSchema): Promise<EmployeeDto> {
+  async updateEmployee(
+    id: string,
+    data: EmployeeUpdateSchema,
+  ): Promise<EmployeeDto> {
     await this.getEmployee(id);
     if (data.eId && (await this.repository.findByEid(data.eId, id)))
       throw new AdminEmployeeIdExistsException();
@@ -77,17 +82,13 @@ export class EmployeesService {
   private toDto(
     employee: Awaited<ReturnType<EmployeesRepository['findById']>>,
   ): EmployeeDto {
-    return {
-      id: employee!.id,
-      organizationId: employee!.organizationId,
-      eId: employee!.eid,
-      fullName: employee!.fullName,
-      phone: employee!.phone,
-      ...(employee!.email ? { email: employee!.email } : {}),
-      gender: employee!.gender,
-      birthDate: new Date(`${employee!.birthDate}T00:00:00.000Z`),
-      status: employee!.status,
-      createdAt: employee!.createdAt,
-    };
+    const { eid, birthDate, email, ...dto } = employee;
+
+    return employeeDto.parse({
+      ...dto,
+      eId: eid,
+      ...(email ? { email } : {}),
+      birthDate: new Date(`${birthDate}T00:00:00.000Z`),
+    });
   }
 }

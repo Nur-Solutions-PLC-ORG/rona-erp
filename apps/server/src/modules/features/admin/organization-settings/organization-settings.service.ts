@@ -10,6 +10,7 @@ import {
   AdminOrganizationSettingsNotFoundException,
 } from './organization-settings.exception';
 import { OrganizationSettingsRepository } from './organization-settings.repository';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 @Injectable()
 export class OrganizationSettingsService {
@@ -19,8 +20,8 @@ export class OrganizationSettingsService {
     params: OrganizationSettingsListSearchParamsSchema,
   ) {
     const { records, total } = await this.repository.findMany(params);
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 25;
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
     return {
       settings: records,
       meta: {

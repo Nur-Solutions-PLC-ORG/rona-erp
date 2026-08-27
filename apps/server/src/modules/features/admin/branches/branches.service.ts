@@ -7,14 +7,15 @@ import type {
 } from '@rona/types/admin';
 import { AdminBranchNotFoundException } from './branches.exception';
 import { BranchesRepository } from './branches.repository';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 @Injectable()
 export class BranchesService {
   constructor(private readonly repository: BranchesRepository) {}
   async listBranches(params: BranchListSearchParamsSchema) {
     const { records, total } = await this.repository.findMany(params);
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 25;
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
     return {
       branches: records,
       meta: {

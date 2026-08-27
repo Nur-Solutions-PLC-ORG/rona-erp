@@ -15,7 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import { ApiPutPlatformConfig } from "../api";
+import { ApiPatchPlatformConfig } from "../api";
 
 const defaultValues: PlatformConfigSchema = {
   key: "name",
@@ -40,7 +40,7 @@ const PlatformConfigModal = () => {
 
   const queryClient = useQueryClient();
   const updateMutation = useCreateMutation(
-    ApiPutPlatformConfig,
+    ApiPatchPlatformConfig,
     (result) => {
       toast.success(result.message);
       queryClient.invalidateQueries({ queryKey: ["admin-platform-configs"] });
@@ -112,9 +112,9 @@ const PlatformConfigModal = () => {
                     name={field.name}
                     aria-invalid={fieldState.invalid}
                     disabled={field.disabled}
-                    checked={field.value == "true" ? true : false}
+                    checked={field.value == "true"}
                     onCheckedChange={(value) =>
-                      field.onChange(value as boolean)
+                      field.onChange(value ? "true" : "false")
                     }
                   />
                 ) : type == "string" ? (

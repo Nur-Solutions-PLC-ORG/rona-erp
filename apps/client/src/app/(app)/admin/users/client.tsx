@@ -32,7 +32,8 @@ const Client = () => {
   const { users, deleteMutation, resetPasswordMutation, isLoading, meta } =
     useAdminUsers(requestSearchParams, paginationData);
 
-  const { organizationsNameLookup } = useAdminOrganizations();
+  const { organizationsNameLookup, organizationsFilter } =
+    useAdminOrganizations();
 
   const getSearchableText = useCallback(
     (user: UserDto) =>
@@ -192,6 +193,9 @@ const Client = () => {
             removeParams(["searchQuery"]);
           }
           pagination.setPage(1);
+        }}
+        replacements={{
+          orgId: organizationsFilter,
         }}
       />
       <DataTable

@@ -38,6 +38,13 @@ export const useAdminOrganizations = (
   const items = data?.data ?? [];
 
   const organizationsNameLookup = createLookup(items, "id", "name");
+  const organizationsFilter = {
+    label: "Organization",
+    options: items.map((organization) => ({
+      label: organization.name,
+      value: organization.id,
+    })),
+  };
 
   return {
     organizations: items,
@@ -45,5 +52,6 @@ export const useAdminOrganizations = (
     isLoading,
     deleteMutation,
     organizationsNameLookup,
+    organizationsFilter,
   };
 };

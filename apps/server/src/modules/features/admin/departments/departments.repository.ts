@@ -3,12 +3,13 @@ import { departments } from '@/db/schemas/admin';
 import { Injectable } from '@nestjs/common';
 import { and, count, desc, eq, ilike, type SQL } from 'drizzle-orm';
 import type { DepartmentListSearchParamsSchema } from '@rona/types/admin';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 @Injectable()
 export class DepartmentsRepository {
   async findMany(params: DepartmentListSearchParamsSchema) {
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 25;
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
     const conditions = this.listConditions(params);
     const where = conditions.length ? and(...conditions) : undefined;
     const [records, totalResult] = await Promise.all([
@@ -51,8 +52,11 @@ export class DepartmentsRepository {
     return Boolean(records[0]);
   }
   private listConditions(params: DepartmentListSearchParamsSchema): SQL[] {
-    return params.searchQuery
-      ? [ilike(departments.name, `%${params.searchQuery}%`)]
-      : [];
+    const conditions: SQL[] = [];
+    if (params.orgId)
+      conditions.push(eq(departments.organizationId, params.orgId));
+    if (params.searchQuery)
+      conditions.push(ilike(departments.name, `%${params.searchQuery}%`));
+    return conditions;
   }
 }

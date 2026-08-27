@@ -11,6 +11,8 @@ import { OrganizationSettingsModule } from '../features/admin/organization-setti
 import { BranchesModule } from '../features/admin/branches/branches.module';
 import { DepartmentsModule } from '../features/admin/departments/departments.module';
 import { EmployeesModule } from '../features/admin/employees/employees.module';
+import { PlatformConfigsModule } from '../features/admin/platform-configs/platform-configs.module';
+import { DashboardModule } from '../features/admin/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -21,6 +23,10 @@ import { EmployeesModule } from '../features/admin/employees/employees.module';
         path: 'admin',
         module: AdminModule,
         children: [
+          {
+            path: 'dashboard',
+            module: DashboardModule,
+          },
           {
             path: 'users',
             module: UsersModule,
@@ -33,6 +39,7 @@ import { EmployeesModule } from '../features/admin/employees/employees.module';
           { path: 'branches', module: BranchesModule },
           { path: 'departments', module: DepartmentsModule },
           { path: 'employees', module: EmployeesModule },
+          { path: 'platform-configs', module: PlatformConfigsModule },
         ],
       },
     ]),

@@ -2,14 +2,14 @@
 export const API_ADMIN_DASHBOARD_URL = "/api/admin/dashboard";
 /**
  * Method: GET
- * Response: ApiResponse<AdminDashboardStats>
+ * Response: ApiResponse<AdminDashboardStatus>
  */
 
 // Users
 export const API_ADMIN_USERS_URL = "/api/admin/users";
 /**
  * Methods: GET, POST
- * Query: UserListSearchParamsSchema
+ * Query: UserListSearchParamsSchema (including optional orgId)
  * RequestBody: UserSchema
  * Response: GET ApiResponse<UserDto[]>; POST ApiResponse<UserCredentialsDto>
  */
@@ -64,7 +64,7 @@ export const API_ADMIN_ORGANIZATION_SETTINGS_BY_ID_URL =
 export const API_ADMIN_DEPARTMENTS_URL = "/api/admin/departments";
 /**
  * Methods: GET, POST
- * Query: DepartmentListSearchParamsSchema
+ * Query: DepartmentListSearchParamsSchema (including optional orgId)
  * RequestBody: DepartmentSchema
  * Response: ApiResponse<DepartmentDto[] | DepartmentDto>
  */
@@ -79,7 +79,7 @@ export const API_ADMIN_DEPARTMENT_BY_ID_URL = "/api/admin/departments/:id";
 export const API_ADMIN_BRANCHES_URL = "/api/admin/branches";
 /**
  * Methods: GET, POST
- * Query: BranchListSearchParamsSchema
+ * Query: BranchListSearchParamsSchema (including optional orgId)
  * RequestBody: BranchSchema
  * Response: ApiResponse<BranchDto[] | BranchDto>
  */
@@ -95,7 +95,7 @@ export const API_ADMIN_BRANCH_BY_ID_URL = "/api/admin/branches/:id";
 export const API_ADMIN_EMPLOYEES_URL = "/api/admin/employees";
 /**
  * Methods: GET, POST
- * Query: EmployeeListSearchParamsSchema
+ * Query: EmployeeListSearchParamsSchema (including optional orgId)
  * RequestBody: EmployeeSchema
  * Response: ApiResponse<EmployeeDto[] | EmployeeDto>
  */
@@ -110,15 +110,16 @@ export const API_ADMIN_EMPLOYEE_BY_ID_URL = "/api/admin/employees/:id";
 // Platform configuration
 export const API_ADMIN_PLATFORM_CONFIGS_URL = "/api/admin/platform-configs";
 /**
- * Methods: GET
- * RequestBody: PlatformConfigSchema
- * Response: ApiResponse<PlatformConfigDto[]>
+ * Methods: GET, POST
+ * POST resets all values to the predefined defaults.
+ * Query: ConfigsListSearchParamsSchema
+ * Response: ApiResponse<PlatformConfigDto[]> with pagination metadata
  */
 
 export const API_ADMIN_PLATFORM_CONFIG_BY_KEY_URL =
   "/api/admin/platform-configs/:key";
 /**
- * Methods: GET, PATCH
+ * Methods: GET, PATCH, PUT
  * RequestBody: PlatformConfigSchema
  * Response: ApiResponse<PlatformConfigDto>
  */

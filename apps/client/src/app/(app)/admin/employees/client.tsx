@@ -31,7 +31,8 @@ const Client = () => {
     requestSearchParams,
     paginationData,
   );
-  const { organizationsNameLookup } = useAdminOrganizations();
+  const { organizationsNameLookup, organizationsFilter } =
+    useAdminOrganizations();
 
   const getSearchableText = useCallback(
     (employee: EmployeeDto) =>
@@ -126,6 +127,9 @@ const Client = () => {
     <>
       <DataHeader<EmployeeListSearchParamsSchema>
         searchParamsSchema={employeeListSearchParamsSchema}
+        replacements={{
+          orgId: organizationsFilter,
+        }}
         head={
           <CustomButton
             primary

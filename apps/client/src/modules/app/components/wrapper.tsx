@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
@@ -21,10 +21,23 @@ interface Props {
   children?: React.ReactNode;
 }
 
+const getSafeRedirectPath = (redirectPath: string | null) => {
+  if (
+    !redirectPath ||
+    !redirectPath.startsWith("/") ||
+    redirectPath.startsWith("//")
+  ) {
+    return null;
+  }
+
+  return redirectPath;
+};
+
 export default function AppWrapper({ children }: Props) {
   const { data: session, isLoading, isAdmin } = useSession();
 
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
@@ -39,13 +52,19 @@ export default function AppWrapper({ children }: Props) {
 
     if (!session) {
       if (!authPages.includes(pathname)) {
-        router.replace(CLIENT_AUTH_SIGNIN_PAGE);
+        const redirectPath = `${pathname}${searchParams.toString() ? `?${searchParams}` : ""}`;
+        const signInUrl = new URLSearchParams({ redirect: redirectPath });
+
+        router.replace(`${CLIENT_AUTH_SIGNIN_PAGE}?${signInUrl}`);
       }
       return;
     }
 
     if (pathname === CLIENT_AUTH_SIGNIN_PAGE) {
-      router.replace(CLIENT_APP_DASHBOARD_PAGE);
+      router.replace(
+        getSafeRedirectPath(searchParams.get("redirect")) ??
+          CLIENT_APP_DASHBOARD_PAGE,
+      );
       return;
     }
 
@@ -62,7 +81,7 @@ export default function AppWrapper({ children }: Props) {
         return;
       }
     }
-  }, [session, isLoading, pathname, router, isAdmin]);
+  }, [session, isLoading, pathname, router, isAdmin, searchParams]);
 
   if (isLoading) {
     return <LoaderPage />;

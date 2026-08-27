@@ -13,14 +13,15 @@ import {
   type SQL,
 } from 'drizzle-orm';
 import type { UserListSearchParamsSchema } from '@rona/types/admin';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
 const userColumns = getTableColumns(users);
 
 @Injectable()
 export class UsersRepository {
   async findMany(params: UserListSearchParamsSchema) {
-    const page = params.page ?? 1;
-    const limit = params.limit ?? 25;
+    const page = params.page ?? DEFAULT_PAGE;
+    const limit = params.limit ?? DEFAULT_PAGE_SIZE;
     const conditions = this.listConditions(params);
     const where = conditions.length ? and(...conditions) : undefined;
 
@@ -137,6 +138,7 @@ export class UsersRepository {
   private listConditions(params: UserListSearchParamsSchema): SQL[] {
     const conditions: SQL[] = [];
 
+    if (params.orgId) conditions.push(eq(users.organizationId, params.orgId));
     if (params.status) conditions.push(eq(users.status, params.status));
     if (params.position)
       conditions.push(eq(userRoles.position, params.position));
