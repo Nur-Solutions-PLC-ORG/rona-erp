@@ -1,5 +1,3 @@
-"""Chat route: natural-language Q&A over the tenant context bundle."""
-
 from __future__ import annotations
 
 import logging
