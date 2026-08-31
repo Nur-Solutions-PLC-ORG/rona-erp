@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: rona_ai
+      POSTGRES_USER: rona
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rona-local-only}
+    volumes:
+      - rona-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rona -d rona_ai"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build: .
+    command: ["alembic", "upgrade", "head"]
+    environment: &app-environment
+      APP_NAME: Rona AI
+      ENVIRONMENT: staging
+      DEBUG: "false"
+      LOG_LEVEL: INFO
+      LOG_FORMAT: text
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      UPSTASH_REDIS_REST_URL: ${UPSTASH_REDIS_REST_URL:-}
+      UPSTASH_REDIS_REST_TOKEN: ${UPSTASH_REDIS_REST_TOKEN:-}
+      AI_LIMIT_ENABLED: ${AI_LIMIT_ENABLED:-true}
+      AI_DAILY_LIMIT: ${AI_DAILY_LIMIT:-1000}
+      ADAPTER_BACKEND: mock
+      JWT_SECRET: ${JWT_SECRET:-local-staging-secret-change-me-32-characters}
+      ALLOW_HEADER_AUTH: "true"
+      DATABASE_URL: postgresql+psycopg://rona:${POSTGRES_PASSWORD:-rona-local-only}@db:5432/rona_ai
+      DATABASE_AUTO_MIGRATE: "false"
+      REPORT_OUTPUT_DIR: /app/generated_reports
+      REPORT_WORKER_MODE: external
+      TRUSTED_HOSTS: localhost,127.0.0.1,rona-ai
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment: *app-environment
+    command: ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port 8000"]
+    volumes:
+      - rona-reports:/app/generated_reports
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  worker:
+    build: .
+    environment:
+      <<: *app-environment
+      REPORT_WORKER_MODE: external
+    command: ["python", "-m", "app.workers.report_worker"]
+    volumes:
+      - rona-reports:/app/generated_reports
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+volumes:
+  rona-postgres:
+  rona-reports:

@@ -1,0 +1,65 @@
+services:
+  - type: web
+    name: rona-ai
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: LOG_FORMAT
+        value: json
+      - key: ADAPTER_BACKEND
+        value: mock
+      - key: ALLOW_HEADER_AUTH
+        value: "false"
+      - key: DATABASE_AUTO_MIGRATE
+        value: "false"
+      - key: REPORT_WORKER_MODE
+        value: embedded
+      - key: REPORT_JOB_MAX_ATTEMPTS
+        value: "3"
+      - key: REPORT_JOB_RETRY_SECONDS
+        value: "5"
+      - key: REPORT_JOB_STALE_SECONDS
+        value: "300"
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_AUDIENCE
+        value: rona-ai
+      - key: JWT_ISSUER
+        value: rona-erp
+      - key: JWT_MAX_LIFETIME_SECONDS
+        value: "3600"
+      # Configure both values as linked secrets. JWT_KEYRING is JSON keyed by
+      # `kid`; JWT_ACTIVE_KID names the key currently used by the ERP issuer.
+      - key: JWT_KEYRING
+        sync: false
+      - key: JWT_ACTIVE_KID
+        sync: false
+      - key: KB_ENABLED
+        value: "false"
+      - key: KB_SEED_MOCK_DATA
+        value: "false"
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATA_ENCRYPTION_KEYRING
+        sync: false
+      - key: DATA_ENCRYPTION_ACTIVE_KID
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: TRUSTED_HOSTS
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
