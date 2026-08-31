@@ -1,9 +1,6 @@
 from __future__ import annotations
-
 import logging
-
 from fastapi import APIRouter, HTTPException, status
-
 from app.api.context import load_bundle, source_system
 from app.api.dependencies import AdapterDep, AuthContextDep, validate_tenant_exists
 from app.api.periods import resolve_period, utcnow
@@ -21,7 +18,6 @@ from app.services.llm import LLMError, LLMQuotaError, get_llm_service
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
 
 @router.post("/chat", response_model=ChatResponse, responses=ERROR_RESPONSES)
 async def chat(
@@ -97,8 +93,6 @@ async def chat(
         source_system=system,
         partial_data=partial,
     )
-
-
 def _quota_http_error(exc: LLMQuotaError) -> HTTPException:
     logger.warning(
         "LLM quota exhausted",
@@ -115,8 +109,6 @@ def _quota_http_error(exc: LLMQuotaError) -> HTTPException:
         ),
         headers=headers,
     )
-
-
 def _llm_http_error(exc: LLMError) -> HTTPException:
     logger.exception("LLM generation failed")
     settings = get_settings()

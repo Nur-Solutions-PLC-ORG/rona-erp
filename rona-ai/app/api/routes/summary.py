@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from fastapi import APIRouter
-
 from app.api.context import greeting, load_bundle, source_system
 from app.api.dependencies import AdapterDep, AuthContextDep, validate_tenant_exists
 from app.api.periods import utcnow

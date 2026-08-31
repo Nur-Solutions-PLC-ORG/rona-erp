@@ -1,11 +1,8 @@
 from __future__ import annotations
-
 import json
 import logging
 import uuid
-
 from fastapi import APIRouter, HTTPException, Response, status
-
 from app.api.context import load_bundle
 from app.api.dependencies import AdapterDep, AuthContextDep, validate_tenant_exists
 from app.api.periods import resolve_period
@@ -23,8 +20,6 @@ from app.services.report_storage import get_report_storage
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-
 @router.post(
     "/reports/export",
     response_model=ReportResponse,
@@ -109,7 +104,6 @@ async def download_report(report_id: str, auth: AuthContextDep) -> Response:
         media_type=report_media_type(job.export_format),
         headers={"Content-Disposition": f'attachment; filename="{job.filename}"'},
     )
-
 
 def _authorized_report_job(report_id: str, auth: AuthContextDep):
     job = get_report_job(report_id, auth.tenant_id)

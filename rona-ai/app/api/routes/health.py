@@ -1,12 +1,9 @@
 from __future__ import annotations
-
 from fastapi import APIRouter
-
 from app.api.schemas import ERROR_RESPONSES, HealthResponse
 from app.core.config import get_settings
 
 router = APIRouter()
-
 
 @router.get("/health", response_model=HealthResponse, responses=ERROR_RESPONSES)
 async def health_check() -> HealthResponse:
@@ -19,6 +16,5 @@ async def health_check() -> HealthResponse:
         llm_configured=settings.llm_configured,
         data_source_reachable=True,
     )
-
 
 __all__ = ["router"]
