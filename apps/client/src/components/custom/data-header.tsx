@@ -5,7 +5,8 @@ import { getSchemaInfo } from "@/lib/zod";
 import Dropdown from "./dropdown";
 import { slugToString } from "@/lib/utils";
 import { Button } from "../ui/button";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { Search } from "lucide-react";
 
 type FilterOption = { label: string; value: string };
 
@@ -18,7 +19,12 @@ type Props<TSearchParams> = {
   head?: React.ReactNode;
   searchParamsSchema?: z.ZodObject;
   replacements?: Record<string, FilterReplacement>;
-} & UseCustomSearchParamsReturn<TSearchParams>;
+  /** Controlled local search (filters already-loaded rows). */
+  localSearch?: string;
+  onLocalSearchChange?: (value: string) => void;
+  /** Commit search to the server (refetch from backend). */
+  onSearchServer?: (value: string) => void;
+} & Omit<UseCustomSearchParamsReturn<TSearchParams>, "requestSearchParams">;
 
 function DataHeader<TSearchParams>({
   head,
@@ -28,22 +34,53 @@ function DataHeader<TSearchParams>({
   updateParams,
   clearParams,
   removeParams,
+  localSearch,
+  onLocalSearchChange,
+  onSearchServer,
 }: Props<TSearchParams>) {
   const schemaInfo = getSchemaInfo(searchParamsSchema ?? z.object({}));
   const SEARCH_QUERY_KEY = "searchQuery";
   const includeSearchQuery = schemaInfo.hasKey(SEARCH_QUERY_KEY);
-  const searchQuery = (searchParams[SEARCH_QUERY_KEY as keyof TSearchParams] ||
-    "") as string;
-  const [searchQueryInput, setSearchQueryInput] = useState(searchQuery);
-  const searchQueryTimeout = useRef<number | undefined>(undefined);
 
-  useEffect(() => {
-    return () => window.clearTimeout(searchQueryTimeout.current);
-  }, []);
+  const externalSearchValue =
+    (searchParams[SEARCH_QUERY_KEY as keyof TSearchParams] || "") as string;
 
-  const handleClearParams = () => {
-    setSearchQueryInput("");
-    clearParams();
+  const isLocallyControlled = localSearch !== undefined;
+  const [draftSearch, setDraftSearch] = useState(
+    () => localSearch ?? externalSearchValue,
+  );
+  const [prevExternalSearch, setPrevExternalSearch] =
+    useState(externalSearchValue);
+
+  // Sync draft from URL when the input is not controlled by localSearch.
+  if (!isLocallyControlled && externalSearchValue !== prevExternalSearch) {
+    setPrevExternalSearch(externalSearchValue);
+    setDraftSearch(externalSearchValue);
+  }
+
+  const searchInput = isLocallyControlled ? localSearch : draftSearch;
+
+  const handleSearchInput = (value: string) => {
+    if (!isLocallyControlled) {
+      setDraftSearch(value);
+    }
+    onLocalSearchChange?.(value);
+  };
+
+  const commitServerSearch = () => {
+    const value = searchInput.trim();
+    if (onSearchServer) {
+      onSearchServer(value);
+      return;
+    }
+
+    if (value) {
+      updateParams({
+        [SEARCH_QUERY_KEY as keyof TSearchParams]: value,
+      } as Partial<TSearchParams>);
+    } else {
+      removeParams([SEARCH_QUERY_KEY as keyof TSearchParams]);
+    }
   };
 
   return (
@@ -57,31 +94,32 @@ function DataHeader<TSearchParams>({
 
       <div className="px-5 flex flex-col md:flex-row gap-4 md:items-center">
         {includeSearchQuery && (
-          <SearchInput
-            value={searchQueryInput}
-            onChange={(e) => {
-              const value = e.target.value;
-              setSearchQueryInput(value);
-              window.clearTimeout(searchQueryTimeout.current);
-
-              if (!value) {
-                removeParams([SEARCH_QUERY_KEY as keyof TSearchParams]);
-                return;
-              }
-
-              searchQueryTimeout.current = window.setTimeout(() => {
-                updateParams({
-                  [SEARCH_QUERY_KEY as keyof TSearchParams]: value,
-                } as Partial<TSearchParams>);
-              }, 600);
-            }}
-            className="h-9 bg-white"
-            containerClassName="flex-1"
-            placeholder="Search anything..."
-          />
+          <div className="flex flex-1 items-center gap-2">
+            <SearchInput
+              value={searchInput}
+              onChange={(e) => handleSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  commitServerSearch();
+                }
+              }}
+              className="h-9 bg-white"
+              containerClassName="flex-1"
+              placeholder="Filter loaded rows… (Enter to search server)"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 shrink-0 gap-2"
+              onClick={commitServerSearch}
+            >
+              <Search className="size-4" />
+              Search server
+            </Button>
+          </div>
         )}
 
-        {/* Dropdowns */}
         <div className="flex items-center gap-4">
           {[
             ...Object.keys(schemaInfo.keyValueLists),
@@ -122,8 +160,15 @@ function DataHeader<TSearchParams>({
             );
           })}
 
-          {!!Object.values(searchParams as object).length && (
-            <Button onClick={handleClearParams} variant="outline">
+          {(!!Object.values(searchParams as object).length ||
+            !!searchInput) && (
+            <Button
+              onClick={() => {
+                handleSearchInput("");
+                clearParams();
+              }}
+              variant="outline"
+            >
               Clear
             </Button>
           )}

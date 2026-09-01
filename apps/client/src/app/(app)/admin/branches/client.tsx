@@ -3,29 +3,60 @@
 import CustomButton from "@/components/custom/custom-button";
 import DataHeader from "@/components/custom/data-header";
 import { DataTable } from "@/components/custom/data-table";
-import { usePagination } from "@/hooks/pagination";
-import { useCustomSearchParams } from "@/hooks/search-params";
+import { useAccumulatedList } from "@/hooks/use-accumulated-list";
+import { useListPage } from "@/hooks/list-page";
 import { createColumns } from "@/lib/create-columns";
 import { useAdminBranches } from "@/modules/features/admin/branches/hooks";
 import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { BranchDto, BranchListSearchParamsSchema } from "@rona/types/admin";
 import { branchListSearchParamsSchema } from "@rona/validation/admin";
+import { useCallback, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 const Client = () => {
-  const customSearchParams =
-    useCustomSearchParams<BranchListSearchParamsSchema>();
-  const { pagination, paginationData } = usePagination();
+  const {
+    pagination,
+    paginationData,
+    searchParams,
+    requestSearchParams,
+    updateParams,
+    clearParams,
+    removeParams,
+  } = useListPage<BranchListSearchParamsSchema>();
+  const [localSearch, setLocalSearch] = useState("");
+
   const { branches, isLoading, deleteMutation, meta } = useAdminBranches(
-    customSearchParams.requestSearchParams,
+    requestSearchParams,
     paginationData,
   );
   const { organizations, organizationsFilter } = useAdminOrganizations();
 
+  const getSearchableText = useCallback(
+    (branch: BranchDto) => {
+      const orgName =
+        organizations.find((o) => o.id === branch.organizationId)?.name || "";
+      return [branch.name, orgName].join(" ");
+    },
+    [organizations],
+  );
+
+  const list = useAccumulatedList({
+    items: branches,
+    meta,
+    pagination,
+    serverFilterKey: JSON.stringify({
+      ...requestSearchParams,
+      limit: paginationData.limit,
+    }),
+    localSearch,
+    getSearchableText,
+    isLoading,
+  });
+
   const columns = createColumns<BranchDto>({
     includeActions: true,
-    searchQuery: customSearchParams.searchParams.searchQuery,
+    searchQuery: localSearch || searchParams.searchQuery,
     extraColumns: [
       { accessorKey: "name", header: "Branch", isBold: true },
       {
@@ -85,14 +116,34 @@ const Client = () => {
             Add Branch
           </CustomButton>
         }
-        {...customSearchParams}
+        searchParams={searchParams}
+        updateParams={updateParams}
+        clearParams={() => {
+          setLocalSearch("");
+          clearParams();
+        }}
+        removeParams={removeParams}
+        localSearch={localSearch}
+        onLocalSearchChange={setLocalSearch}
+        onSearchServer={(value) => {
+          setLocalSearch(value);
+          if (value) updateParams({ searchQuery: value });
+          else removeParams(["searchQuery"]);
+          pagination.setPage(1);
+        }}
       />
       <DataTable
         columns={columns}
-        data={branches}
+        data={list.items}
         loading={isLoading}
         pagination={pagination}
         responseMeta={meta}
+        loadMore={{
+          hasMore: list.hasMore,
+          onLoadMore: list.loadMore,
+          cachedCount: list.cachedCount,
+          isFilteringLocally: list.isFilteringLocally,
+        }}
       />
     </>
   );

@@ -1,3 +1,4 @@
+import { DEFAULT_ORGANIZATION_CURRENCY } from '@rona/config/admin';
 import { Injectable } from '@nestjs/common';
 import type {
   OrganizationDto,
@@ -43,7 +44,10 @@ export class OrganizationsService {
   async createOrganization(data: OrganizationSchema): Promise<OrganizationDto> {
     if (await this.organizationsRepository.findBySlug(data.slug))
       throw new AdminOrganizationSlugExistsException();
-    return this.organizationsRepository.create(data);
+    return this.organizationsRepository.createWithDefaultSettings(
+      data,
+      DEFAULT_ORGANIZATION_CURRENCY,
+    );
   }
 
   async updateOrganization(

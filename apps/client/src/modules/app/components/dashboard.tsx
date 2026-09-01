@@ -2,66 +2,88 @@
 
 import Logo from "@/components/custom/logo";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import UserButton from "@/modules/auth/components/user-button";
 import { useSession } from "@/modules/auth/hooks";
 import { useSidebarStore } from "@/store";
+import { ChevronDown, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
-import { FiChevronDown, FiMenu } from "react-icons/fi";
+import React, { useEffect } from "react";
+import { FiMenu } from "react-icons/fi";
 import { IconType } from "react-icons/lib";
 
-type SidebarOption = {
+export type SidebarOption = {
   header?: string;
   title: string;
-  href: string;
+  href?: string;
   Icon?: IconType | (() => React.ReactNode);
   children?: SidebarOption[];
 };
 
-type SidebarOptions = SidebarOption[];
-
-const findSidebarOption = (
-  options: SidebarOptions,
-  pathname: string,
-): SidebarOption | undefined => {
-  for (const option of options) {
-    if (option.href === pathname) return option;
-
-    const childOption =
-      option.children && findSidebarOption(option.children, pathname);
-    if (childOption) return childOption;
-  }
-
-  return undefined;
-};
+export type SidebarOptions = SidebarOption[];
 
 type Props = {
   children: React.ReactNode;
   options?: SidebarOptions;
 };
 
+function findActiveSidebarTitle(
+  options: SidebarOptions,
+  pathname: string,
+): string | undefined {
+  for (const option of options) {
+    if (option.href === pathname) return option.title;
+
+    if (option.children) {
+      const childTitle = findActiveSidebarTitle(option.children, pathname);
+      if (childTitle) return childTitle;
+    }
+  }
+
+  return undefined;
+}
+
+function isGroupActive(option: SidebarOption, pathname: string) {
+  return option.children?.some((child) => child.href === pathname) ?? false;
+}
+
 const DashboardWrapper = ({ children, options }: Props) => {
   const isMobile = useIsMobile();
   const pathname = usePathname();
+  const collapsed = useSidebarStore((s) => s.collapsed);
 
   return (
     <>
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-w-0">
         {!isMobile && (
           <DashboardSidebar pathname={pathname} options={options || []} />
         )}
-        <div className="flex-1 flex flex-col">
+        <div
+          className={cn(
+            "flex-1 flex flex-col min-w-0 transition-[margin] duration-300",
+            !isMobile && (collapsed ? "ml-0" : "ml-0"),
+          )}
+        >
           <DashboardNav
             options={options}
             pathname={pathname}
             isMobile={isMobile}
           />
-
-          <div className="flex-1 w-full flex flex-col bg-secondary/25">
+          <div className="flex-1 w-full flex flex-col bg-secondary/50 min-w-0">
             {children}
           </div>
         </div>
@@ -79,10 +101,15 @@ type NavProps = {
 };
 
 const DashboardNav = ({ isMobile, options, pathname }: NavProps) => {
+  const activeTitle = options
+    ? findActiveSidebarTitle(options, pathname)
+    : undefined;
+  const { collapsed, toggleCollapsed } = useSidebarStore();
+
   return (
-    <nav className="border-b h-20">
-      <div className="px-8 flex h-full items-center gap-4">
-        {isMobile && (
+    <nav className="border-b h-20 shadow">
+      <div className="px-6 md:px-8 flex h-full items-center gap-3">
+        {isMobile ? (
           <Button
             onClick={() => useSidebarStore.getState().setOpen(true)}
             size={"icon-sm"}
@@ -90,12 +117,37 @@ const DashboardNav = ({ isMobile, options, pathname }: NavProps) => {
           >
             <FiMenu className="size-5" />
           </Button>
+        ) : (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={toggleCollapsed}
+                  size="icon-sm"
+                  variant="ghost"
+                  className="shrink-0"
+                  aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                >
+                  {collapsed ? (
+                    <PanelLeftOpen className="size-5" />
+                  ) : (
+                    <PanelLeftClose className="size-5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
 
-        {options && (
-          <h1 className="text-2xl font-heading font-medium">
-            {findSidebarOption(options, pathname)?.title}
-          </h1>
+        {activeTitle && (
+          <div className="min-w-0">
+            <h1 className="text-2xl font-heading font-medium truncate">
+              {activeTitle}
+            </h1>
+          </div>
         )}
         <span className="ml-auto" />
         <UserButton />
@@ -110,150 +162,189 @@ type SidebarProps = {
   pathname: string;
 };
 
+const NavItemTooltip = ({
+  label,
+  enabled,
+  children,
+}: {
+  label: string;
+  enabled: boolean;
+  children: React.ReactNode;
+}) => {
+  if (!enabled) return <>{children}</>;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent side="right" sideOffset={8}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
 const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
-  const { open, setOpen } = useSidebarStore();
+  const { open, setOpen, openGroups, setGroupOpen, collapsed } =
+    useSidebarStore();
   const { isAdmin } = useSession();
-  const [expandedItems, setExpandedItems] = React.useState<
-    Record<string, boolean>
-  >({});
+  const isIconMode = !sheet && collapsed;
+
+  useEffect(() => {
+    options.forEach((option) => {
+      if (option.children?.length && isGroupActive(option, pathname)) {
+        setGroupOpen(option.title, true);
+      }
+    });
+  }, [options, pathname, setGroupOpen]);
+
+  const itemClass = (isActive: boolean, nested = false) =>
+    cn(
+      "flex items-center cursor-pointer rounded-l-xl ml-2 transition-all duration-200",
+      isIconMode
+        ? "justify-center px-0 py-2.5 w-11 mx-auto ml-auto mr-auto rounded-xl"
+        : "gap-4 px-4 py-2 hover:opacity-90",
+      !isIconMode && nested && "pl-8",
+      isActive
+        ? "bg-secondary/10 text-white"
+        : "hover:bg-secondary/10 text-white/50 hover:text-white/75",
+    );
+
+  const renderLink = (option: SidebarOption, nested = false) => {
+    if (!option.href) return null;
+
+    const isActive = pathname === option.href;
+    const Icon = option.Icon;
+
+    const link = (
+      <Link
+        key={option.href}
+        onClick={() => {
+          if (sheet) setOpen(false);
+        }}
+        href={option.href}
+        className={itemClass(isActive, nested)}
+      >
+        {Icon ? (
+          <Icon className="size-4 shrink-0" />
+        ) : (
+          <span
+            className={cn(
+              "size-1.5 rounded-full shrink-0 bg-current opacity-60",
+              isIconMode && "size-2",
+            )}
+          />
+        )}
+        {!isIconMode && <span className="truncate">{option.title}</span>}
+      </Link>
+    );
+
+    return (
+      <NavItemTooltip
+        key={option.href}
+        label={option.title}
+        enabled={isIconMode}
+      >
+        {link}
+      </NavItemTooltip>
+    );
+  };
+
+  const renderOption = (option: SidebarOption, index: number) => {
+    if (option.children?.length) {
+      const groupActive = isGroupActive(option, pathname);
+      const isOpen = isIconMode
+        ? false
+        : (openGroups[option.title] ?? groupActive);
+      const Icon = option.Icon;
+
+      if (isIconMode) {
+        return (
+          <div key={`${option.title}-${index}`} className="flex flex-col gap-1">
+            {option.header ? <span className="mt-3 block" /> : null}
+            {option.children.map((child) => renderLink(child, true))}
+          </div>
+        );
+      }
+
+      return (
+        <Collapsible
+          key={`${option.title}-${index}`}
+          open={isOpen}
+          onOpenChange={(value) => setGroupOpen(option.title, value)}
+        >
+          <CollapsibleTrigger className={itemClass(groupActive)}>
+            {Icon ? (
+              <Icon className="size-4 shrink-0" />
+            ) : (
+              <span className="size-4" />
+            )}
+            <span className="flex-1 text-left truncate">{option.title}</span>
+            <ChevronDown
+              className={cn(
+                "size-4 shrink-0 transition-transform duration-200",
+                isOpen && "rotate-180",
+              )}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="flex flex-col">
+            {option.children.map((child) => renderLink(child, true))}
+          </CollapsibleContent>
+        </Collapsible>
+      );
+    }
+
+    if (!option.href) return null;
+
+    const link = renderLink(option);
+
+    return option.header && !isIconMode ? (
+      <div key={option.href} className="flex flex-col">
+        <span className="px-4 text-white/25 tracking-wider mt-6 mb-2 font-normal uppercase text-sm">
+          {option.header}
+        </span>
+        {link}
+      </div>
+    ) : (
+      <React.Fragment key={option.href}>
+        {option.header && isIconMode && <span className="mt-4 block" />}
+        {link}
+      </React.Fragment>
+    );
+  };
 
   const sidebar = (
     <div
       className={cn(
-        "border-r bg-sidebar flex flex-col transition-[width] duration-200",
-        "w-60",
+        "border-r bg-sidebar flex flex-col h-full transition-[width] duration-300 ease-in-out relative",
+        isIconMode ? "w-[4.25rem]" : "w-60 max-w-60",
       )}
     >
-      <div className="flex h-20 px-4 gap-3 justify-center border-b border-border/10 items-center">
-        <Logo admin={isAdmin} />
+      <div
+        className={cn(
+          "flex h-20 gap-3 border-b border-border/10 items-center",
+          isIconMode ? "px-2 justify-center" : "px-4 justify-center",
+        )}
+      >
+        <Logo admin={isAdmin && !isIconMode} icon={isIconMode} />
       </div>
       <span className="mb-4 w-full" />
-      <div className="flex flex-col">
-        {options.map((option, i) => {
-          const isActive = pathname == option.href;
-          const isExpanded = expandedItems[option.href] ?? false;
-
-          const link = (
-            <div key={option.href + i.toString()} className="flex items-center">
-              <Link
-                onClick={() => {
-                  if (sheet) setOpen(false);
-                }}
-                href={option.href}
-                className={cn(
-                  "flex flex-1 items-center gap-4 cursor-pointer",
-                  "px-4 py-2 hover:opacity-90 rounded-l-xl ml-2",
-                  "relative",
-                  isActive
-                    ? "bg-secondary/10 text-white"
-                    : "hover:bg-secondary/10 text-white/50 hover:text-white/75",
-                )}
-              >
-                {option.Icon ? (
-                  <option.Icon className={cn("size-4", isActive && "")} />
-                ) : (
-                  <></>
-                )}
-                <span>{option.title}</span>
-                {option.children && (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-
-                      setExpandedItems((previous) => ({
-                        ...previous,
-                        [option.href]: !isExpanded,
-                      }));
-                    }}
-                    size="icon-sm"
-                    variant="ghost"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 hover:bg-secondary/3 hover:text-white"
-                  >
-                    <FiChevronDown
-                      className={cn(
-                        "size-4 transition-transform",
-                        isExpanded && "rotate-180",
-                      )}
-                    />
-                  </Button>
-                )}
-              </Link>
-            </div>
-          );
-
-          const children = option.children && isExpanded && (
-            <div className="flex flex-col">
-              {option.children.map((child, ic) => {
-                const childIsActive = pathname === child.href;
-
-                return (
-                  <Link
-                    key={child.href}
-                    onClick={() => {
-                      if (sheet) setOpen(false);
-                    }}
-                    href={child.href}
-                    className={cn(
-                      "flex items-center gap-4 cursor-pointer px-4 py-2 hover:opacity-90 rounded-l-xl ml-2",
-                      childIsActive
-                        ? "bg-secondary/10 text-white"
-                        : "hover:bg-secondary/10 text-white/50 hover:text-white/75",
-                    )}
-                  >
-                    <span className="size-4 relative opacity-15">
-                      <span
-                        className={cn(
-                          "border-l absolute h-3 w-2 bottom-full right-0",
-                          ic == 0 ? "h-3" : "h-8",
-                        )}
-                      />
-                      <span className="size-2 absolute top-0 right-0 border-l border-b" />
-                      <span className="w-1.5 h-2 absolute top-0 left-full border-b" />
-                    </span>
-                    <span>{child.title}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          );
-
-          return option.header ? (
-            <div key={option.href} className="flex flex-col">
-              <span className="px-4 text-white/25 tracking-wider mt-6 mb-2 font-normal uppercase text-sm">
-                {option.header}
-              </span>
-              {link}
-              {children}
-            </div>
-          ) : (
-            <React.Fragment key={option.href}>
-              {link}
-              {children}
-            </React.Fragment>
-          );
-        })}
+      <div className="flex flex-col gap-0.5 overflow-y-auto pb-4">
+        {options.map((option, index) => renderOption(option, index))}
       </div>
     </div>
   );
 
   return sheet ? (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent side="left" className="w-60!">
-        {sidebar}
+      <SheetContent side="left" className="w-60! p-0">
+        <TooltipProvider>{sidebar}</TooltipProvider>
       </SheetContent>
     </Sheet>
   ) : (
-    sidebar
+    <TooltipProvider>
+      <aside className="sticky top-0 h-screen shrink-0">{sidebar}</aside>
+    </TooltipProvider>
   );
 };
 
-interface RowProps {
-  children: React.ReactNode;
-}
-
-const Row = ({ children }: RowProps) => {
-  return <div className="flex flex-col gap-4 px-6 py-4">{children}</div>;
-};
-
-export { DashboardNav, DashboardWrapper, Row };
+export { DashboardNav, DashboardWrapper };

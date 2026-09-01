@@ -3,8 +3,8 @@
 import CustomButton from "@/components/custom/custom-button";
 import DataHeader from "@/components/custom/data-header";
 import { DataTable } from "@/components/custom/data-table";
-import { usePagination } from "@/hooks/pagination";
-import { useCustomSearchParams } from "@/hooks/search-params";
+import { useAccumulatedList } from "@/hooks/use-accumulated-list";
+import { useListPage } from "@/hooks/list-page";
 import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
 import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
@@ -12,22 +12,58 @@ import { useAdminEmployees } from "@/modules/features/admin/employees/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { EmployeeDto, EmployeeListSearchParamsSchema } from "@rona/types/admin";
 import { employeeListSearchParamsSchema } from "@rona/validation/admin";
+import { useCallback, useState } from "react";
 import { FiPlus } from "react-icons/fi";
 
 const Client = () => {
-  const customSearchParams =
-    useCustomSearchParams<EmployeeListSearchParamsSchema>();
-  const { pagination, paginationData } = usePagination();
+  const {
+    pagination,
+    paginationData,
+    searchParams,
+    requestSearchParams,
+    updateParams,
+    clearParams,
+    removeParams,
+  } = useListPage<EmployeeListSearchParamsSchema>();
+  const [localSearch, setLocalSearch] = useState("");
+
   const { employees, isLoading, deleteMutation, meta } = useAdminEmployees(
-    customSearchParams.requestSearchParams,
+    requestSearchParams,
     paginationData,
   );
   const { organizationsNameLookup, organizationsFilter } =
     useAdminOrganizations();
 
+  const getSearchableText = useCallback(
+    (employee: EmployeeDto) =>
+      [
+        employee.eId,
+        employee.fullName,
+        employee.email || "",
+        employee.phone,
+        employee.gender,
+        employee.status,
+        organizationsNameLookup[employee.organizationId] || "",
+      ].join(" "),
+    [organizationsNameLookup],
+  );
+
+  const list = useAccumulatedList({
+    items: employees,
+    meta,
+    pagination,
+    serverFilterKey: JSON.stringify({
+      ...requestSearchParams,
+      limit: paginationData.limit,
+    }),
+    localSearch,
+    getSearchableText,
+    isLoading,
+  });
+
   const columns = createColumns<EmployeeDto>({
     includeActions: true,
-    searchQuery: customSearchParams.searchParams.searchQuery,
+    searchQuery: localSearch || searchParams.searchQuery,
     extraColumns: [
       {
         accessorKey: "eId",
@@ -91,30 +127,46 @@ const Client = () => {
     <>
       <DataHeader<EmployeeListSearchParamsSchema>
         searchParamsSchema={employeeListSearchParamsSchema}
-        {...customSearchParams}
         replacements={{
           orgId: organizationsFilter,
         }}
         head={
-          <>
-            <CustomButton
-              primary
-              onClick={() =>
-                useModalStore.getState().openModal("admin-employee")
-              }
-              icon={FiPlus}
-            >
-              Add Employee
-            </CustomButton>
-          </>
+          <CustomButton
+            primary
+            onClick={() => useModalStore.getState().openModal("admin-employee")}
+            icon={FiPlus}
+          >
+            Add Employee
+          </CustomButton>
         }
+        searchParams={searchParams}
+        updateParams={updateParams}
+        clearParams={() => {
+          setLocalSearch("");
+          clearParams();
+        }}
+        removeParams={removeParams}
+        localSearch={localSearch}
+        onLocalSearchChange={setLocalSearch}
+        onSearchServer={(value) => {
+          setLocalSearch(value);
+          if (value) updateParams({ searchQuery: value });
+          else removeParams(["searchQuery"]);
+          pagination.setPage(1);
+        }}
       />
       <DataTable
         columns={columns}
-        data={employees}
+        data={list.items}
         loading={isLoading}
         pagination={pagination}
         responseMeta={meta}
+        loadMore={{
+          hasMore: list.hasMore,
+          onLoadMore: list.loadMore,
+          cachedCount: list.cachedCount,
+          isFilteringLocally: list.isFilteringLocally,
+        }}
       />
     </>
   );
