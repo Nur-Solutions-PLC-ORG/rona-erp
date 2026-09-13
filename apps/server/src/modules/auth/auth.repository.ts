@@ -38,4 +38,14 @@ export class AuthRepository {
   async updateUserPassword(userId: string, passwordHash: string) {
     await db.update(users).set({ passwordHash }).where(eq(users.id, userId));
   }
+
+  async updateUserMustChangePassword(
+    userId: string,
+    mustChangePassword: boolean,
+  ) {
+    await db
+      .update(users)
+      .set({ mustChangePassword })
+      .where(eq(users.id, userId));
+  }
 }

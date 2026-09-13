@@ -4,7 +4,6 @@ import DataHeader from "@/components/custom/data-header";
 import { DataTable } from "@/components/custom/data-table";
 import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
-import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
 import { useAdminPlatformConfigs } from "@/modules/features/admin/platform-configs/hooks";
 import { useModalStore } from "@/store";
@@ -13,6 +12,11 @@ import {
   PlatformConfigDto,
 } from "@rona/types/admin";
 import { configsListSearchParamsSchema } from "@rona/validation/admin";
+import { HiOutlineCog6Tooth } from "react-icons/hi2";
+import {
+  PageHeader,
+  StatusBadge,
+} from "@/modules/workspace/components/ui";
 
 const Client = () => {
   const customSearchParams =
@@ -39,11 +43,6 @@ const Client = () => {
         accessorKey: "type",
         header: "Type",
         isMono: true,
-        coloring: {
-          string: BADGE_COLORS.yellow,
-          number: BADGE_COLORS.blue,
-          boolean: BADGE_COLORS.red,
-        },
       },
     ],
     actionsItems: [
@@ -66,10 +65,16 @@ const Client = () => {
   });
 
   return (
-    <>
+    <div className="space-y-4">
+      <PageHeader
+        icon={<HiOutlineCog6Tooth className="w-5 h-5" />}
+        title="Platform Configs"
+        description="View and manage platform-wide configuration settings"
+      />
       <DataHeader<ConfigsListSearchParamsSchema>
         {...customSearchParams}
         searchParamsSchema={configsListSearchParamsSchema}
+        head={null}
       />
       <DataTable
         columns={columns}
@@ -78,7 +83,7 @@ const Client = () => {
         pagination={pagination}
         responseMeta={meta}
       />
-    </>
+    </div>
   );
 };
 

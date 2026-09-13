@@ -1,11 +1,9 @@
 "use client";
 
 import DataHeader from "@/components/custom/data-header";
-import CustomButton from "@/components/custom/custom-button";
 import { DataTable } from "@/components/custom/data-table";
 import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
-import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
 import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
@@ -14,7 +12,12 @@ import {
   OrganizationListSearchParamsSchema,
 } from "@rona/types/admin";
 import { organizationListSearchParamsSchema } from "@rona/validation/admin";
-import { FiPlus } from "react-icons/fi";
+import { HiOutlineBuildingOffice2, HiOutlinePlus } from "react-icons/hi2";
+import {
+  BTN_PRIMARY,
+  PageHeader,
+  StatusBadge,
+} from "@/modules/workspace/components/ui";
 
 const Client = () => {
   const customSearchParams =
@@ -38,7 +41,9 @@ const Client = () => {
       {
         accessorKey: "status",
         header: "Status",
-        coloring: { active: BADGE_COLORS.green, inactive: BADGE_COLORS.red },
+        cell: ({ row }) => (
+          <StatusBadge status={row.getValue("status") as string} />
+        ),
       },
     ],
     actionsItems: [
@@ -78,20 +83,27 @@ const Client = () => {
   });
 
   return (
-    <>
-      <DataHeader<OrganizationListSearchParamsSchema>
-        searchParamsSchema={organizationListSearchParamsSchema}
-        head={
-          <CustomButton
-            primary
+    <div className="space-y-4">
+      <PageHeader
+        icon={<HiOutlineBuildingOffice2 className="w-5 h-5" />}
+        title="Organizations"
+        description="Manage all organizations on the platform"
+        actions={
+          <button
+            type="button"
+            className={BTN_PRIMARY}
             onClick={() =>
               useModalStore.getState().openModal("admin-organization")
             }
-            icon={FiPlus}
           >
+            <HiOutlinePlus className="w-4 h-4" />
             Add Organization
-          </CustomButton>
+          </button>
         }
+      />
+      <DataHeader<OrganizationListSearchParamsSchema>
+        searchParamsSchema={organizationListSearchParamsSchema}
+        head={null}
         {...customSearchParams}
       />
       <DataTable
@@ -101,7 +113,7 @@ const Client = () => {
         pagination={pagination}
         responseMeta={meta}
       />
-    </>
+    </div>
   );
 };
 

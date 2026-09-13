@@ -1,5 +1,6 @@
 import {
   boolean,
+  index,
   pgEnum,
   pgTable,
   text,
@@ -14,12 +15,10 @@ import {
 import { organizations } from './admin';
 import { relations } from 'drizzle-orm';
 
-// ENUMS
 export const modulesList = pgEnum('modules_list', MODULE_LIST);
 export const positionsList = pgEnum('positions_list', POSITIONS_LIST);
 export const statusesList = pgEnum('statuses_list', USER_STATUS_LIST);
 
-// TABLES
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   organizationId: uuid('organization_id').references(() => organizations.id, {
@@ -33,6 +32,8 @@ export const users = pgTable('users', {
   isEmailVerified: boolean('is_email_verified').default(false).notNull(),
   tfaEnabled: boolean('tfa_enabled').default(false).notNull(),
 
+  mustChangePassword: boolean('must_change_password').default(false).notNull(),
+
   status: statusesList('status').default('active').notNull(),
 
   createdAt: timestamp('created_at', { withTimezone: true })
@@ -44,25 +45,30 @@ export const users = pgTable('users', {
     .$onUpdate(() => new Date()),
 });
 
-export const userRoles = pgTable('user_roles', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .references(() => users.id, { onDelete: 'cascade' })
-    .notNull(),
+export const userRoles = pgTable(
+  'user_roles',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .references(() => users.id, { onDelete: 'cascade' })
+      .notNull(),
 
-  position: positionsList('position').notNull(),
-  module: modulesList('module').array().notNull().default([]),
+    position: positionsList('position').notNull(),
+    module: modulesList('module').array().notNull().default([]),
 
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .defaultNow()
-    .notNull()
-    .$onUpdate(() => new Date()),
-});
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index('user_roles_user_id_idx').on(table.userId),
+  ],
+);
 
-// RELATIONS
 export const organizationsRelations = relations(organizations, ({ many }) => ({
   users: many(users),
 }));

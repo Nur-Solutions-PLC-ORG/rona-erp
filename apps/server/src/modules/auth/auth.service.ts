@@ -4,18 +4,26 @@ import {
   InvalidCredentialsException,
   InvalidResetTokenException,
   SessionException,
-  UserNotFoundException,
+  TooManyAttemptsException,
   UserRoleNotFoundException,
   WaitForResendException,
 } from '@/modules/auth/auth.exception';
 import { getGoogleAuthUrl, getGoogleUserProfile } from '@/google/o-auth';
-import { redisClient } from '@/redis';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { rateLimit, redisClient } from '@/redis';
+import { getRequestContext } from '@/context/request-context';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { AuthRepository } from './auth.repository';
 import {
   OPT_RESEND_DELAY_DURATION_MS,
   CODE_EXPIRY_MS,
   CODE_LENGTH,
+  CODE_MAX_ATTEMPTS,
+  CODE_WINDOW_SECONDS,
+  FORGOT_ATTEMPT_LIMIT,
+  FORGOT_WINDOW_SECONDS,
+  RESET_MAX_ATTEMPTS,
+  SIGN_IN_ATTEMPT_LIMIT,
+  SIGN_IN_WINDOW_SECONDS,
   SESSION_DURATION,
 } from '@rona/config/auth';
 import type { RegisterSchema } from '@rona/types/auth';
@@ -26,9 +34,10 @@ import { generateCombinations } from '@/lib/combinations';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(private readonly authRepository: AuthRepository) {}
 
-  // gets user by email
   async validateUserByEmail(email: string) {
     const userRecord = await this.authRepository.findUserByEmail(email);
 
@@ -39,8 +48,16 @@ export class AuthService {
     return userRecord;
   }
 
-  // get user with matching email and password
   async validateCredentials(email: string, password: string) {
+    const attemptKey = `auth:attempts:sign-in:${email.toLowerCase()}`;
+
+    const allowed = await rateLimit(
+      attemptKey,
+      SIGN_IN_ATTEMPT_LIMIT,
+      SIGN_IN_WINDOW_SECONDS,
+    );
+    if (!allowed) throw new TooManyAttemptsException();
+
     const user = await this.validateUserByEmail(email);
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
@@ -49,10 +66,10 @@ export class AuthService {
       throw new InvalidCredentialsException();
     }
 
+    await redisClient.del(attemptKey).catch(() => undefined);
     return user;
   }
 
-  // Random verification code generator
   generateRandomCode(): string {
     return generateCombinations({
       length: CODE_LENGTH,
@@ -63,7 +80,6 @@ export class AuthService {
     });
   }
 
-  // Sends verification code
   async sendVerificationCode(email: string) {
     const lastSendKey = `auth:last_send:${email}`;
 
@@ -90,9 +106,17 @@ export class AuthService {
     await this.sendVerificationCode(email);
   }
 
-  // Verifies code
   async verifyCode(email: string, code: string) {
     const codeKey = `auth:code:${email}`;
+    const attemptKey = `auth:attempts:code:${email}`;
+
+    const allowed = await rateLimit(
+      attemptKey,
+      CODE_MAX_ATTEMPTS,
+      CODE_WINDOW_SECONDS,
+    );
+    if (!allowed) throw new TooManyAttemptsException();
+
     const storedCode = String(await redisClient.get<string>(codeKey));
 
     if (!storedCode || storedCode !== code) {
@@ -100,9 +124,9 @@ export class AuthService {
     }
 
     await redisClient.del(codeKey);
+    await redisClient.del(attemptKey).catch(() => undefined);
   }
 
-  // get users role
   async getRoles(userId: string): Promise<UserRole> {
     const roleKey = `auth:role:${userId}`;
     const cachedRoles = await redisClient.get<UserRole>(roleKey);
@@ -123,7 +147,6 @@ export class AuthService {
     return userRole;
   }
 
-  // encoding a jwt session token
   createSession(user: SessionUser): string {
     try {
       const payload = { user };
@@ -132,12 +155,11 @@ export class AuthService {
         expiresIn: SESSION_DURATION / 1000,
       });
     } catch (e) {
-      console.log('session encoding error: ', e);
+      this.logger.error(`session encoding error: ${String(e)}`);
       throw new SessionException();
     }
   }
 
-  // decoding a jwt session token
   async decodeSession(token: string): Promise<Session> {
     try {
       const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
@@ -152,12 +174,11 @@ export class AuthService {
         expires: new Date(payload.exp * 1000).toISOString(),
       };
     } catch (e) {
-      console.log('session decoding error: ', e);
+      this.logger.error(`session decoding error: ${String(e)}`);
       throw new SessionException();
     }
   }
 
-  // registers a platform user
   async registerUser(data: RegisterSchema) {
     const existing = await this.authRepository.findUserByEmail(data.email);
     if (existing) {
@@ -175,6 +196,7 @@ export class AuthService {
       passwordHash,
       tfaEnabled: data.tfaEnabled,
       isEmailVerified: true,
+      mustChangePassword: true,
     });
 
     await this.authRepository.createUserRole({
@@ -184,12 +206,10 @@ export class AuthService {
     });
   }
 
-  // generates google auth url
   getGoogleAuthUrl(state?: string) {
     return getGoogleAuthUrl(state);
   }
 
-  // handles google callback
   async handleGoogleCallback(code: string) {
     const profile = await getGoogleUserProfile(code);
     const user = await this.validateUserByEmail(profile.email);
@@ -203,50 +223,98 @@ export class AuthService {
     return { token };
   }
 
-  // forgot-password: validates email, generates a secure one-time token, stores it in Redis, and sends a reset email
   async forgotPassword(email: string) {
+    const normalizedEmail = email.toLowerCase();
+    const ip = getRequestContext()?.ip ?? 'unknown';
+
+    const ipAllowed = await rateLimit(
+      `auth:attempts:forgot-ip:${ip}`,
+      FORGOT_ATTEMPT_LIMIT,
+      FORGOT_WINDOW_SECONDS,
+    );
+    if (!ipAllowed) throw new TooManyAttemptsException();
+
+    const allowed = await rateLimit(
+      `auth:attempts:forgot:${normalizedEmail}`,
+      FORGOT_ATTEMPT_LIMIT,
+      FORGOT_WINDOW_SECONDS,
+    );
+    if (!allowed) throw new TooManyAttemptsException();
+
     const user = await this.authRepository.findUserByEmail(email);
 
     if (!user) {
-      throw new UserNotFoundException();
+      return;
     }
 
-    const token = this.generateRandomCode();
+    const lastSendKey = `auth:last_send_reset:${normalizedEmail}`;
+    const lastSend = await redisClient.get<number>(lastSendKey);
+    if (lastSend && Date.now() - lastSend < OPT_RESEND_DELAY_DURATION_MS) {
+      throw new WaitForResendException();
+    }
 
-    const resetTokenKey = `auth:reset-token:${user.id}`;
-    await redisClient.set(resetTokenKey, token, { px: CODE_EXPIRY_MS });
+    const code = this.generateRandomCode();
 
-    await sendPasswordResetEmail(email, token);
-  }
-
-  // reset-password: validates the token against Redis, checks expiration, hashes the new password, and updates the user
-  async resetPassword(token: string, password: string) {
-    const resetTokenKey = `auth:reset-token:*`;
-    const [, keys] = await redisClient.scan(0, {
-      match: resetTokenKey,
-      count: 100,
+    await redisClient.set(`auth:reset-code:${normalizedEmail}`, code, {
+      px: CODE_EXPIRY_MS,
     });
 
-    let foundKey: string | null = null;
+    await sendPasswordResetEmail(email, code);
 
-    for (const key of keys) {
-      const storedToken = String(await redisClient.get<string>(key));
-      if (storedToken === token) {
-        foundKey = key;
-        break;
-      }
-    }
+    await redisClient.set(lastSendKey, Date.now(), {
+      px: OPT_RESEND_DELAY_DURATION_MS,
+    });
+  }
 
-    if (!foundKey) {
+  async resetPassword(email: string, code: string, password: string) {
+    const normalizedEmail = email.toLowerCase();
+    const codeKey = `auth:reset-code:${normalizedEmail}`;
+    const attemptKey = `auth:attempts:reset:${normalizedEmail}`;
+
+    const allowed = await rateLimit(
+      attemptKey,
+      RESET_MAX_ATTEMPTS,
+      CODE_WINDOW_SECONDS,
+    );
+    if (!allowed) throw new TooManyAttemptsException();
+
+    const storedCode = await redisClient.get<string>(codeKey);
+
+    if (!storedCode || storedCode !== code) {
       throw new InvalidResetTokenException();
     }
 
-    const userId = foundKey.replace('auth:reset-token:', '');
+    const user = await this.authRepository.findUserByEmail(email);
+
+    if (!user) {
+      throw new InvalidResetTokenException();
+    }
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    await this.authRepository.updateUserPassword(userId, passwordHash);
+    await this.authRepository.updateUserPassword(user.id, passwordHash);
 
-    await redisClient.del(foundKey);
+    await redisClient.del(codeKey);
+    await redisClient.del(attemptKey).catch(() => undefined);
+  }
+
+  async changePassword(
+    email: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.validateCredentials(email, currentPassword);
+
+    if (!user.mustChangePassword) {
+      throw new BadRequestException({
+        success: false,
+        message: 'This account does not require a password change.',
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await this.authRepository.updateUserPassword(user.id, passwordHash);
+    await this.authRepository.updateUserMustChangePassword(user.id, false);
   }
 }

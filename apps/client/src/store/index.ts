@@ -10,5 +10,4 @@ export const useSidebarStore = create<SidebarStore>((set) => ({
   setOpen: (open) => set({ open }),
 }));
 
-// exports
 export * from "./modals";

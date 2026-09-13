@@ -1,6 +1,5 @@
 "use client";
 
-import CustomButton from "@/components/custom/custom-button";
 import DataHeader from "@/components/custom/data-header";
 import { DataTable } from "@/components/custom/data-table";
 import { usePagination } from "@/hooks/pagination";
@@ -14,7 +13,11 @@ import {
   OrganizationSettingsListSearchParamsSchema,
 } from "@rona/types/admin";
 import { organizationSettingsListSearchParamsSchema } from "@rona/validation/admin";
-import { FiPlus } from "react-icons/fi";
+import { HiOutlinePlus, HiOutlineWrenchScrewdriver } from "react-icons/hi2";
+import {
+  BTN_PRIMARY,
+  PageHeader,
+} from "@/modules/workspace/components/ui";
 
 const Client = () => {
   const customSearchParams =
@@ -78,21 +81,28 @@ const Client = () => {
   });
 
   return (
-    <>
-      <DataHeader<OrganizationSettingsListSearchParamsSchema>
-        searchParamsSchema={organizationSettingsListSearchParamsSchema}
-        {...customSearchParams}
-        head={
-          <CustomButton
-            primary
+    <div className="space-y-4">
+      <PageHeader
+        icon={<HiOutlineWrenchScrewdriver className="w-5 h-5" />}
+        title="Organization Settings"
+        description="Manage per-organization settings like currency"
+        actions={
+          <button
+            type="button"
+            className={BTN_PRIMARY}
             onClick={() =>
               useModalStore.getState().openModal("admin-organization-settings")
             }
-            icon={FiPlus}
           >
+            <HiOutlinePlus className="w-4 h-4" />
             Add Settings
-          </CustomButton>
+          </button>
         }
+      />
+      <DataHeader<OrganizationSettingsListSearchParamsSchema>
+        searchParamsSchema={organizationSettingsListSearchParamsSchema}
+        {...customSearchParams}
+        head={null}
       />
       <DataTable
         columns={columns}
@@ -101,7 +111,7 @@ const Client = () => {
         pagination={pagination}
         responseMeta={meta}
       />
-    </>
+    </div>
   );
 };
 

@@ -37,8 +37,8 @@ const UserButton = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className=" cursor-pointer hover:ring-2  hover:ring-border">
-          <AvatarFallback className="bg-purple-700 shadow-inner relative overflow-hidden">
-            <FaUser className="size-5.5 absolute bottom-0 text-white/50" />
+          <AvatarFallback className="ring-1 ring-zinc-300 bg-transparent relative overflow-hidden">
+            <FaUser className="size-5.5 absolute bottom-0 text-zinc-500" />
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>

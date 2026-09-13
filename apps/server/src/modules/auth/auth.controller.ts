@@ -26,7 +26,9 @@ import {
   ResetPasswordSchema,
   SignInSchema,
 } from '@rona/types/auth';
+import type { ChangePasswordSchema } from '@rona/types/auth';
 import {
+  changePasswordSchema,
   forgotPasswordSchema,
   registerSchema,
   resendVerificationCodeSchema,
@@ -54,6 +56,15 @@ export class AuthController {
       body.email,
       body.password,
     );
+
+    if (user.mustChangePassword) {
+      return {
+        success: true,
+        statusCode: HttpStatus.OK,
+        message: 'Please set a new password to continue.',
+        data: { tfaEnabled: false, mustChangePassword: true },
+      };
+    }
 
     if (user.tfaEnabled) {
       if (!body.code) {
@@ -89,6 +100,7 @@ export class AuthController {
       success: true,
       statusCode: HttpStatus.OK,
       message: 'You have signed in successfully.',
+      data: { tfaEnabled: false, mustChangePassword: false },
     };
   }
 
@@ -111,7 +123,6 @@ export class AuthController {
   @Roles('super_admin')
   @UsePipes(new ZodValidationPipe(registerSchema))
   async register(@Body() body: RegisterSchema): Promise<ApiResponse<never>> {
-    console.log('sjd');
     await this.authService.registerUser(body);
 
     return {
@@ -191,7 +202,6 @@ export class AuthController {
     }
   }
 
-  /// POST /api/auth/forgot-password — initiates the password reset flow
   @Post('forgot-password')
   @UsePipes(new ZodValidationPipe(forgotPasswordSchema))
   async forgotPassword(
@@ -201,21 +211,40 @@ export class AuthController {
     return {
       success: true,
       statusCode: HttpStatus.OK,
-      message: 'Your password reset token has been sent successfully.',
+      message:
+        'If an account exists, a reset code has been sent to your email.',
     };
   }
-  // POST /api/auth/reset-password — completes the password reset flow
   @Post('reset-password')
   @UsePipes(new ZodValidationPipe(resetPasswordSchema))
   async resetPassword(
     @Body() body: ResetPasswordSchema,
   ): Promise<ApiResponse<ResetPasswordSchema>> {
-    await this.authService.resetPassword(body.token, body.password);
+    await this.authService.resetPassword(body.email, body.token, body.password);
 
     return {
       success: true,
       statusCode: HttpStatus.OK,
       message: 'Your password has been reset successfully.',
+    };
+  }
+
+  @Post('change-password')
+  @UsePipes(new ZodValidationPipe(changePasswordSchema))
+  async changePassword(
+    @Body() body: ChangePasswordSchema,
+  ): Promise<ApiResponse<never>> {
+    await this.authService.changePassword(
+      body.email,
+      body.currentPassword,
+      body.newPassword,
+    );
+
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message:
+        'Your password has been set. Please sign in with your new password.',
     };
   }
 }

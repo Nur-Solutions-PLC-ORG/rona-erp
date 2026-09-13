@@ -7,7 +7,10 @@ import { Toaster } from "@/components/ui/sonner";
 import { useSession } from "@/modules/auth/hooks";
 
 import LoaderPage from "@/components/custom/loader-page";
-import { CLIENT_APP_DASHBOARD_PAGE } from "@rona/routes/app";
+import {
+  CLIENT_APP_DASHBOARD_PAGE,
+  CLIENT_APP_LAUNCHER_PAGE,
+} from "@rona/routes/app";
 import {
   CLIENT_AUTH_FORGOT_PASSWORD_PAGE,
   CLIENT_AUTH_GOOGLE_CALLBACK_PAGE,
@@ -63,7 +66,7 @@ export default function AppWrapper({ children }: Props) {
     if (pathname === CLIENT_AUTH_SIGNIN_PAGE) {
       router.replace(
         getSafeRedirectPath(searchParams.get("redirect")) ??
-          CLIENT_APP_DASHBOARD_PAGE,
+          CLIENT_APP_LAUNCHER_PAGE,
       );
       return;
     }
@@ -77,7 +80,7 @@ export default function AppWrapper({ children }: Props) {
 
     if (!isAdmin) {
       if (pathname.startsWith("/admin")) {
-        router.replace(CLIENT_APP_DASHBOARD_PAGE);
+        router.replace(CLIENT_APP_LAUNCHER_PAGE);
         return;
       }
     }

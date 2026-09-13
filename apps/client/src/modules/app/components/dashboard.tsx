@@ -42,9 +42,10 @@ const findSidebarOption = (
 type Props = {
   children: React.ReactNode;
   options?: SidebarOptions;
+  navExtra?: React.ReactNode;
 };
 
-const DashboardWrapper = ({ children, options }: Props) => {
+const DashboardWrapper = ({ children, options, navExtra }: Props) => {
   const isMobile = useIsMobile();
   const pathname = usePathname();
 
@@ -59,6 +60,7 @@ const DashboardWrapper = ({ children, options }: Props) => {
             options={options}
             pathname={pathname}
             isMobile={isMobile}
+            navExtra={navExtra}
           />
 
           <div className="flex-1 w-full flex flex-col bg-secondary/25">
@@ -76,9 +78,10 @@ type NavProps = {
   isMobile?: boolean;
   options?: SidebarOptions;
   pathname: string;
+  navExtra?: React.ReactNode;
 };
 
-const DashboardNav = ({ isMobile, options, pathname }: NavProps) => {
+const DashboardNav = ({ isMobile, options, pathname, navExtra }: NavProps) => {
   return (
     <nav className="border-b h-20">
       <div className="px-8 flex h-full items-center gap-4">
@@ -98,6 +101,7 @@ const DashboardNav = ({ isMobile, options, pathname }: NavProps) => {
           </h1>
         )}
         <span className="ml-auto" />
+        {navExtra}
         <UserButton />
       </div>
     </nav>

@@ -14,12 +14,16 @@ import {
   USER_STATUS_LIST,
 } from "@rona/config/auth";
 
-// Tables schema
 export const userSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters long"),
   email: z.email("Invalid email address"),
   organizationId: z.string().optional(),
   status: z.enum(USER_STATUS_LIST),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters long")
+    .max(72, "Password must be at most 72 characters long")
+    .optional(),
   role: z.object({
     position: z.enum(POSITIONS_LIST),
     modules: z.array(z.enum(MODULE_LIST)),
@@ -37,6 +41,7 @@ export const organizationSchema = z.object({
   phone: z.string().min(7, "Phone is required"),
   country: z.string().min(2, "Country is required"),
   status: z.enum(ORGANIZATION_STATUS_LIST),
+  ownerUserId: z.string().uuid("Owner user ID must be a valid UUID").optional(),
 });
 export const organizationUpdateSchema = organizationSchema.partial();
 

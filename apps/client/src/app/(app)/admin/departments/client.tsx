@@ -1,7 +1,6 @@
 "use client";
 
 import DataHeader from "@/components/custom/data-header";
-import CustomButton from "@/components/custom/custom-button";
 import { DataTable } from "@/components/custom/data-table";
 import { usePagination } from "@/hooks/pagination";
 import { useCustomSearchParams } from "@/hooks/search-params";
@@ -15,7 +14,11 @@ import {
   DepartmentListSearchParamsSchema,
 } from "@rona/types/admin";
 import { departmentListSearchParamsSchema } from "@rona/validation/admin";
-import { FiPlus } from "react-icons/fi";
+import { HiOutlineCube, HiOutlinePlus } from "react-icons/hi2";
+import {
+  BTN_PRIMARY,
+  PageHeader,
+} from "@/modules/workspace/components/ui";
 
 const Client = () => {
   const customSearchParams =
@@ -79,23 +82,28 @@ const Client = () => {
   });
 
   return (
-    <>
-      <DataHeader<DepartmentListSearchParamsSchema>
-        searchParamsSchema={departmentListSearchParamsSchema}
-        replacements={{
-          orgId: organizationsFilter,
-        }}
-        head={
-          <CustomButton
-            primary
+    <div className="space-y-4">
+      <PageHeader
+        icon={<HiOutlineCube className="w-5 h-5" />}
+        title="Departments"
+        description="Manage organizational departments and their modules"
+        actions={
+          <button
+            type="button"
+            className={BTN_PRIMARY}
             onClick={() =>
               useModalStore.getState().openModal("admin-department")
             }
-            icon={FiPlus}
           >
+            <HiOutlinePlus className="w-4 h-4" />
             Add Department
-          </CustomButton>
+          </button>
         }
+      />
+      <DataHeader<DepartmentListSearchParamsSchema>
+        searchParamsSchema={departmentListSearchParamsSchema}
+        replacements={{ orgId: organizationsFilter }}
+        head={null}
         {...customSearchParams}
       />
       <DataTable
@@ -105,7 +113,7 @@ const Client = () => {
         pagination={pagination}
         responseMeta={meta}
       />
-    </>
+    </div>
   );
 };
 

@@ -1,5 +1,6 @@
 import { Request } from "@/api";
 import {
+  API_AUTH_CHANGE_PASSWORD_URL,
   API_AUTH_FORGOT_PASSWORD_URL,
   API_AUTH_GOOGLE_URL,
   API_AUTH_RESEND_VERIFICATION_CODE_URL,
@@ -9,6 +10,7 @@ import {
   API_AUTH_SIGN_OUT_URL,
 } from "@rona/routes/auth";
 import {
+  ChangePasswordSchema,
   ForgotPasswordSchema,
   ResendVerificationCodeSchema,
   ResetPasswordSchema,
@@ -36,6 +38,11 @@ export const ApiPostForgotPassword = Request<never, ForgotPasswordSchema>(
 export const ApiPostResetPassword = Request<never, ResetPasswordSchema>(
   "post",
   API_AUTH_RESET_PASSWORD_URL,
+);
+
+export const ApiPostChangePassword = Request<never, ChangePasswordSchema>(
+  "post",
+  API_AUTH_CHANGE_PASSWORD_URL,
 );
 
 export const ApiGetSessionStatus = Request<Session>(

@@ -1,16 +1,13 @@
 "use client";
 
 import { ApiPostForgotPassword } from "@/api";
-import CardWrapper from "@/components/custom/card-wrapper";
-import CustomButton from "@/components/custom/custom-button";
-import { Button } from "@/components/ui/button";
 import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+  AuthField,
+  AuthHeading,
+  AUTH_INPUT,
+  AUTH_OUTLINE_BUTTON,
+  AUTH_PRIMARY_BUTTON,
+} from "@/components/custom/auth-form";
 import { useCreateMutation } from "@/hooks/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -41,7 +38,9 @@ const Client = () => {
     ApiPostForgotPassword,
     (data) => {
       toast.success(data.message);
-      router.push(CLIENT_AUTH_RESET_PASSWORD_PAGE);
+      router.push(
+        `${CLIENT_AUTH_RESET_PASSWORD_PAGE}?email=${encodeURIComponent(form.getValues().email)}`,
+      );
     },
     (data) => {
       toast.error(data.message);
@@ -53,46 +52,46 @@ const Client = () => {
   };
 
   return (
-    <CardWrapper center title={"Forgot Password"}>
+    <div className="space-y-6">
+      <AuthHeading
+        title="Forgot password"
+        description="Enter your email and we will send you a reset token."
+      />
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-5 w-full flex flex-col"
+        className="flex w-full flex-col space-y-5"
       >
-        <FieldGroup className="gap-5">
-          <p className="text-muted-foreground">
-            Enter your email and password resent token will be sent.
-          </p>
-          <Controller
-            control={form.control}
-            name="email"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor="email-input">Email</FieldLabel>
-                <Input
-                  {...field}
-                  id="email-input"
-                  aria-invalid={fieldState.invalid}
-                  placeholder="email@gmail.com"
-                />
-                {fieldState.invalid && (
-                  <FieldError errors={[fieldState.error]} />
-                )}
-              </Field>
-            )}
-          />
-        </FieldGroup>
-        <CustomButton
-          isPending={forgotPasswordMutation.isPending}
-          size={"lg"}
-          className="w-full"
+        <Controller
+          control={form.control}
+          name="email"
+          render={({ field, fieldState }) => (
+            <AuthField
+              label="Email"
+              htmlFor="email-input"
+              error={fieldState.invalid ? "Invalid email address" : undefined}
+            >
+              <input
+                {...field}
+                id="email-input"
+                placeholder="you@company.com"
+                className={AUTH_INPUT}
+                aria-invalid={fieldState.invalid}
+              />
+            </AuthField>
+          )}
+        />
+        <button
+          type="submit"
+          disabled={forgotPasswordMutation.isPending}
+          className={AUTH_PRIMARY_BUTTON}
         >
-          Send
-        </CustomButton>
-        <Button asChild variant={"outline"} className="w-full">
-          <Link href={CLIENT_AUTH_SIGNIN_PAGE}>Back to Sign in</Link>
-        </Button>
+          {forgotPasswordMutation.isPending ? "Sending..." : "Send reset token"}
+        </button>
       </form>
-    </CardWrapper>
+      <Link href={CLIENT_AUTH_SIGNIN_PAGE} className={AUTH_OUTLINE_BUTTON}>
+        Back to sign in
+      </Link>
+    </div>
   );
 };
 

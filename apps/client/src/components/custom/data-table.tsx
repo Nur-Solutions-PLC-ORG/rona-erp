@@ -18,9 +18,10 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import { RiLoader5Fill } from "react-icons/ri";
+import { HiOutlineTableCells } from "react-icons/hi2";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Dropdown from "./dropdown";
+import { Skeleton } from "./skeleton";
 import { Pagination } from "@/hooks/pagination";
 import { ResponseMeta } from "@rona/types/api";
 
@@ -63,32 +64,32 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const cellPadding = (cellIdx: number, arr: unknown[]) =>
+    cn(
+      cellIdx === 0
+        ? "pl-4"
+        : cellIdx === arr.length - 1
+          ? "pr-4"
+          : "px-4",
+    );
+
   return (
-    <div className="px-5 flex-1 flex pb-6">
-      <div className="flex flex-1 bg-white rounded-lg shadow flex-col">
-        <div
-          style={
-            {
-              "--border": "#ddd",
-            } as React.CSSProperties
-          }
-          className="flex w-full flex-col"
-        >
-          {/* Table */}
-          <ScrollArea className="max-w-[calc(100vw-2.5rem)] md:max-w-[calc(100vw-17.5rem)]">
+    <div className="flex-1 flex">
+      <div className="flex flex-1 bg-white rounded-lg border border-zinc-200 overflow-hidden flex-col">
+        <div className="flex w-full flex-col">
+          <ScrollArea className="w-full">
             <Table>
-              <TableHeader className="border-b-2! border-black/5!">
+              <TableHeader className="bg-zinc-50">
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow className="h-10" key={headerGroup.id}>
+                  <TableRow
+                    className="hover:bg-zinc-50 border-zinc-200"
+                    key={headerGroup.id}
+                  >
                     {headerGroup.headers.map((header, cellIdx, arr) => (
                       <TableHead
                         className={cn(
-                          cellIdx === 0
-                            ? "pl-6"
-                            : cellIdx === arr.length - 1
-                              ? "pr-6"
-                              : "px-6",
-                          "opacity-50",
+                          cellPadding(cellIdx, arr),
+                          "py-2 text-xs font-semibold uppercase tracking-wider text-zinc-500",
                         )}
                         key={header.id}
                       >
@@ -105,27 +106,27 @@ export function DataTable<TData, TValue>({
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={table.getAllColumns().length}
-                      className="h-12 opacity-25 animate-pulse px-6"
-                    >
-                      <RiLoader5Fill className="size-5 animate-spin inline mr-2" />
-                      Loading...
-                    </TableCell>
-                  </TableRow>
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <TableRow key={`skeleton-${index}`} className="border-zinc-100">
+                      <TableCell
+                        colSpan={table.getAllColumns().length}
+                        className="px-4 py-1.5"
+                      >
+                        <Skeleton className="my-0.5 h-8 w-full" />
+                      </TableCell>
+                    </TableRow>
+                  ))
                 ) : table.getRowModel().rows.length ? (
                   table.getRowModel().rows.map((row) => (
-                    <TableRow key={row.id}>
+                    <TableRow
+                      key={row.id}
+                      className="border-zinc-100 hover:bg-zinc-100"
+                    >
                       {row.getVisibleCells().map((cell, cellIdx, arr) => (
                         <TableCell
                           className={cn(
-                            cellIdx === 0
-                              ? "pl-6"
-                              : cellIdx === arr.length - 1
-                                ? "pr-6"
-                                : "px-6",
-                            "h-12",
+                            cellPadding(cellIdx, arr),
+                            "py-2 text-xs text-zinc-700",
                           )}
                           key={cell.id}
                         >
@@ -138,12 +139,17 @@ export function DataTable<TData, TValue>({
                     </TableRow>
                   ))
                 ) : (
-                  <TableRow>
+                  <TableRow className="border-zinc-100">
                     <TableCell
                       colSpan={table.getAllColumns().length}
-                      className="h-12 px-6 opacity-50"
+                      className="px-4 py-10"
                     >
-                      No results.
+                      <div className="flex flex-col items-center justify-center gap-2 text-center">
+                        <HiOutlineTableCells className="h-7 w-7 text-zinc-200" />
+                        <p className="text-sm font-medium text-zinc-600">
+                          No results found.
+                        </p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )}
@@ -154,49 +160,53 @@ export function DataTable<TData, TValue>({
         </div>
 
         {pagination && (
-          <div className="flex px-6 mt-auto h-16 border-t border-border/25">
-            <div className="flex flex-1 items-center gap-6">
-              <div className="pl-2 h-9 rounded-md gap-2 flex items-center">
-                <p className="my-auto text-sm opacity-75">Showing</p>
+          <div className="flex px-4 py-2.5 mt-auto border-t border-zinc-100 bg-zinc-50/50">
+            <div className="flex flex-1 flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-zinc-500">Show</p>
                 <Dropdown
-                  className="min-w-0 w-20! max-w-20! h-8"
+                  className="min-w-0 w-20! max-w-20! h-7! bg-white!"
                   options={PAGE_SIZE_OPTIONS}
                   placeholder="Size"
                   value={pagination.limit?.toString() || ""}
                   onChange={(e) => pagination.setLimit(Number(e))}
                 />
-                <p className="my-auto text-sm opacity-75">
-                  of <span>{responseMeta?.totalItems}</span> item
-                  {(responseMeta?.totalItems || 0) > 1 ? "s" : ""}
+                <p className="text-xs text-zinc-500">
+                  of{" "}
+                  <span className="font-medium text-zinc-700">
+                    {responseMeta?.totalItems ?? 0}
+                  </span>{" "}
+                  item{(responseMeta?.totalItems || 0) > 1 ? "s" : ""}
                 </p>
               </div>
 
-              <div className="pl-2 h-9 rounded-md gap-2 flex items-center ml-auto">
-                <p className="my-auto text-sm opacity-75">Page</p>
-                <div className="flex border rounded-md h-8">
-                  <FiChevronLeft
+              <div className="flex items-center gap-2 ml-auto">
+                <p className="text-xs text-zinc-500">Page</p>
+                <div className="flex rounded-lg border border-zinc-200 bg-white overflow-hidden h-7">
+                  <button
+                    type="button"
+                    aria-label="Previous page"
                     onClick={() => {
                       if (pagination.page && pagination.page - 1 > 0) {
                         pagination.setPage(pagination.page - 1);
                       }
                     }}
                     className={cn(
-                      "h-full px-2 w-8 rounded-md hover:bg-secondary/5 active:bg-secondary/10 duration-200 transition-all cursor-pointer",
-                      // disable
+                      "w-8 flex items-center justify-center text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 active:bg-zinc-100 transition-all cursor-pointer disabled:cursor-default",
                       pagination.page == 1 && "opacity-25",
                     )}
-                  />
-
-                  <span
-                    className={cn(
-                      "h-full px-3 font-medium border-x text-base flex items-center",
-                      !pagination.page && "opacity-50",
-                    )}
+                    disabled={pagination.page == 1}
                   >
-                    {pagination.page || "Page"}
+                    <FiChevronLeft className="size-3.5" />
+                  </button>
+
+                  <span className="min-w-9 px-2 border-x border-zinc-200 text-xs font-semibold text-zinc-700 flex items-center justify-center">
+                    {pagination.page || "-"}
                   </span>
 
-                  <FiChevronRight
+                  <button
+                    type="button"
+                    aria-label="Next page"
                     onClick={() => {
                       if (pagination.page) {
                         if (hasNextPage) {
@@ -207,11 +217,13 @@ export function DataTable<TData, TValue>({
                       }
                     }}
                     className={cn(
-                      "h-full px-2 w-8 rounded-md hover:bg-secondary/5 active:bg-secondary/10 duration-200 transition-all cursor-pointer",
-                      // disable
+                      "w-8 flex items-center justify-center text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700 active:bg-zinc-100 transition-all cursor-pointer disabled:cursor-default",
                       !hasNextPage && "opacity-25",
                     )}
-                  />
+                    disabled={!hasNextPage}
+                  >
+                    <FiChevronRight className="size-3.5" />
+                  </button>
                 </div>
               </div>
             </div>

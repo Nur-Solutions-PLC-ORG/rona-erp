@@ -28,7 +28,7 @@ const UserCredentialsModal = () => {
   return (
     <DialogWrapper
       title={modalData?.title ?? "User created successfully"}
-      info="Share these login credentials securely. The password is shown only now."
+      info="Share these login credentials securely. The user will be prompted to set a new password on first sign-in."
       open={open === "admin-user-credentials"}
       onOpen={() => closeModal()}
       footer={

@@ -1,6 +1,5 @@
 "use client";
 
-import CustomButton from "@/components/custom/custom-button";
 import DataHeader from "@/components/custom/data-header";
 import { DataTable } from "@/components/custom/data-table";
 import { usePagination } from "@/hooks/pagination";
@@ -11,7 +10,11 @@ import { useAdminOrganizations } from "@/modules/features/admin/organizations/ho
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { BranchDto, BranchListSearchParamsSchema } from "@rona/types/admin";
 import { branchListSearchParamsSchema } from "@rona/validation/admin";
-import { FiPlus } from "react-icons/fi";
+import { HiOutlineBuildingOffice2, HiOutlinePlus } from "react-icons/hi2";
+import {
+  BTN_PRIMARY,
+  PageHeader,
+} from "@/modules/workspace/components/ui";
 
 const Client = () => {
   const customSearchParams =
@@ -70,21 +73,26 @@ const Client = () => {
   });
 
   return (
-    <>
+    <div className="space-y-4">
+      <PageHeader
+        icon={<HiOutlineBuildingOffice2 className="w-5 h-5" />}
+        title="Branches"
+        description="Manage organizational branches and locations"
+        actions={
+          <button
+            type="button"
+            className={BTN_PRIMARY}
+            onClick={() => useModalStore.getState().openModal("admin-branch")}
+          >
+            <HiOutlinePlus className="w-4 h-4" />
+            Add Branch
+          </button>
+        }
+      />
       <DataHeader<BranchListSearchParamsSchema>
         searchParamsSchema={branchListSearchParamsSchema}
-        replacements={{
-          orgId: organizationsFilter,
-        }}
-        head={
-          <CustomButton
-            primary
-            onClick={() => useModalStore.getState().openModal("admin-branch")}
-            icon={FiPlus}
-          >
-            Add Branch
-          </CustomButton>
-        }
+        replacements={{ orgId: organizationsFilter }}
+        head={null}
         {...customSearchParams}
       />
       <DataTable
@@ -94,7 +102,7 @@ const Client = () => {
         pagination={pagination}
         responseMeta={meta}
       />
-    </>
+    </div>
   );
 };
 

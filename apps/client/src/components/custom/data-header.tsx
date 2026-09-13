@@ -47,15 +47,15 @@ function DataHeader<TSearchParams>({
   };
 
   return (
-    <div id="data-header" className="flex flex-col py-4 gap-5">
+    <div id="data-header" className="flex flex-col gap-3">
       {head && (
-        <div className="px-5 flex">
+        <div className="flex">
           <span className="mr-auto" />
           {head}
         </div>
       )}
 
-      <div className="px-5 flex flex-col md:flex-row gap-4 md:items-center">
+      <div className="flex flex-col md:flex-row gap-2 md:items-center md:flex-wrap bg-white p-3 sm:p-4 rounded-lg border border-zinc-200">
         {includeSearchQuery && (
           <SearchInput
             value={searchQueryInput}
@@ -75,13 +75,12 @@ function DataHeader<TSearchParams>({
                 } as Partial<TSearchParams>);
               }, 600);
             }}
-            className="h-9 bg-white"
-            containerClassName="flex-1"
+            className="h-8! rounded-md bg-zinc-100! border-transparent! text-xs placeholder:text-zinc-400 focus-visible:bg-white! focus-visible:ring-1! focus-visible:ring-zinc-500!"
+            containerClassName="flex-1 md:max-w-80"
             placeholder="Search anything..."
           />
         )}
 
-        {/* Dropdowns */}
         <div className="flex items-center gap-4">
           {[
             ...Object.keys(schemaInfo.keyValueLists),
@@ -107,6 +106,7 @@ function DataHeader<TSearchParams>({
                     "Select " + (replacement?.label ?? slugToString(key))
                   }
                   value={value}
+                  className="h-8! bg-zinc-50! rounded-md! text-xs min-w-36 focus:ring-1! focus:ring-zinc-500!"
                   onChange={(newValue) => {
                     if (!newValue) {
                       removeParams([key as keyof TSearchParams]);
@@ -123,9 +123,12 @@ function DataHeader<TSearchParams>({
           })}
 
           {!!Object.values(searchParams as object).length && (
-            <Button onClick={handleClearParams} variant="outline">
+            <button
+              onClick={handleClearParams}
+              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition border border-zinc-200 disabled:opacity-50 disabled:pointer-events-none h-8"
+            >
               Clear
-            </Button>
+            </button>
           )}
         </div>
       </div>
