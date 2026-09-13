@@ -105,6 +105,7 @@ export class AiModule implements OnModuleInit {
       try {
         await redisClient.del(LOCK_KEY);
       } catch {
+        console.warn('Failed to release AI RBAC sync lock.');
       }
     }
   }

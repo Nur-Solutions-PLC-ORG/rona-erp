@@ -22,7 +22,6 @@ import type { InspectionListParams } from '@rona/types/quality';
 
 @Injectable()
 export class InspectionsRepository extends TenantScopedRepository {
-
   async create(
     data: {
       inspectionNumber: string;

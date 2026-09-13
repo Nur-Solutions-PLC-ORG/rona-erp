@@ -74,8 +74,9 @@ export class WarehousesRepository extends TenantScopedRepository {
 
   async list(params: WarehouseListParams) {
     const conditions: SQL[] = [];
-    if (typeof params.includeInactive === 'boolean' && params.includeInactive) {
-    } else {
+    if (!(
+      typeof params.includeInactive === 'boolean' && params.includeInactive
+    )) {
       conditions.push(eq(warehouses.isActive, true));
     }
     if (params.searchQuery) {

@@ -21,7 +21,6 @@ export interface OrderMaterialInsert {
 
 @Injectable()
 export class ProductionOrdersRepository extends TenantScopedRepository {
-
   async create(
     data: {
       orderNumber: string;

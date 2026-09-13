@@ -64,9 +64,7 @@ export const userRoles = pgTable(
       .notNull()
       .$onUpdate(() => new Date()),
   },
-  (table) => [
-    index('user_roles_user_id_idx').on(table.userId),
-  ],
+  (table) => [index('user_roles_user_id_idx').on(table.userId)],
 );
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({

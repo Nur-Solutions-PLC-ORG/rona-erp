@@ -10,7 +10,6 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { organizations } from '../admin';
-import { users } from '../auth';
 import { customers } from '../sales';
 import { invoiceStatusList, paymentMethodList } from './enums';
 

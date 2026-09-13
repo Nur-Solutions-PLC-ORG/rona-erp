@@ -37,7 +37,7 @@ async function main() {
     sql`select count(*)::int as count from ai_knowledge_documents`,
   );
   console.log(
-    `ai_knowledge_documents present (${knowledge.rows[0]?.count ?? 0} rows).`,
+    `ai_knowledge_documents present (${Number(knowledge.rows[0]?.count) || 0} rows).`,
   );
 
   process.exit(0);

@@ -74,8 +74,9 @@ export class ItemsRepository extends TenantScopedRepository {
     if (params.type) {
       conditions.push(eq(items.type, params.type));
     }
-    if (typeof params.includeArchived === 'boolean' && params.includeArchived) {
-    } else {
+    if (!(
+      typeof params.includeArchived === 'boolean' && params.includeArchived
+    )) {
       conditions.push(eq(items.isArchived, false));
     }
     if (params.searchQuery) {

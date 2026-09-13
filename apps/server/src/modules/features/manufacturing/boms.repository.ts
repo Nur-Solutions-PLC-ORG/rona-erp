@@ -16,7 +16,6 @@ export interface BomLineInsert {
 
 @Injectable()
 export class BomsRepository extends TenantScopedRepository {
-
   async create(
     data: {
       code: string;

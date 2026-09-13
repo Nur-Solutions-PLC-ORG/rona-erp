@@ -15,7 +15,6 @@ import type {
 
 @Injectable()
 export class DepartmentsRepository extends TenantScopedRepository {
-
   async createDepartment(data: DepartmentCreateInput, tx?: Executor) {
     const executor = tx ?? pooledDb;
     const [row] = await executor
@@ -157,8 +156,9 @@ export class DepartmentsRepository extends TenantScopedRepository {
     if (params.departmentId) {
       conditions.push(eq(positions.departmentId, params.departmentId));
     }
-    if (typeof params.includeArchived === 'boolean' && params.includeArchived) {
-    } else {
+    if (!(
+      typeof params.includeArchived === 'boolean' && params.includeArchived
+    )) {
       conditions.push(isNull(positions.archivedAt));
     }
     if (params.searchQuery) {

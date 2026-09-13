@@ -7,7 +7,6 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
 import { organizations } from '../admin';
 import { users } from '../auth';
 import {

@@ -7,7 +7,6 @@ import { TenantScopedRepository } from '@/modules/tenancy/tenant-scoped.reposito
 
 @Injectable()
 export class DecisionsRepository extends TenantScopedRepository {
-
   async createReview(
     data: {
       inspectionId: string;

@@ -120,26 +120,26 @@ export default function LauncherGrid() {
 
     const resolved: ResolvedModule[] = [];
 
-    for (const module of LAUNCHER_MODULES) {
-      if (module.group) {
-        const group = NAV_GROUPS.find((g) => g.label === module.group);
+    for (const candidate of LAUNCHER_MODULES) {
+      if (candidate.group) {
+        const group = NAV_GROUPS.find((g) => g.label === candidate.group);
         const items = (group?.items ?? []).filter(visible);
         if (!items.length) continue;
         resolved.push({
-          label: module.label,
+          label: candidate.label,
           href: items[0].href,
-          icon: MODULE_ICONS[module.label] ?? FALLBACK_ICON,
-          style: MODULE_STYLES[module.label] ?? DEFAULT_STYLE,
+          icon: MODULE_ICONS[candidate.label] ?? FALLBACK_ICON,
+          style: MODULE_STYLES[candidate.label] ?? DEFAULT_STYLE,
         });
         continue;
       }
 
-      if (module.href && visible(module)) {
+      if (candidate.href && visible(candidate)) {
         resolved.push({
-          label: module.label,
-          href: module.href,
-          icon: MODULE_ICONS[module.label] ?? FALLBACK_ICON,
-          style: MODULE_STYLES[module.label] ?? DEFAULT_STYLE,
+          label: candidate.label,
+          href: candidate.href,
+          icon: MODULE_ICONS[candidate.label] ?? FALLBACK_ICON,
+          style: MODULE_STYLES[candidate.label] ?? DEFAULT_STYLE,
         });
       }
     }

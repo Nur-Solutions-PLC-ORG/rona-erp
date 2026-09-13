@@ -26,7 +26,6 @@ import { PAYMENT_TERMS_DUE_DAYS } from '@rona/config/sales';
 
 @Injectable()
 export class FinanceRepository extends TenantScopedRepository {
-
   async createInvoiceFromOrder(
     data: InvoiceCreateInput,
     order: typeof salesOrders.$inferSelect,

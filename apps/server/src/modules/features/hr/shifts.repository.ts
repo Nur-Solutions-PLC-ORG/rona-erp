@@ -13,7 +13,6 @@ import type {
 
 @Injectable()
 export class ShiftsRepository extends TenantScopedRepository {
-
   async createShift(data: ShiftCreateInput, tx?: Executor) {
     const executor = tx ?? pooledDb;
     const [row] = await executor

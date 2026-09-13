@@ -8,7 +8,6 @@ import type { KioskListParams } from '@rona/types/kiosk';
 
 @Injectable()
 export class KiosksRepository extends TenantScopedRepository {
-
   async create(
     data: {
       organizationId: string;

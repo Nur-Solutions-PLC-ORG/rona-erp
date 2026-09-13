@@ -153,8 +153,9 @@ export class EmployeesRepository extends TenantScopedRepository {
     if (params.positionId) {
       conditions.push(eq(employees.positionId, params.positionId));
     }
-    if (typeof params.includeArchived === 'boolean' && params.includeArchived) {
-    } else {
+    if (!(
+      typeof params.includeArchived === 'boolean' && params.includeArchived
+    )) {
       conditions.push(isNull(employees.archivedAt));
     }
     if (params.searchQuery) {

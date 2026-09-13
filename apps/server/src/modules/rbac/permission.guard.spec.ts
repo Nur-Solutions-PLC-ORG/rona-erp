@@ -16,15 +16,12 @@ const MEMBERSHIP_ID = '33333333-3333-4333-8333-333333333333';
 
 class SecuredController {
   @RequirePermissions('membership.create')
-  create(): void {
-  }
+  create(): void {}
 
   @RequirePermissions('membership.read', 'membership.update')
-  update(): void {
-  }
+  update(): void {}
 
-  open(): void {
-  }
+  open(): void {}
 }
 
 const guard = new PermissionGuard(new Reflector());

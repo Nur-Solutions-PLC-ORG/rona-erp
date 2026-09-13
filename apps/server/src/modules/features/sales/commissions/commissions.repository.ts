@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, type SQL } from 'drizzle-orm';
+import { asc, count, desc, eq, type SQL } from 'drizzle-orm';
 import { Injectable } from '@nestjs/common';
 import { db, pooledDb } from '@/db';
 import { users } from '@/db/schemas/auth';

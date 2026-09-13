@@ -108,8 +108,8 @@ export const usePermissions = () => {
 
     if (allowedModules) {
       for (const permission of [...set]) {
-        const module = permissionModule(permission);
-        if (module && !allowedModules.has(module)) {
+        const mod = permissionModule(permission);
+        if (mod && !allowedModules.has(mod)) {
           set.delete(permission);
         }
       }

@@ -76,6 +76,7 @@ export class RbacService implements OnModuleDestroy {
         { ex: 86400 },
       );
     } catch {
+      console.warn('Failed to bump RBAC version for org', organizationId);
     }
 
     for (const key of this.cache.keys()) {
@@ -104,6 +105,7 @@ export class RbacService implements OnModuleDestroy {
         (await redisClient.get(`${this.versionKeyPrefix}${organizationId}`)) ??
         '0';
     } catch {
+      console.warn('Failed to read RBAC version for org', organizationId);
     }
     return `rbac:access:${version}:${membershipId}:${organizationId}`;
   }

@@ -24,7 +24,6 @@ import type { BatchListParams } from '@rona/types/manufacturing';
 
 @Injectable()
 export class ProductionBatchesRepository extends TenantScopedRepository {
-
   async create(
     data: {
       productionOrderId: string;
