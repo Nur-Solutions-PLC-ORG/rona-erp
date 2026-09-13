@@ -21,11 +21,11 @@ import {
   Workflow as WorkflowIcon,
   Zap,
 } from "lucide-react";
+import { useSession } from "@/modules/auth/hooks";
+import { CLIENT_APP_LAUNCHER_PAGE } from "@rona/routes/app";
 
 const container = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
 const hairline = "border-[#581c87]";
-const ink = "#581c87";
-const paper = "#f9f7fd";
 
 const serif = "[font-family:var(--font-serif-display)] tracking-[-0.02em]";
 
@@ -42,6 +42,8 @@ const navLinks = [
 ];
 
 function Navbar() {
+  const { user } = useSession();
+
   return (
     <header className={`sticky top-0 z-50 border-b ${hairline} bg-white`}>
       <nav className={`${container} flex h-14 items-center justify-between`}>
@@ -69,17 +71,29 @@ function Navbar() {
         </div>
 
         <div className="flex items-center gap-0">
+          {user ? (
+            <Link
+              href={CLIENT_APP_LAUNCHER_PAGE}
+              className="hidden sm:flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-[#5c4d77] hover:text-[#581c87]"
+            >
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#581c87] text-[10px] font-bold uppercase text-white">
+                {user.name?.slice(0, 1) ?? "U"}
+              </span>
+              My account
+            </Link>
+          ) : (
+            <Link
+              href="/sign-in"
+              className="hidden sm:flex items-center px-4 py-2 text-[13px] font-medium text-[#5c4d77] hover:text-[#581c87]"
+            >
+              Sign in
+            </Link>
+          )}
           <Link
-            href="/sign-in"
-            className="hidden sm:flex items-center px-4 py-2 text-[13px] font-medium text-[#5c4d77] hover:text-[#581c87]"
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/sign-in"
+            href={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
             className="group flex items-center gap-2 bg-[#581c87] px-4 py-2 text-[13px] font-semibold text-white border border-[#581c87] hover:bg-white hover:text-[#581c87]"
           >
-            Launch Workspace
+            {user ? "Go to workspace" : "Launch Workspace"}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -377,6 +391,7 @@ function DashboardPreview() {
 }
 
 function Hero() {
+  const { user } = useSession();
   return (
     <section className="relative overflow-hidden border-b border-[#581c87] bg-[#f9f7fd]">
       <HeroBackdrop />
@@ -425,10 +440,10 @@ function Hero() {
             className="mt-8 flex flex-wrap items-center justify-center gap-3"
           >
             <Link
-              href="/sign-in"
+              href={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
               className="group flex items-center gap-2 border border-[#581c87] bg-[#581c87] px-6 py-3 text-[13px] font-semibold text-white hover:bg-white hover:text-[#581c87]"
             >
-              Launch Workspace
+              {user ? "Go to workspace" : "Launch Workspace"}
               <ArrowRight className="h-4 w-4" />
             </Link>
             <a
@@ -881,6 +896,8 @@ function ModulesSection() {
 }
 
 function CtaSlab() {
+  const { user } = useSession();
+
   return (
     <section className="bg-[#581c87] py-20 sm:py-24">
       <div className={`${container} text-center`}>
@@ -888,28 +905,33 @@ function CtaSlab() {
           04 / Access
         </span>
         <h2 className={`mt-4 text-3xl font-semibold text-white sm:text-5xl ${serif}`}>
-          Ready to streamline your operations?
+          {user ? "Welcome back." : "Ready to streamline your operations?"}
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-[14px] leading-relaxed text-[#e4dcf5]">
-          Launch your workspace and manage inventory, manufacturing, and
-          traceability in one place.
+          {user
+            ? "Your workspace is ready — pick up right where you left off."
+            : "Launch your workspace and manage inventory, manufacturing, and traceability in one place."}
         </p>
         <Link
-          href="/sign-in"
+          href={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
           className="group mt-9 inline-flex items-center gap-2 border border-white bg-white px-7 py-3.5 text-[13px] font-semibold text-[#581c87] hover:bg-[#581c87] hover:text-white"
         >
-          Launch Workspace
+          {user ? "Go to workspace" : "Launch Workspace"}
           <ArrowRight className="h-4 w-4" />
         </Link>
-        <p className="mt-5 font-mono text-[10px] uppercase tracking-widest text-[#7c6f96]">
-          Free 14-day trial · No card required
-        </p>
+        {user ? null : (
+          <p className="mt-5 font-mono text-[10px] uppercase tracking-widest text-[#7c6f96]">
+            Free 14-day trial · No card required
+          </p>
+        )}
       </div>
     </section>
   );
 }
 
 function Footer() {
+  const { user } = useSession();
+
   const cols = [
     {
       h: "Platform",
@@ -931,10 +953,15 @@ function Footer() {
     },
     {
       h: "Access",
-      links: [
-        { l: "Launch workspace", href: "/sign-in" },
-        { l: "Sign in", href: "/sign-in" },
-      ],
+      links: user
+        ? [
+            { l: "Go to workspace", href: CLIENT_APP_LAUNCHER_PAGE },
+            { l: "My account", href: CLIENT_APP_LAUNCHER_PAGE },
+          ]
+        : [
+            { l: "Launch workspace", href: "/sign-in" },
+            { l: "Sign in", href: "/sign-in" },
+          ],
     },
   ];
 
