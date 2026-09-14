@@ -53,11 +53,14 @@ function CommandPalette() {
 
   const pages = useMemo(
     () =>
-      NAV_GROUPS.flatMap((group) => group.items).filter((item) =>
-        item.anyOf
-          ? item.anyOf.some((permission) => hasPermission(permission))
-          : hasPermission(item.permission),
-      ),
+      NAV_GROUPS.flatMap((group) => {
+        if (group.label === "Overview") return group.items;
+        return group.items.filter((item) =>
+          item.anyOf
+            ? item.anyOf.some((permission) => hasPermission(permission))
+            : hasPermission(item.permission),
+        );
+      }),
     [hasPermission],
   );
 
@@ -223,8 +226,8 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
     setSigningOut(true);
     try {
       await ApiPostSignOut();
+      await queryClient.invalidateQueries({ queryKey: ["auth-session"] });
       router.push(CLIENT_AUTH_SIGNIN_PAGE);
-      location.reload();
     } finally {
       setSigningOut(false);
     }

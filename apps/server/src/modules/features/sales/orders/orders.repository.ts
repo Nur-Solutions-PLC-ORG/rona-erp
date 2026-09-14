@@ -2,24 +2,37 @@ import { and, asc, count, eq, ilike, type SQL } from 'drizzle-orm';
 import { Injectable } from '@nestjs/common';
 import { db, pooledDb } from '@/db';
 import type { Executor } from '@/db/executor';
-import { salesOrders, salesOrderLines } from '@/db/schemas/sales';
+import { salesOrders, salesOrderLines, customers } from '@/db/schemas/sales';
 import { TenantScopedRepository } from '@/modules/tenancy/tenant-scoped.repository';
 import type {
   SalesOrderCreateInput,
   SalesOrderListParams,
   SalesOrderStatus,
 } from '@rona/types/sales';
+import { SalesOrderCustomerNotFoundException } from './orders.exception';
 
 @Injectable()
 export class SalesOrderRepository extends TenantScopedRepository {
   async create(data: SalesOrderCreateInput, tx?: Executor) {
     const executor = tx ?? pooledDb;
+    const [customer] = await executor
+      .select({ name: customers.name })
+      .from(customers)
+      .where(
+        and(
+          eq(customers.id, data.customerId),
+          eq(customers.organizationId, this.organizationId),
+        ),
+      )
+      .limit(1);
+    if (!customer) throw new SalesOrderCustomerNotFoundException();
+
     const [order] = await executor
       .insert(salesOrders)
       .values({
         organizationId: this.organizationId,
         customerId: data.customerId,
-        customerName: data.customerId,
+        customerName: customer.name,
         warehouseId: data.warehouseId,
         salespersonUserId: data.salespersonUserId ?? null,
         status: 'DRAFT',
@@ -158,7 +171,45 @@ export class SalesOrderRepository extends TenantScopedRepository {
     return row;
   }
 
-  async addLine(data: any, tx?: Executor) {
+  async updateTotals(
+    orderId: string,
+    totals: {
+      subtotal: string;
+      discountTotal: string;
+      vatTotal: string;
+      total: string;
+    },
+    tx?: Executor,
+  ) {
+    const executor = tx ?? pooledDb;
+    const [row] = await executor
+      .update(salesOrders)
+      .set(totals)
+      .where(
+        and(
+          eq(salesOrders.id, orderId),
+          eq(salesOrders.organizationId, this.organizationId),
+        ),
+      )
+      .returning();
+
+    return row;
+  }
+
+  async addLine(
+    data: {
+      orderId: string;
+      itemId: string;
+      quantity: string;
+      unitPrice: string;
+      discountPercent?: string;
+      vatPercent?: string;
+      lineNet: string;
+      lineVat: string;
+      lineTotal: string;
+    },
+    tx?: Executor,
+  ) {
     const executor = tx ?? pooledDb;
     const [line] = await executor
       .insert(salesOrderLines)

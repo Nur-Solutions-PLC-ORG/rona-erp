@@ -38,6 +38,13 @@ export const paymentCreateSchema = z.object({
     .min(1, "At least one invoice allocation is required"),
 });
 
+export const paymentUpdateSchema = z.object({
+  method: z.enum(PAYMENT_METHOD_LIST).optional(),
+  reference: z.string().trim().min(3).max(100).optional(),
+  paidAt: z.coerce.date().optional(),
+  notes: z.string().trim().max(2000).optional(),
+});
+
 export const paymentListSearchParamsSchema =
   paginationSearchParamsSchema.extend({
     method: z.enum(PAYMENT_METHOD_LIST).optional(),

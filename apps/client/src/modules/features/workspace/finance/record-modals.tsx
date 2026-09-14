@@ -9,13 +9,14 @@ import {
   ModalActions,
 } from "@/modules/workspace/components/form";
 import { usePermissions } from "@/modules/workspace/hooks";
-import type { CostCreateInput, InvoiceCreateInput } from "@rona/types/finance";
+import type { CostCreateInput, InvoiceCreateInput, PaymentDto, PaymentUpdateInput } from "@rona/types/finance";
 import { useSalesOrders } from "@/modules/features/workspace/sales/hooks";
 import {
   useCreateCost,
   useCreateInvoice,
   useCreatePayment,
   useInvoices,
+  useUpdatePayment,
 } from "./hooks";
 
 const COST_TYPES = [
@@ -405,6 +406,121 @@ export function RecordPaymentModal({
           onSubmit={onSubmitPayment}
           submitLabel="Record payment"
           isPending={createPayment.isPending}
+        />
+      </form>
+    </FormModal>
+  );
+}
+
+const EMPTY_EDIT_PAYMENT: {
+  id: string;
+  method: string;
+  reference: string;
+  paidAt: string;
+  notes: string;
+} = {
+  id: "",
+  method: "BANK",
+  reference: "",
+  paidAt: "",
+  notes: "",
+};
+
+export function EditPaymentModal({
+  open,
+  payment,
+  onClose,
+}: {
+  open: boolean;
+  payment: PaymentDto | null;
+  onClose: () => void;
+}) {
+  const [form, setForm] = useState(EMPTY_EDIT_PAYMENT);
+  const updatePayment = useUpdatePayment();
+
+  if (payment && form.id !== payment.id) {
+    const dateStr = payment.paidAt
+      ? new Date(payment.paidAt).toISOString().slice(0, 10)
+      : "";
+    setForm({
+      id: payment.id,
+      method: payment.method,
+      reference: payment.reference,
+      paidAt: dateStr,
+      notes: payment.notes ?? "",
+    });
+  }
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!form.id || !form.reference.trim()) return;
+    const payload: PaymentUpdateInput = {
+      method: form.method as PaymentUpdateInput["method"],
+      reference: form.reference.trim(),
+      paidAt: form.paidAt ? new Date(form.paidAt) : undefined,
+      notes: form.notes.trim() || undefined,
+    };
+    updatePayment.mutate({ id: form.id, data: payload }, {
+      onSuccess: () => {
+        setForm(EMPTY_EDIT_PAYMENT);
+        onClose();
+      },
+    });
+  };
+
+  const onSubmitPayment = () => submit({ preventDefault: () => {} } as FormEvent);
+
+  return (
+    <FormModal
+      open={open}
+      onClose={onClose}
+      title="Edit payment"
+      icon={<HiOutlineBanknotes className="h-4 w-4" />}
+    >
+      <form onSubmit={submit} className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <LabeledSelect
+            label="Method"
+            id="edit-payment-method"
+            value={form.method}
+            onChange={(e) => setForm({ ...form, method: e.target.value })}
+            required
+          >
+            {PAYMENT_METHODS.map((m) => (
+              <option key={m.value} value={m.value}>{m.label}</option>
+            ))}
+          </LabeledSelect>
+          <LabeledInput
+            label="Date"
+            id="edit-payment-date"
+            type="date"
+            value={form.paidAt}
+            onChange={(e) => setForm({ ...form, paidAt: e.target.value })}
+          />
+        </div>
+        <LabeledInput
+          label="Reference"
+          id="edit-payment-reference"
+          value={form.reference}
+          onChange={(e) => setForm({ ...form, reference: e.target.value })}
+          placeholder="e.g. TRF-2026-00412"
+          required
+          minLength={3}
+          maxLength={100}
+        />
+        <LabeledInput
+          label="Notes (optional)"
+          id="edit-payment-notes"
+          value={form.notes}
+          onChange={(e) => setForm({ ...form, notes: e.target.value })}
+          placeholder="e.g. Part payment for INV-0042"
+          maxLength={2000}
+        />
+        <ModalActions
+          onCancel={onClose}
+          onSubmit={onSubmitPayment}
+          submitLabel="Save changes"
+          isPending={updatePayment.isPending}
         />
       </form>
     </FormModal>

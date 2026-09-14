@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -19,6 +20,7 @@ import type {
   InvoiceListSearchParamsSchema,
   PaymentCreateSchema,
   PaymentListSearchParamsSchema,
+  PaymentUpdateSchema,
 } from '@rona/types/finance';
 import {
   costCreateSchema,
@@ -28,6 +30,7 @@ import {
   invoiceListSearchParamsSchema,
   paymentCreateSchema,
   paymentListSearchParamsSchema,
+  paymentUpdateSchema,
 } from '@rona/validation/finance';
 import { AuthGuard } from '@/modules/auth/guards/auth.guard';
 import { TenantGuard } from '@/modules/tenancy/tenant.guard';
@@ -131,6 +134,34 @@ export class FinanceController {
       statusCode: HttpStatus.CREATED,
       message: 'Payment recorded.',
       data: await this.service.createPayment(body),
+    };
+  }
+
+  @Patch('finance/payments/:id')
+  @RequirePermissions('finance.payment.create')
+  async updatePayment(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(paymentUpdateSchema))
+    body: PaymentUpdateSchema,
+  ): Promise<ApiResponse<unknown>> {
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'Payment updated.',
+      data: await this.service.updatePayment(id, body),
+    };
+  }
+
+  @Delete('finance/payments/:id')
+  @RequirePermissions('finance.payment.create')
+  async deletePayment(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ApiResponse<unknown>> {
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'Payment deleted.',
+      data: await this.service.deletePayment(id),
     };
   }
 

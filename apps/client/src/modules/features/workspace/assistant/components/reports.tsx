@@ -232,7 +232,6 @@ export function AiReportsPanel() {
                 value={exportFormat}
                 onChange={setExportFormat}
                 disabled={exportReport.isPending}
-                icon={selectedFormat?.icon}
                 className="h-11"
               />
             </div>
@@ -286,8 +285,7 @@ export function AiReportsPanel() {
               {job.status === "ready" && job.downloadUrl ? (
                 <a
                   href={aiReportDownloadUrl(job.reportId)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  download
                   className="mt-3 inline-flex h-10 items-center gap-2 rounded-lg bg-purple-600 px-4 text-sm font-semibold text-white transition hover:bg-purple-700"
                 >
                   <HiOutlineArrowDownTray className="h-4 w-4" />

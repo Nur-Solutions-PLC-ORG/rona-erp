@@ -5,6 +5,7 @@ import {
   CostNotFoundException,
   InvoiceNotFoundException,
   InvoiceStateException,
+  PaymentNotFoundException,
   PaymentOverpayException,
   SalesOrderNotFoundException,
   SalesOrderStateException,
@@ -18,6 +19,7 @@ import type {
   InvoiceCreateInput,
   InvoiceListParams,
   PaymentCreateInput,
+  PaymentUpdateInput,
 } from '@rona/types/finance';
 
 @Injectable()
@@ -187,6 +189,66 @@ export class FinanceService {
 
   async listAllPayments(params: { page: number; limit: number }) {
     return this.repo.listAllPayments(params);
+  }
+
+  async updatePayment(id: string, data: PaymentUpdateInput) {
+    const updated = await pooledDb.transaction(async (tx) => {
+      const payment = await this.repo.findPaymentForUpdate(id, tx);
+      if (!payment) throw new PaymentNotFoundException();
+      return this.repo.updatePayment(id, data, tx);
+    });
+
+    if (!updated) throw new PaymentNotFoundException();
+
+    await this.audit.record({
+      organizationId: updated.organizationId,
+      action: 'FINANCE_PAYMENT_UPDATE',
+      entityType: 'Payment',
+      entityId: id,
+      after: updated,
+    });
+    return updated;
+  }
+
+  async deletePayment(id: string) {
+    return pooledDb.transaction(async (tx) => {
+      const payment = await this.repo.findPaymentForUpdate(id, tx);
+      if (!payment) throw new PaymentNotFoundException();
+
+      const allocations = await this.repo.findAllocationsByPayment(id, tx);
+      await this.repo.deleteAllocationsByPayment(id, tx);
+      await this.repo.deletePayment(id, tx);
+
+      const invoiceIds = [...new Set(allocations.map((a) => a.invoiceId))];
+      for (const invoiceId of invoiceIds) {
+        const invoice = await this.repo.findInvoiceForUpdate(invoiceId, tx);
+        if (!invoice) continue;
+
+        const paid = Number(invoice.paidTotal);
+        const total = Number(invoice.total);
+        const nextStatus =
+          paid <= 0.001
+            ? 'ISSUED'
+            : paid >= total - 0.001
+              ? 'PAID'
+              : 'PARTIALLY_PAID';
+        await this.repo.updateInvoiceStatus(
+          invoiceId,
+          nextStatus,
+          undefined,
+          tx,
+        );
+      }
+
+      await this.audit.record({
+        organizationId: payment.organizationId,
+        action: 'FINANCE_PAYMENT_DELETE',
+        entityType: 'Payment',
+        entityId: id,
+        before: payment,
+      });
+      return payment;
+    });
   }
 
   async createCost(data: CostCreateInput) {

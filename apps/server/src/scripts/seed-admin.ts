@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { organizations, organizationSettings } from '@/db/schemas/admin';
@@ -140,15 +140,19 @@ async function main() {
 
   if (membership && ownerRoleRow) {
     await db
-      .insert(membershipRoles)
-      .values({ membershipId: membership.id, roleId: ownerRoleRow.id })
-      .onConflictDoNothing();
-    console.log(`Assigned OWNER role to membership ${membership.id}.`);
+      .delete(membershipRoles)
+      .where(
+        and(
+          eq(membershipRoles.membershipId, membership.id),
+          eq(membershipRoles.roleId, ownerRoleRow.id),
+        ),
+      );
+    console.log(`Removed OWNER role from membership ${membership.id}.`);
   }
 
   console.log('Admin seed complete.');
   console.log(`  Organization: ${org.name} (${org.id})`);
-  console.log(`  Owner user:   ${user.email} (${user.id})`);
+  console.log(`  Super admin user: ${user.email} (${user.id})`);
   console.log('You can now sign in with Google using this email.');
 }
 

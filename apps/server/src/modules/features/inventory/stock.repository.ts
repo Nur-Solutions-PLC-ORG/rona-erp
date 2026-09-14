@@ -169,10 +169,41 @@ export class StockRepository extends TenantScopedRepository {
       .select({
         lotId: stockBalances.lotId,
         locationId: stockBalances.locationId,
-        quantity: stockBalances.quantity,
+        quantity: sql<string>`${stockBalances.quantity} - ${stockBalances.reservedQuantity}`,
         expiryDate: batchLots.expiryDate,
         qualityStatus: batchLots.qualityStatus,
         receiptDate: batchLots.receiptDate,
+      })
+      .from(stockBalances)
+      .innerJoin(batchLots, eq(batchLots.id, stockBalances.lotId))
+      .innerJoin(
+        warehouseLocations,
+        eq(warehouseLocations.id, stockBalances.locationId),
+      )
+      .where(
+        this.tenantScope(
+          stockBalances,
+          eq(stockBalances.itemId, itemId),
+          eq(warehouseLocations.warehouseId, warehouseId),
+          sql`${stockBalances.quantity} - coalesce(${stockBalances.reservedQuantity}, 0) > 0`,
+          sql`${batchLots.expiryDate} is null or ${batchLots.expiryDate} > now()`,
+          sql`${batchLots.qualityStatus} = 'APPROVED' or ${batchLots.qualityStatus} = 'RELEASED'`,
+        ),
+      )
+      .orderBy(orderByDate, asc(stockBalances.lotId))
+      .limit(1000);
+    return rows;
+  }
+
+  async listSellableLots(itemId: string, warehouseId: string) {
+    const rows = await db
+      .select({
+        lotId: stockBalances.lotId,
+        lotNumber: batchLots.lotNumber,
+        expiryDate: batchLots.expiryDate,
+        receiptDate: batchLots.receiptDate,
+        onHand: sql<string>`sum(${stockBalances.quantity})`,
+        reserved: sql<string>`sum(${stockBalances.reservedQuantity})`,
       })
       .from(stockBalances)
       .innerJoin(batchLots, eq(batchLots.id, stockBalances.lotId))
@@ -190,9 +221,24 @@ export class StockRepository extends TenantScopedRepository {
           sql`${batchLots.qualityStatus} = 'APPROVED' or ${batchLots.qualityStatus} = 'RELEASED'`,
         ),
       )
-      .orderBy(orderByDate, asc(stockBalances.lotId))
-      .limit(1000);
-    return rows;
+      .groupBy(
+        stockBalances.lotId,
+        batchLots.lotNumber,
+        batchLots.expiryDate,
+        batchLots.receiptDate,
+      )
+      .orderBy(asc(batchLots.receiptDate));
+
+    return rows.map((row) => ({
+      lotId: row.lotId,
+      lotNumber: row.lotNumber,
+      expiryDate: row.expiryDate,
+      onHand: row.onHand ?? '0',
+      reserved: row.reserved ?? '0',
+      available: (Number(row.onHand ?? 0) - Number(row.reserved ?? 0)).toFixed(
+        4,
+      ),
+    }));
   }
 
   async listBalances(params: StockQueryParams) {

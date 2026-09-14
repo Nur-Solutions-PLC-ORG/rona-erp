@@ -7,10 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { useSession } from "@/modules/auth/hooks";
 
 import LoaderPage from "@/components/custom/loader-page";
-import {
-  CLIENT_APP_DASHBOARD_PAGE,
-  CLIENT_APP_LAUNCHER_PAGE,
-} from "@rona/routes/app";
+import { CLIENT_APP_LAUNCHER_PAGE } from "@rona/routes/app";
 import {
   CLIENT_AUTH_FORGOT_PASSWORD_PAGE,
   CLIENT_AUTH_GOOGLE_CALLBACK_PAGE,

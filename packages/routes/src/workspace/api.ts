@@ -291,6 +291,8 @@ export const API_FINANCE_INVOICE_PAYMENTS_URL =
 
 export const API_FINANCE_PAYMENTS_URL = "/api/finance/payments";
 
+export const API_FINANCE_PAYMENT_DETAILS_URL = "/api/finance/payments/:id";
+
 export const API_FINANCE_COSTS_URL = "/api/finance/costs";
 
 export const API_FINANCE_COST_DETAILS_URL = "/api/finance/costs/:id";

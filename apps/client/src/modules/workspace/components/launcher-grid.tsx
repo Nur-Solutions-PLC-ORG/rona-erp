@@ -134,7 +134,7 @@ export default function LauncherGrid() {
         continue;
       }
 
-      if (candidate.href && visible(candidate)) {
+      if (candidate.href && (!candidate.group || visible(candidate))) {
         resolved.push({
           label: candidate.label,
           href: candidate.href,

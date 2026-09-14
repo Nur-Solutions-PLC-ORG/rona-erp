@@ -172,11 +172,9 @@ export function Sidebar({
 
   const renderNav = () => (
     <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 pb-4">
-      {topLevelGroups.map((group) => {
-        const visibleItems = group.items.filter((item) => itemVisible(item));
-        if (visibleItems.length === 0) return null;
-        return visibleItems.map((item) => renderItem(item.label, item.href));
-      })}
+      {topLevelGroups.map((group) =>
+        group.items.map((item) => renderItem(item.label, item.href)),
+      )}
 
       <div className="mx-3 mt-3 h-px bg-zinc-200" />
 

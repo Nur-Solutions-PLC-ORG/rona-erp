@@ -31,6 +31,12 @@ export class CostNotFoundException extends ApiException {
   }
 }
 
+export class PaymentNotFoundException extends ApiException {
+  constructor() {
+    super(HttpStatus.NOT_FOUND, 'Payment not found');
+  }
+}
+
 export class PaymentOverpayException extends ApiException {
   constructor() {
     super(

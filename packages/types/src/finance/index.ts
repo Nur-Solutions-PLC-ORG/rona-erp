@@ -20,6 +20,7 @@ import {
   paymentCreateSchema,
   paymentDto,
   paymentListSearchParamsSchema,
+  paymentUpdateSchema,
 } from "@rona/validation/finance";
 
 export type InvoiceStatus = (typeof INVOICE_STATUS_LIST)[number];
@@ -31,6 +32,7 @@ export type InvoiceListSearchParamsSchema = z.infer<
   typeof invoiceListSearchParamsSchema
 >;
 export type PaymentCreateSchema = z.infer<typeof paymentCreateSchema>;
+export type PaymentUpdateSchema = z.infer<typeof paymentUpdateSchema>;
 export type PaymentListSearchParamsSchema = z.infer<
   typeof paymentListSearchParamsSchema
 >;
@@ -53,6 +55,7 @@ export type CostDto = z.infer<typeof costDto>;
 
 export type InvoiceCreateInput = InvoiceCreateSchema;
 export type PaymentCreateInput = PaymentCreateSchema;
+export type PaymentUpdateInput = PaymentUpdateSchema;
 export type CostCenterCreateInput = CostCenterCreateSchema;
 export type CostCenterUpdateInput = CostCenterUpdateSchema;
 export type CostCreateInput = CostCreateSchema;

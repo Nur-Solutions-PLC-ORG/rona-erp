@@ -2,9 +2,11 @@
 
 import {
   ApiGetGoogleUrl,
+  ApiGetSessionStatus,
   ApiPostChangePassword,
   ApiPostResendVerificationCode,
   ApiPostSignIn,
+  TryCatchNullWrap,
 } from "@/api";
 import {
   AuthDivider,
@@ -27,6 +29,7 @@ import { RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
@@ -51,6 +54,7 @@ const getSafeRedirectPath = (redirectPath: string | null) => {
 const Client = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
 
   const redirectPath =
     getSafeRedirectPath(searchParams.get("redirect")) ??
@@ -91,7 +95,7 @@ const Client = () => {
 
   const signInMutation = useCreateMutation(
     ApiPostSignIn,
-    (data) => {
+    async (data) => {
       toast.success(data.message);
 
       if (data.data && data.data.mustChangePassword) {
@@ -103,8 +107,14 @@ const Client = () => {
         setTFAEnabled(true);
         setResendIn(60);
       } else {
-        router.push(redirectPath);
-        location.reload();
+        const session = await queryClient.fetchQuery({
+          queryKey: ["auth-session"],
+          queryFn: TryCatchNullWrap(ApiGetSessionStatus),
+        });
+
+        if (session?.success) {
+          router.replace(redirectPath);
+        }
       }
     },
     (data) => {

@@ -14,7 +14,7 @@ export const useSession = () => {
     data: data?.data,
     user: data?.data?.user,
     role: data?.data?.role,
-    isAdmin: data?.data?.role.position == "super_admin",
+    isAdmin: data?.data?.role?.position == "super_admin",
     isLoading,
   };
 };

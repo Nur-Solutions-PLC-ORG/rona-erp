@@ -19,6 +19,7 @@ import { CLIENT_AUTH_SIGNIN_PAGE } from "@rona/routes/auth";
 import { CLIENT_DASHBOARD_PAGE } from "@rona/routes/workspace";
 import { useSession } from "@/modules/auth/hooks";
 import AdminModals from "./modals";
+import { useQueryClient } from "@tanstack/react-query";
 
 type NavItem = { label: string; href: string };
 
@@ -228,6 +229,7 @@ function AdminSidebar({
 
 function AdminNavbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user } = useSession();
   const [profileOpen, setProfileOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -236,8 +238,8 @@ function AdminNavbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
     setSigningOut(true);
     try {
       await ApiPostSignOut();
+      await queryClient.invalidateQueries({ queryKey: ["auth-session"] });
       router.push(CLIENT_AUTH_SIGNIN_PAGE);
-      location.reload();
     } finally {
       setSigningOut(false);
     }

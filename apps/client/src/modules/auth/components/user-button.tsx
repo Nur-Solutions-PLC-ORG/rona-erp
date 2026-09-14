@@ -12,6 +12,7 @@ import {
 import { useCreateMutation } from "@/hooks/utils";
 import { CLIENT_AUTH_SIGNIN_PAGE } from "@rona/routes/auth";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { FaUser } from "react-icons/fa6";
 import { FiLogOut } from "react-icons/fi";
 import { toast } from "sonner";
@@ -21,12 +22,13 @@ import { useSession } from "../hooks";
 const UserButton = () => {
   const { user } = useSession();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const signOutMutation = useCreateMutation(
     ApiPostSignOut,
-    () => {
+    async () => {
+      await queryClient.invalidateQueries({ queryKey: ["auth-session"] });
       router.push(CLIENT_AUTH_SIGNIN_PAGE);
-      location.reload();
     },
     (data) => {
       toast.error(data.message);

@@ -129,8 +129,15 @@ export class AuthService {
 
   async getRoles(userId: string): Promise<UserRole> {
     const roleKey = `auth:role:${userId}`;
-    const cachedRoles = await redisClient.get<UserRole>(roleKey);
-    if (cachedRoles) return cachedRoles;
+
+    // Redis is only a cache. Authentication must continue from Postgres if the
+    // cache credentials are missing, expired, or temporarily unavailable.
+    try {
+      const cachedRoles = await redisClient.get<UserRole>(roleKey);
+      if (cachedRoles) return cachedRoles;
+    } catch (error) {
+      this.logger.warn(`Role cache unavailable; using database: ${String(error)}`);
+    }
 
     const role = await this.authRepository.findUserRoleByUserId(userId);
 
@@ -143,7 +150,12 @@ export class AuthService {
       modules: role.module,
     };
 
-    await redisClient.set(roleKey, userRole, { ex: SESSION_DURATION / 1000 });
+    try {
+      await redisClient.set(roleKey, userRole, { ex: SESSION_DURATION / 1000 });
+    } catch (error) {
+      this.logger.warn(`Role cache write failed: ${String(error)}`);
+    }
+
     return userRole;
   }
 

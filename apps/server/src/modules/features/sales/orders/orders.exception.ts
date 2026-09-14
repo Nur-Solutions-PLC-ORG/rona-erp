@@ -12,3 +12,9 @@ export class SalesOrderStateException extends ApiException {
     super(HttpStatus.CONFLICT, message);
   }
 }
+
+export class SalesOrderCustomerNotFoundException extends ApiException {
+  constructor() {
+    super(HttpStatus.NOT_FOUND, 'Customer not found');
+  }
+}

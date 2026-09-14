@@ -4,12 +4,14 @@ import { usePermissions } from "@/modules/workspace/hooks";
 import { TryCatchNullWrap } from "@/api";
 import { useCreateMutation } from "@/hooks/utils";
 import type { Permission } from "@rona/types/tenancy";
-import type { CostCreateInput, CostDto, InvoiceCreateInput, InvoiceDto, PaymentCreateInput, PaymentDto } from "@rona/types/finance";
+import type { CostCreateInput, CostDto, InvoiceCreateInput, InvoiceDto, PaymentCreateInput, PaymentDto, PaymentUpdateInput } from "@rona/types/finance";
 import {
+  ApiDeletePayment,
   ApiGetCosts,
   ApiGetInvoices,
   ApiGetPayments,
   ApiIssueInvoice,
+  ApiPatchPayment,
   ApiPostCost,
   ApiPostInvoice,
   ApiPostPayment,
@@ -131,6 +133,34 @@ export const useCreatePayment = () => {
     (input) => ApiPostPayment({ body: input }),
     (data) => {
       toast.success(data.message);
+      void queryClient.invalidateQueries({ queryKey: ["finance-payments"] });
+      void queryClient.invalidateQueries({ queryKey: ["finance-invoices"] });
+    },
+    (error) => toast.error(error.message),
+  );
+};
+
+export const useUpdatePayment = () => {
+  const queryClient = useQueryClient();
+
+  return useCreateMutation<PaymentDto, { id: string; data: PaymentUpdateInput }>(
+    ({ id, data }) => ApiPatchPayment({ slugReplacement: { id }, body: data }),
+    (res) => {
+      toast.success(res.message);
+      void queryClient.invalidateQueries({ queryKey: ["finance-payments"] });
+      void queryClient.invalidateQueries({ queryKey: ["finance-invoices"] });
+    },
+    (error) => toast.error(error.message),
+  );
+};
+
+export const useDeletePayment = () => {
+  const queryClient = useQueryClient();
+
+  return useCreateMutation<PaymentDto, string>(
+    (id) => ApiDeletePayment({ slugReplacement: { id } }),
+    (res) => {
+      toast.success(res.message);
       void queryClient.invalidateQueries({ queryKey: ["finance-payments"] });
       void queryClient.invalidateQueries({ queryKey: ["finance-invoices"] });
     },

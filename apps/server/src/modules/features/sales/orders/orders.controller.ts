@@ -13,10 +13,12 @@ import { ApiResponse } from '@rona/types/api';
 import type {
   SalesOrderCreateSchema,
   SalesOrderListSearchParamsSchema,
+  StockAvailabilityParams,
 } from '@rona/types/sales';
 import {
   salesOrderCreateSchema,
   salesOrderListSearchParamsSchema,
+  stockAvailabilityParamsSchema,
 } from '@rona/validation/sales';
 import { AuthGuard } from '@/modules/auth/guards/auth.guard';
 import { ZodValidationPipe } from '@/modules/app/pipes/zod-validation.pipe';
@@ -70,6 +72,20 @@ export class SalesOrderController {
     };
   }
 
+  @Get('availability')
+  @RequirePermissions('sales.order.read')
+  async availability(
+    @Query(new ZodValidationPipe(stockAvailabilityParamsSchema))
+    query: StockAvailabilityParams,
+  ): Promise<ApiResponse<unknown>> {
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'Stock availability retrieved.',
+      data: await this.service.getAvailability(query),
+    };
+  }
+
   @Get(':id')
   @RequirePermissions('sales.order.read')
   async get(
@@ -93,6 +109,19 @@ export class SalesOrderController {
       statusCode: HttpStatus.OK,
       message: 'Order confirmed.',
       data: await this.service.confirm(id),
+    };
+  }
+
+  @Post(':id/fulfill')
+  @RequirePermissions('sales.order.confirm')
+  async fulfill(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ApiResponse<unknown>> {
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'Order fulfilled.',
+      data: await this.service.fulfill(id),
     };
   }
 

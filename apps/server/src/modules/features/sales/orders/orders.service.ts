@@ -9,9 +9,12 @@ import { AuditService } from '@/modules/audit/audit.service';
 import { ReservationsService } from '@/modules/features/inventory/reservations.service';
 import { ReservationsRepository } from '@/modules/features/inventory/reservations.repository';
 import { StockRepository } from '@/modules/features/inventory/stock.repository';
+import { StockLedgerService } from '@/modules/features/inventory/stock-ledger.service';
+import { DEFAULT_VAT_PERCENT } from '@rona/config/sales';
 import type {
   SalesOrderCreateInput,
   SalesOrderListParams,
+  StockAvailabilityParams,
 } from '@rona/types/sales';
 
 @Injectable()
@@ -22,9 +25,60 @@ export class SalesOrderService {
     private readonly reservationsService: ReservationsService,
     private readonly reservationsRepository: ReservationsRepository,
     private readonly stockRepo: StockRepository,
+    private readonly stockLedger: StockLedgerService,
   ) {}
   async create(data: SalesOrderCreateInput) {
-    const order = await this.repo.create(data);
+    const order = await pooledDb.transaction(async (tx) => {
+      const created = await this.repo.create(data, tx);
+
+      let subtotal = 0;
+      let discountTotal = 0;
+      let vatTotal = 0;
+
+      for (const line of data.lines) {
+        const quantity = Number(line.quantity);
+        const unitPrice = Number(line.unitPrice);
+        const discountPercent = Number(line.discountPercent ?? 0);
+        const vatPercent = line.vatPercent ?? DEFAULT_VAT_PERCENT;
+
+        const gross = quantity * unitPrice;
+        const discount = (gross * discountPercent) / 100;
+        const net = gross - discount;
+        const vat = (net * Number(vatPercent)) / 100;
+
+        subtotal += gross;
+        discountTotal += discount;
+        vatTotal += vat;
+
+        await this.repo.addLine(
+          {
+            orderId: created.id,
+            itemId: line.itemId,
+            quantity: line.quantity,
+            unitPrice: line.unitPrice,
+            discountPercent: line.discountPercent ?? '0',
+            vatPercent,
+            lineNet: net.toFixed(2),
+            lineVat: vat.toFixed(2),
+            lineTotal: (net + vat).toFixed(2),
+          },
+          tx,
+        );
+      }
+
+      const total = subtotal - discountTotal + vatTotal;
+      return this.repo.updateTotals(
+        created.id,
+        {
+          subtotal: subtotal.toFixed(2),
+          discountTotal: discountTotal.toFixed(2),
+          vatTotal: vatTotal.toFixed(2),
+          total: total.toFixed(2),
+        },
+        tx,
+      );
+    });
+
     await this.audit.record({
       organizationId: order.organizationId,
       action: 'SALES_ORDER_CREATE',
@@ -162,5 +216,95 @@ export class SalesOrderService {
       );
       return updated;
     });
+  }
+  async fulfill(id: string) {
+    return pooledDb.transaction(async (tx) => {
+      const order = await this.repo.findByIdForUpdate(id, tx);
+      if (!order) throw new SalesOrderNotFoundException();
+      if (order.status !== 'CONFIRMED') {
+        throw new SalesOrderStateException(
+          `Only CONFIRMED orders can be fulfilled (current: ${order.status})`,
+        );
+      }
+
+      const orderReservations =
+        await this.reservationsRepository.findActiveByReference(`SO-${id}`, tx);
+      for (const reservation of orderReservations) {
+        for (const allocation of reservation.allocatedLots ?? []) {
+          await this.stockRepo.adjustReserved(
+            allocation.lotId,
+            allocation.locationId,
+            `-${allocation.quantity}`,
+            tx,
+          );
+        }
+        await this.stockLedger.consumeAllocations(
+          {
+            type: 'ISSUE',
+            itemId: reservation.itemId,
+            reference: reservation.reference,
+            notes: `Fulfilled order ${id}`,
+          },
+          reservation.allocatedLots ?? [],
+          tx,
+        );
+        await this.reservationsRepository.update(
+          reservation.id,
+          { status: 'CONSUMED' },
+          tx,
+        );
+        await this.audit.record(
+          {
+            organizationId: order.organizationId,
+            action: 'inventory.reservation.consume',
+            entityType: 'reservation',
+            entityId: reservation.id,
+            before: { status: reservation.status },
+            after: { status: 'CONSUMED' },
+          },
+          tx,
+        );
+      }
+
+      const updated = await this.repo.transitionStatus(
+        id,
+        'CONFIRMED',
+        'FULFILLED',
+        { fulfilledAt: new Date() },
+        tx,
+      );
+      if (!updated) {
+        throw new SalesOrderStateException(
+          'Order status changed during fulfillment',
+        );
+      }
+      await this.audit.record(
+        {
+          organizationId: updated.organizationId,
+          action: 'SALES_ORDER_FULFILL',
+          entityType: 'SalesOrder',
+          entityId: id,
+          after: updated,
+        },
+        tx,
+      );
+      return updated;
+    });
+  }
+  async getAvailability(params: StockAvailabilityParams) {
+    const lots = await this.stockRepo.listSellableLots(
+      params.itemId,
+      params.warehouseId,
+    );
+    const totalAvailable = lots.reduce(
+      (sum, lot) => sum + Number(lot.available),
+      0,
+    );
+    return {
+      itemId: params.itemId,
+      warehouseId: params.warehouseId,
+      lots,
+      totalAvailable: totalAvailable.toFixed(4),
+    };
   }
 }

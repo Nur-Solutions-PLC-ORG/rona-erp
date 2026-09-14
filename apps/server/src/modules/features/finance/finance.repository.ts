@@ -359,10 +359,82 @@ export class FinanceRepository extends TenantScopedRepository {
   }
 
   async listPayments(invoiceId: string) {
-    return db
+    const rows = await db
       .select()
       .from(payments)
       .where(this.tenantScope(payments, eq(payments.invoiceId, invoiceId)));
+    return rows.map((row) => ({ ...row, paidAt: row.date }));
+  }
+
+  async findPaymentForUpdate(id: string, tx: Executor) {
+    const [row] = await tx
+      .select()
+      .from(payments)
+      .where(this.tenantScope(payments, eq(payments.id, id)))
+      .limit(1)
+      .for('update');
+
+    if (!row) return null;
+    return { ...row, paidAt: row.date };
+  }
+
+  async findAllocationsByPayment(paymentId: string, tx: Executor) {
+    return tx
+      .select()
+      .from(paymentAllocations)
+      .where(
+        this.tenantScope(
+          paymentAllocations,
+          eq(paymentAllocations.paymentId, paymentId),
+        ),
+      );
+  }
+
+  async updatePayment(
+    id: string,
+    data: {
+      method?: 'BANK' | 'CASH' | 'CREDIT_NOTE';
+      reference?: string;
+      paidAt?: Date;
+      notes?: string;
+    },
+    tx?: Executor,
+  ) {
+    const executor = tx ?? pooledDb;
+    const [row] = await executor
+      .update(payments)
+      .set({
+        ...(data.method !== undefined ? { method: data.method } : {}),
+        ...(data.reference !== undefined ? { reference: data.reference } : {}),
+        ...(data.paidAt !== undefined ? { date: data.paidAt } : {}),
+        ...(data.notes !== undefined ? { notes: data.notes } : {}),
+      })
+      .where(this.tenantScope(payments, eq(payments.id, id)))
+      .returning();
+
+    if (!row) return null;
+    return { ...row, paidAt: row.date };
+  }
+
+  async deleteAllocationsByPayment(paymentId: string, tx: Executor) {
+    return tx
+      .delete(paymentAllocations)
+      .where(
+        this.tenantScope(
+          paymentAllocations,
+          eq(paymentAllocations.paymentId, paymentId),
+        ),
+      );
+  }
+
+  async deletePayment(id: string, tx: Executor) {
+    const [row] = await tx
+      .delete(payments)
+      .where(this.tenantScope(payments, eq(payments.id, id)))
+      .returning();
+
+    if (!row) return null;
+    return { ...row, paidAt: row.date };
   }
 
   async listAllPayments(params: { page: number; limit: number }) {
@@ -382,7 +454,10 @@ export class FinanceRepository extends TenantScopedRepository {
       .from(payments)
       .where(where);
 
-    return { rows, total: Number(total) };
+    return {
+      rows: rows.map((row) => ({ ...row, paidAt: row.date })),
+      total: Number(total),
+    };
   }
 
   async createCost(data: CostCreateInput, tx?: Executor) {

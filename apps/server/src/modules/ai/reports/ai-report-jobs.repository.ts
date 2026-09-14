@@ -93,8 +93,8 @@ export class AiReportJobsRepository {
     const staleRows = await db.execute(sql`
       UPDATE ai_report_jobs
       SET status = 'pending', started_at = NULL
-      WHERE id = (
-        SELECT id FROM ai_report_jobs
+      WHERE report_id = (
+        SELECT report_id FROM ai_report_jobs
         WHERE status = 'processing'
           AND started_at <= ${staleBefore}
           AND attempts < max_attempts

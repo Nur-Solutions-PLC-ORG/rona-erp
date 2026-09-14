@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { HiOutlineBanknotes, HiOutlinePlus } from "react-icons/hi2";
+import { HiOutlineBanknotes, HiOutlinePencilSquare, HiOutlinePlus, HiOutlineTrash } from "react-icons/hi2";
 import {
   BTN_PRIMARY,
   DataTable,
@@ -19,8 +19,8 @@ import {
 } from "@/modules/workspace/components/charts";
 import type { PaymentDto } from "@rona/types/finance";
 import { usePermissions } from "@/modules/workspace/hooks";
-import { usePayments } from "@/modules/features/workspace/finance/hooks";
-import { RecordPaymentModal } from "@/modules/features/workspace/finance/record-modals";
+import { useDeletePayment, usePayments } from "@/modules/features/workspace/finance/hooks";
+import { EditPaymentModal, RecordPaymentModal } from "@/modules/features/workspace/finance/record-modals";
 
 function formatMoney(value: string) {
   const amount = Number(value);
@@ -35,7 +35,12 @@ export default function FinancePaymentsPage() {
   const { payments, isLoading } = usePayments();
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission("finance.payment.create");
+  const canEdit = hasPermission("finance.payment.create");
+  const canDelete = hasPermission("finance.payment.create");
+  const deletePayment = useDeletePayment();
+
   const [isRecordOpen, setIsRecordOpen] = useState(false);
+  const [editingPayment, setEditingPayment] = useState<PaymentDto | null>(null);
 
   const columns: Column<PaymentDto>[] = [
     {
@@ -69,6 +74,38 @@ export default function FinancePaymentsPage() {
         <span className="tabular text-xs text-zinc-600">
           {new Date(row.paidAt).toLocaleDateString()}
         </span>
+      ),
+    },
+    {
+      key: "id",
+      header: "",
+      className: "w-20 text-right",
+      render: (row) => (
+        <div className="flex items-center justify-end gap-1">
+          {canEdit && (
+            <button
+              type="button"
+              className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+              title="Edit payment"
+              onClick={() => setEditingPayment(row)}
+            >
+              <HiOutlinePencilSquare className="h-4 w-4" />
+            </button>
+          )}
+          {canDelete && (
+            <button
+              type="button"
+              className="rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-600"
+              title="Delete payment"
+              onClick={() => {
+                if (!window.confirm("Delete this payment? The linked invoice will be recalculated.")) return;
+                deletePayment.mutate(row.id);
+              }}
+            >
+              <HiOutlineTrash className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       ),
     },
   ];
@@ -122,6 +159,11 @@ export default function FinancePaymentsPage() {
       />
 
       <RecordPaymentModal open={isRecordOpen} onClose={() => setIsRecordOpen(false)} />
+      <EditPaymentModal
+        open={editingPayment !== null}
+        payment={editingPayment}
+        onClose={() => setEditingPayment(null)}
+      />
 
       <ChartStatStrip
         stats={[
