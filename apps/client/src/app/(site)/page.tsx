@@ -29,7 +29,12 @@ const hairline = "border-[#581c87]";
 
 const serif = "[font-family:var(--font-serif-display)] tracking-[-0.02em]";
 
-const springSnap = { type: "spring", stiffness: 550, damping: 32, mass: 0.9 } as const;
+const springSnap = {
+  type: "spring",
+  stiffness: 550,
+  damping: 32,
+  mass: 0.9,
+} as const;
 
 const hoverFill =
   "transition-none group-hover:bg-[#581c87] group-hover:text-white group-hover:border-[#581c87]";
@@ -39,6 +44,7 @@ const navLinks = [
   { label: "Workflow", href: "#workflow" },
   { label: "Architecture", href: "#architecture" },
   { label: "Modules", href: "#modules" },
+  { label: "Docs", href: "/docs" },
 ];
 
 function Navbar() {
@@ -115,7 +121,10 @@ function HeroBackdrop() {
   }, []);
 
   return (
-    <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div
+      aria-hidden
+      className="absolute inset-0 overflow-hidden pointer-events-none"
+    >
       <motion.svg
         style={{ y: gridY }}
         className="absolute inset-x-0 -top-24 h-[140%] w-full"
@@ -123,12 +132,28 @@ function HeroBackdrop() {
         preserveAspectRatio="xMidYMin slice"
       >
         {gridLines.v.map((x) => (
-          <line key={`v${x}`} x1={x} y1={0} x2={x} y2={900} stroke="#e9e2f2" strokeWidth="1" />
+          <line
+            key={`v${x}`}
+            x1={x}
+            y1={0}
+            x2={x}
+            y2={900}
+            stroke="#e9e2f2"
+            strokeWidth="1"
+          />
         ))}
         {gridLines.h.map((y) => (
-          <line key={`h${y}`} x1={0} y1={y} x2={1440} y2={y} stroke="#e9e2f2" strokeWidth="1" />
+          <line
+            key={`h${y}`}
+            x1={0}
+            y1={y}
+            x2={1440}
+            y2={y}
+            stroke="#e9e2f2"
+            strokeWidth="1"
+          />
         ))}
-        {(Array.from({ length: 14 }, (_, i) => i)).map((i) => {
+        {Array.from({ length: 14 }, (_, i) => i).map((i) => {
           const cx = 144 + i * 96;
           const cy = 144 + ((i * 7) % 4) * 96;
           return (
@@ -199,14 +224,20 @@ function SnapBadge({
     >
       <span
         className={`flex h-7 w-7 items-center justify-center border ${hairline} ${
-          tone === "ok" ? "bg-[#e8f5e9]" : tone === "warn" ? "bg-[#fdeeca]" : "bg-[#f3eefb]"
+          tone === "ok"
+            ? "bg-[#e8f5e9]"
+            : tone === "warn"
+              ? "bg-[#fdeeca]"
+              : "bg-[#f3eefb]"
         }`}
       >
         {icon}
       </span>
       <div className={tones[tone]}>
         <div className="text-[11px] font-semibold leading-tight">{title}</div>
-        <div className="text-[10px] font-mono text-[#6c5f8a] leading-tight">{meta}</div>
+        <div className="text-[10px] font-mono text-[#6c5f8a] leading-tight">
+          {meta}
+        </div>
       </div>
     </motion.div>
   );
@@ -214,10 +245,42 @@ function SnapBadge({
 
 function DashboardPreview() {
   const stockRows = [
-    { sku: "WF-500", item: "Wheat Flour", lot: "LOT-26-001", qty: "450.00 KG", pct: 82, status: "OK", st: "bg-[#581c87] text-white" },
-    { sku: "VC-012", item: "Vanilla Cake", lot: "LOT-26-044", qty: "12.00 EA", pct: 12, status: "LOW", st: "bg-[#fdeeca] text-[#581c87] border border-[#581c87]" },
-    { sku: "BR-100", item: "Bread Loaf", lot: "FG-26-001", qty: "230.00 EA", pct: 64, status: "OK", st: "bg-[#581c87] text-white" },
-    { sku: "DR-045", item: "Dinner Rolls", lot: "FG-26-012", qty: "0.00 EA", pct: 0, status: "OUT", st: "bg-[#581c87] text-white" },
+    {
+      sku: "WF-500",
+      item: "Wheat Flour",
+      lot: "LOT-26-001",
+      qty: "450.00 KG",
+      pct: 82,
+      status: "OK",
+      st: "bg-[#581c87] text-white",
+    },
+    {
+      sku: "VC-012",
+      item: "Vanilla Cake",
+      lot: "LOT-26-044",
+      qty: "12.00 EA",
+      pct: 12,
+      status: "LOW",
+      st: "bg-[#fdeeca] text-[#581c87] border border-[#581c87]",
+    },
+    {
+      sku: "BR-100",
+      item: "Bread Loaf",
+      lot: "FG-26-001",
+      qty: "230.00 EA",
+      pct: 64,
+      status: "OK",
+      st: "bg-[#581c87] text-white",
+    },
+    {
+      sku: "DR-045",
+      item: "Dinner Rolls",
+      lot: "FG-26-012",
+      qty: "0.00 EA",
+      pct: 0,
+      status: "OUT",
+      st: "bg-[#581c87] text-white",
+    },
   ];
 
   const prodOrders = [
@@ -264,7 +327,9 @@ function DashboardPreview() {
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
         className={`relative border-2 ${hairline} bg-white shadow-[8px_8px_0_0_#581c87]`}
       >
-        <div className={`flex h-9 items-center border-b ${hairline} bg-[#f3eefb] px-3`}>
+        <div
+          className={`flex h-9 items-center border-b ${hairline} bg-[#f3eefb] px-3`}
+        >
           <div className="flex gap-1.5">
             <span className="h-2.5 w-2.5 border border-[#581c87] bg-white" />
             <span className="h-2.5 w-2.5 border border-[#581c87] bg-white" />
@@ -278,67 +343,125 @@ function DashboardPreview() {
         </div>
 
         <div className="grid grid-cols-12">
-          <div className={`col-span-2 hidden border-r ${hairline} bg-white md:block`}>
-            <div className={`border-b ${hairline} px-3 py-2.5 font-mono text-[10px] font-semibold uppercase tracking-wider`}>
+          <div
+            className={`col-span-2 hidden border-r ${hairline} bg-white md:block`}
+          >
+            <div
+              className={`border-b ${hairline} px-3 py-2.5 font-mono text-[10px] font-semibold uppercase tracking-wider`}
+            >
               Modules
             </div>
-            {["Dashboard", "Inventory", "Quality", "Mfg", "Trace", "Sales", "Finance", "Workforce"].map((m, i) => (
+            {[
+              "Dashboard",
+              "Inventory",
+              "Quality",
+              "Mfg",
+              "Trace",
+              "Sales",
+              "Finance",
+              "Workforce",
+            ].map((m, i) => (
               <div
                 key={m}
                 className={`flex items-center gap-2 border-b ${hairline} px-3 py-2 text-[11px] font-medium ${
-                  i === 1 ? "bg-[#581c87] text-white" : "text-[#5c4d77] hover:bg-[#f3eefb]"
+                  i === 1
+                    ? "bg-[#581c87] text-white"
+                    : "text-[#5c4d77] hover:bg-[#f3eefb]"
                 }`}
               >
-                <span className={`h-1.5 w-1.5 border ${i === 1 ? "border-white" : "border-[#581c87]"}`} />
+                <span
+                  className={`h-1.5 w-1.5 border ${i === 1 ? "border-white" : "border-[#581c87]"}`}
+                />
                 {m}
               </div>
             ))}
           </div>
 
           <div className="col-span-12 md:col-span-10">
-            <div className={`grid grid-cols-2 divide-x ${hairline} border-b ${hairline} lg:grid-cols-4`}>
+            <div
+              className={`grid grid-cols-2 divide-x ${hairline} border-b ${hairline} lg:grid-cols-4`}
+            >
               {[
                 { k: "Stock value", v: "1.28M", d: "ETB", delta: "+4.2%" },
                 { k: "Open orders", v: "18", d: "production", delta: "−2" },
-                { k: "Pass rate", v: "98.4%", d: "inspections", delta: "+0.6%" },
+                {
+                  k: "Pass rate",
+                  v: "98.4%",
+                  d: "inspections",
+                  delta: "+0.6%",
+                },
                 { k: "Avg latency", v: "8ms", d: "API p95", delta: "−1ms" },
               ].map((s) => (
-                <div key={s.k} className="group bg-white px-4 py-3 hover:bg-[#f3eefb]">
-                  <div className="font-mono text-[9px] uppercase tracking-widest text-[#7c6f96]">{s.k}</div>
+                <div
+                  key={s.k}
+                  className="group bg-white px-4 py-3 hover:bg-[#f3eefb]"
+                >
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-[#7c6f96]">
+                    {s.k}
+                  </div>
                   <div className="mt-1 flex items-baseline gap-2">
-                    <span className="font-mono text-xl font-semibold tabular-nums">{s.v}</span>
+                    <span className="font-mono text-xl font-semibold tabular-nums">
+                      {s.v}
+                    </span>
                     <span className="text-[10px] text-[#7c6f96]">{s.d}</span>
-                    <span className="ml-auto font-mono text-[10px] text-[#581c87]">{s.delta}</span>
+                    <span className="ml-auto font-mono text-[10px] text-[#581c87]">
+                      {s.delta}
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className={`grid grid-cols-1 divide-y ${hairline} lg:grid-cols-5 lg:divide-y-0 lg:divide-x`}>
+            <div
+              className={`grid grid-cols-1 divide-y ${hairline} lg:grid-cols-5 lg:divide-y-0 lg:divide-x`}
+            >
               <div className="lg:col-span-3">
-                <div className={`flex items-center justify-between border-b ${hairline} px-4 py-2`}>
-                  <span className="text-[12px] font-semibold">Stock balances</span>
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-[#7c6f96]">Live</span>
+                <div
+                  className={`flex items-center justify-between border-b ${hairline} px-4 py-2`}
+                >
+                  <span className="text-[12px] font-semibold">
+                    Stock balances
+                  </span>
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-[#7c6f96]">
+                    Live
+                  </span>
                 </div>
                 <table className="w-full text-left">
                   <thead>
-                    <tr className={`border-b ${hairline} font-mono text-[9px] uppercase tracking-wider text-[#7c6f96]`}>
+                    <tr
+                      className={`border-b ${hairline} font-mono text-[9px] uppercase tracking-wider text-[#7c6f96]`}
+                    >
                       <th className="px-4 py-1.5 font-medium">SKU</th>
                       <th className="px-2 py-1.5 font-medium">Item</th>
                       <th className="px-2 py-1.5 font-medium">Lot</th>
-                      <th className="px-2 py-1.5 font-medium text-right">Qty</th>
+                      <th className="px-2 py-1.5 font-medium text-right">
+                        Qty
+                      </th>
                       <th className="px-4 py-1.5 font-medium">State</th>
                     </tr>
                   </thead>
                   <tbody>
                     {stockRows.map((r) => (
-                      <tr key={r.sku} className={`border-b ${hairline} text-[11px] hover:bg-[#f3eefb]`}>
-                        <td className="px-4 py-2 font-mono font-semibold">{r.sku}</td>
+                      <tr
+                        key={r.sku}
+                        className={`border-b ${hairline} text-[11px] hover:bg-[#f3eefb]`}
+                      >
+                        <td className="px-4 py-2 font-mono font-semibold">
+                          {r.sku}
+                        </td>
                         <td className="px-2 py-2 text-[#4a3a68]">{r.item}</td>
-                        <td className="px-2 py-2 font-mono text-[#6c5f8a]">{r.lot}</td>
-                        <td className="px-2 py-2 text-right font-mono tabular-nums">{r.qty}</td>
+                        <td className="px-2 py-2 font-mono text-[#6c5f8a]">
+                          {r.lot}
+                        </td>
+                        <td className="px-2 py-2 text-right font-mono tabular-nums">
+                          {r.qty}
+                        </td>
                         <td className="px-4 py-2">
-                          <span className={`px-1.5 py-0.5 text-[9px] font-bold tracking-wide ${r.st}`}>{r.status}</span>
+                          <span
+                            className={`px-1.5 py-0.5 text-[9px] font-bold tracking-wide ${r.st}`}
+                          >
+                            {r.status}
+                          </span>
                         </td>
                       </tr>
                     ))}
@@ -347,26 +470,45 @@ function DashboardPreview() {
               </div>
 
               <div className="lg:col-span-2">
-                <div className={`border-b ${hairline} px-4 py-2 text-[12px] font-semibold`}>
+                <div
+                  className={`border-b ${hairline} px-4 py-2 text-[12px] font-semibold`}
+                >
                   Production orders
                 </div>
                 {prodOrders.map((o) => (
-                  <div key={o.id} className={`border-b ${hairline} px-4 py-2.5 hover:bg-[#f3eefb]`}>
+                  <div
+                    key={o.id}
+                    className={`border-b ${hairline} px-4 py-2.5 hover:bg-[#f3eefb]`}
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] font-semibold">{o.id}</span>
-                      <span className="font-mono text-[9px] text-[#7c6f96]">{o.stage}</span>
+                      <span className="font-mono text-[10px] font-semibold">
+                        {o.id}
+                      </span>
+                      <span className="font-mono text-[9px] text-[#7c6f96]">
+                        {o.stage}
+                      </span>
                     </div>
                     <div className="mt-1.5 flex h-2 border border-[#581c87] bg-white">
-                      <div className="h-full bg-[#581c87]" style={{ width: `${o.progress}%` }} />
+                      <div
+                        className="h-full bg-[#581c87]"
+                        style={{ width: `${o.progress}%` }}
+                      />
                     </div>
                   </div>
                 ))}
-                <div className="px-4 py-2 text-[12px] font-semibold">Audit stream</div>
+                <div className="px-4 py-2 text-[12px] font-semibold">
+                  Audit stream
+                </div>
                 {events.map((e) => (
-                  <div key={e.ref} className={`border-b ${hairline} px-4 py-2 text-[10px] hover:bg-[#f3eefb]`}>
+                  <div
+                    key={e.ref}
+                    className={`border-b ${hairline} px-4 py-2 text-[10px] hover:bg-[#f3eefb]`}
+                  >
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[#7c6f96]">{e.t}</span>
-                      <span className="border border-[#581c87] bg-[#f3eefb] px-1 font-mono font-semibold">{e.ref}</span>
+                      <span className="border border-[#581c87] bg-[#f3eefb] px-1 font-mono font-semibold">
+                        {e.ref}
+                      </span>
                     </div>
                     <div className="mt-1 text-[#4a3a68]">{e.msg}</div>
                   </div>
@@ -376,7 +518,9 @@ function DashboardPreview() {
           </div>
         </div>
 
-        <div className={`flex items-center justify-between border-t ${hairline} bg-[#f3eefb] px-3 py-1.5`}>
+        <div
+          className={`flex items-center justify-between border-t ${hairline} bg-[#f3eefb] px-3 py-1.5`}
+        >
           <span className="font-mono text-[9px] text-[#7c6f96]">
             TENANT: 7c9e · REGION: eu-west · SYNCED 3s ago
           </span>
@@ -477,7 +621,9 @@ const stats = [
 function StatsStrip() {
   return (
     <section className={`border-b ${hairline} bg-white`}>
-      <div className={`${container} grid grid-cols-2 divide-x divide-[#e9e2f2] lg:grid-cols-4`}>
+      <div
+        className={`${container} grid grid-cols-2 divide-x divide-[#e9e2f2] lg:grid-cols-4`}
+      >
         {stats.map((s, i) => (
           <motion.div
             key={s.k}
@@ -489,7 +635,9 @@ function StatsStrip() {
               i % 2 === 1 ? "border-l lg:border-l" : ""
             } border-[#e9e2f2] px-6 py-8 hover:bg-[#f9f7fd]`}
           >
-            <div className={`font-mono text-3xl font-semibold tabular-nums ${hoverFill} px-1 -mx-1`}>
+            <div
+              className={`font-mono text-3xl font-semibold tabular-nums ${hoverFill} px-1 -mx-1`}
+            >
               {s.v}
             </div>
             <div className="mt-1.5 text-[12px] font-medium uppercase tracking-wider text-[#7c6f96]">
@@ -543,14 +691,19 @@ const archFeatures = [
 
 function ArchitectureSection() {
   return (
-    <section id="architecture" className={`border-b ${hairline} bg-white py-20 sm:py-28`}>
+    <section
+      id="architecture"
+      className={`border-b ${hairline} bg-white py-20 sm:py-28`}
+    >
       <div className={container}>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_2fr] lg:items-end">
           <div>
             <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7c6f96]">
               01 / Platform
             </span>
-            <h2 className={`mt-3 text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}>
+            <h2
+              className={`mt-3 text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
+            >
               Enterprise-grade
               <br />
               performance
@@ -563,7 +716,9 @@ function ArchitectureSection() {
           </p>
         </div>
 
-        <div className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-[#581c87] sm:grid-cols-2 lg:grid-cols-3`}>
+        <div
+          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-[#581c87] sm:grid-cols-2 lg:grid-cols-3`}
+        >
           {archFeatures.map((f, i) => (
             <motion.article
               key={f.title}
@@ -579,8 +734,12 @@ function ArchitectureSection() {
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
-              <h3 className="mt-5 text-[14px] font-semibold text-[#581c87]">{f.title}</h3>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#5c4d77]">{f.body}</p>
+              <h3 className="mt-5 text-[14px] font-semibold text-[#581c87]">
+                {f.title}
+              </h3>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-[#5c4d77]">
+                {f.body}
+              </p>
               <div className="mt-5 border-t border-[#e9e2f2] pt-3 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#7c6f96] group-hover:border-[#581c87] group-hover:text-[#581c87]">
                 {f.spec}
               </div>
@@ -621,13 +780,18 @@ const workflowSteps = [
 
 function WorkflowSection() {
   return (
-    <section id="workflow" className={`border-b ${hairline} bg-[#f9f7fd] py-20 sm:py-28`}>
+    <section
+      id="workflow"
+      className={`border-b ${hairline} bg-[#f9f7fd] py-20 sm:py-28`}
+    >
       <div className={container}>
         <div className="max-w-2xl">
           <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7c6f96]">
             02 / Workflow
           </span>
-          <h2 className={`mt-3 text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}>
+          <h2
+            className={`mt-3 text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
+          >
             Dock to finished goods,
             <br />
             in four steps
@@ -677,9 +841,15 @@ function WorkflowSection() {
                   <span className="font-mono text-[11px] font-bold tabular-nums text-[#a893c9]">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <h3 className={`text-xl font-semibold text-[#581c87] ${serif}`}>{step.title}</h3>
+                  <h3
+                    className={`text-xl font-semibold text-[#581c87] ${serif}`}
+                  >
+                    {step.title}
+                  </h3>
                 </div>
-                <p className="mt-2.5 text-[12.5px] leading-relaxed text-[#5c4d77]">{step.body}</p>
+                <p className="mt-2.5 text-[12.5px] leading-relaxed text-[#5c4d77]">
+                  {step.body}
+                </p>
                 <div className="mt-4 inline-block border border-[#581c87] bg-white px-2 py-1 font-mono text-[10px] font-semibold text-[#581c87] group-hover:bg-[#581c87] group-hover:text-white">
                   {step.detail}
                 </div>
@@ -744,18 +914,33 @@ const modules = [
 ];
 
 const aiPrompts = [
-  { q: "Trace lot LOT-2026-001 across production", a: "5 hops. Received 500 KG Ethio Grain → QA approved → 50 KG consumed PO-BREAD-044 → FG-LOT-2026-001 · 95% yield." },
-  { q: "Which items are below reorder point?", a: "2 items. VC-012 Vanilla Cake (12 < 20), DR-045 Dinner Rolls (0 < 40). Draft POs ready for approval." },
-  { q: "Summarize last month's production cost", a: "ETB 412,800 total · +4.2% vs prior. Flour drove 61% of variance. Report generated." },
+  {
+    q: "Trace lot LOT-2026-001 across production",
+    a: "5 hops. Received 500 KG Ethio Grain → QA approved → 50 KG consumed PO-BREAD-044 → FG-LOT-2026-001 · 95% yield.",
+  },
+  {
+    q: "Which items are below reorder point?",
+    a: "2 items. VC-012 Vanilla Cake (12 < 20), DR-045 Dinner Rolls (0 < 40). Draft POs ready for approval.",
+  },
+  {
+    q: "Summarize last month's production cost",
+    a: "ETB 412,800 total · +4.2% vs prior. Flour drove 61% of variance. Report generated.",
+  },
 ];
 
 function RonaAiIntro() {
   return (
-    <div className={`mt-14 border-2 ${hairline} bg-white shadow-[8px_8px_0_0_#581c87]`}>
-      <div className={`flex items-center justify-between border-b-2 ${hairline} bg-[#581c87] px-5 py-3`}>
+    <div
+      className={`mt-14 border-2 ${hairline} bg-white shadow-[8px_8px_0_0_#581c87]`}
+    >
+      <div
+        className={`flex items-center justify-between border-b-2 ${hairline} bg-[#581c87] px-5 py-3`}
+      >
         <div className="flex items-center gap-3">
           <Sparkles className="h-4 w-4 text-white" strokeWidth={1.5} />
-          <span className={`text-lg font-semibold text-white ${serif}`}>Rona AI</span>
+          <span className={`text-lg font-semibold text-white ${serif}`}>
+            Rona AI
+          </span>
           <span className="border border-white px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-white">
             Built-in
           </span>
@@ -766,21 +951,24 @@ function RonaAiIntro() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5">
-        <div className={`border-b ${hairline} p-6 lg:col-span-2 lg:border-b-0 lg:border-r`}>
+        <div
+          className={`border-b ${hairline} p-6 lg:col-span-2 lg:border-b-0 lg:border-r`}
+        >
           <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-[#7c6f96]">
             00 / Rona AI
           </span>
-          <h3 className={`mt-3 text-2xl font-semibold leading-tight text-[#581c87] ${serif}`}>
+          <h3
+            className={`mt-3 text-2xl font-semibold leading-tight text-[#581c87] ${serif}`}
+          >
             An operations analyst
             <br />
             that never sleeps
           </h3>
           <p className="mt-4 text-[12.5px] leading-relaxed text-[#5c4d77]">
             Rona AI lives inside every module with full context of your
-            inventory, production, quality, and finance data. Ask it to
-            trace lots, draft reports, flag anomalies, or summarize
-            performance — it reads your live records, not generic training
-            data.
+            inventory, production, quality, and finance data. Ask it to trace
+            lots, draft reports, flag anomalies, or summarize performance — it
+            reads your live records, not generic training data.
           </p>
           <ul className="mt-5 space-y-2.5">
             {[
@@ -789,7 +977,10 @@ function RonaAiIntro() {
               "Anomaly alerts before they become write-offs",
               "Zero setup — knows your schema from day one",
             ].map((t) => (
-              <li key={t} className="flex items-start gap-2.5 text-[12.5px] text-[#4a3a68]">
+              <li
+                key={t}
+                className="flex items-start gap-2.5 text-[12.5px] text-[#4a3a68]"
+              >
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-[#581c87]" />
                 {t}
               </li>
@@ -808,20 +999,28 @@ function RonaAiIntro() {
               className={`group border-b ${hairline} p-5 last:border-b-0 hover:bg-[#f9f7fd]`}
             >
               <div className="flex items-start gap-3">
-                <span className={`shrink-0 border ${hairline} bg-[#581c87] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-white`}>
+                <span
+                  className={`shrink-0 border ${hairline} bg-[#581c87] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-white`}
+                >
                   You
                 </span>
                 <p className="text-[13px] font-medium text-[#581c87]">{m.q}</p>
               </div>
               <div className="mt-3 flex items-start gap-3">
-                <span className={`shrink-0 border ${hairline} bg-white px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-[#581c87]`}>
+                <span
+                  className={`shrink-0 border ${hairline} bg-white px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-[#581c87]`}
+                >
                   AI
                 </span>
-                <p className="text-[12.5px] leading-relaxed text-[#4a3a68]">{m.a}</p>
+                <p className="text-[12.5px] leading-relaxed text-[#4a3a68]">
+                  {m.a}
+                </p>
               </div>
             </motion.div>
           ))}
-          <div className={`flex items-center gap-2 border-t-2 ${hairline} bg-[#f9f7fd] px-5 py-3`}>
+          <div
+            className={`flex items-center gap-2 border-t-2 ${hairline} bg-[#f9f7fd] px-5 py-3`}
+          >
             <span className="h-1.5 w-1.5 animate-pulse bg-[#581c87]" />
             <span className="font-mono text-[10px] uppercase tracking-widest text-[#7c6f96]">
               Ask anything about your operation
@@ -835,27 +1034,34 @@ function RonaAiIntro() {
 
 function ModulesSection() {
   return (
-    <section id="modules" className={`border-b ${hairline} bg-white py-20 sm:py-28`}>
+    <section
+      id="modules"
+      className={`border-b ${hairline} bg-white py-20 sm:py-28`}
+    >
       <div className={container}>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_2fr] lg:items-end">
           <div>
             <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7c6f96]">
               03 / Modules
             </span>
-            <h2 className={`mt-3 text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}>
+            <h2
+              className={`mt-3 text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
+            >
               One platform,
               <br />
               every module
             </h2>
           </div>
           <p className="text-[14px] leading-relaxed text-[#5c4d77] lg:pb-2">
-            Eight operational modules plus Rona AI on a single data core —
-            every record cross-linked, every change audited, no third-party
-            glue holding your operation together.
+            Eight operational modules plus Rona AI on a single data core — every
+            record cross-linked, every change audited, no third-party glue
+            holding your operation together.
           </p>
         </div>
 
-        <div className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-[#581c87] sm:grid-cols-2 lg:grid-cols-4`}>
+        <div
+          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-[#581c87] sm:grid-cols-2 lg:grid-cols-4`}
+        >
           {modules.map((m, i) => (
             <motion.article
               key={m.abbr}
@@ -866,15 +1072,21 @@ function ModulesSection() {
               className="group relative bg-white p-6 hover:bg-[#f9f7fd]"
             >
               <div className="flex items-start justify-between">
-                <span className={`font-mono text-xl font-bold ${serif} text-[#581c87]`}>
+                <span
+                  className={`font-mono text-xl font-bold ${serif} text-[#581c87]`}
+                >
                   {m.abbr}
                 </span>
                 <span className="font-mono text-[10px] tabular-nums text-[#a893c9] group-hover:text-[#581c87]">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
-              <h3 className="mt-4 text-[14px] font-semibold text-[#581c87]">{m.name}</h3>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#5c4d77]">{m.body}</p>
+              <h3 className="mt-4 text-[14px] font-semibold text-[#581c87]">
+                {m.name}
+              </h3>
+              <p className="mt-2 text-[12.5px] leading-relaxed text-[#5c4d77]">
+                {m.body}
+              </p>
               <div className="mt-5 flex flex-wrap gap-1.5 border-t border-[#e9e2f2] pt-3">
                 {m.tags.map((t) => (
                   <span
@@ -904,7 +1116,9 @@ function CtaSlab() {
         <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a893c9]">
           04 / Access
         </span>
-        <h2 className={`mt-4 text-3xl font-semibold text-white sm:text-5xl ${serif}`}>
+        <h2
+          className={`mt-4 text-3xl font-semibold text-white sm:text-5xl ${serif}`}
+        >
           {user ? "Welcome back." : "Ready to streamline your operations?"}
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-[14px] leading-relaxed text-[#e4dcf5]">

@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { HiOutlineArrowRight, HiOutlineBars3, HiOutlineXMark } from "react-icons/hi2";
+import {
+  HiOutlineArrowRight,
+  HiOutlineBars3,
+  HiOutlineXMark,
+} from "react-icons/hi2";
 
 type Props = {
   links: { label: string; href: string }[];
@@ -20,7 +24,11 @@ export function MobileMenu({ links }: Props) {
         onClick={() => setOpen((o) => !o)}
         className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 text-zinc-600 transition-colors hover:bg-zinc-50"
       >
-        {open ? <HiOutlineXMark className="h-5 w-5" /> : <HiOutlineBars3 className="h-5 w-5" />}
+        {open ? (
+          <HiOutlineXMark className="h-5 w-5" />
+        ) : (
+          <HiOutlineBars3 className="h-5 w-5" />
+        )}
       </button>
 
       {open ? (

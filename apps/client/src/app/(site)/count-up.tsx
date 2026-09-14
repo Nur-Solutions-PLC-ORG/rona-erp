@@ -10,7 +10,13 @@ type Props = {
   className?: string;
 };
 
-export function CountUp({ to, decimals = 0, prefix = "", suffix = "", className }: Props) {
+export function CountUp({
+  to,
+  decimals = 0,
+  prefix = "",
+  suffix = "",
+  className,
+}: Props) {
   const ref = useRef<HTMLSpanElement>(null);
   const [value, setValue] = useState(0);
   const [started, setStarted] = useState(false);

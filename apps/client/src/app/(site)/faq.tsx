@@ -29,7 +29,11 @@ export function FaqAccordion() {
   return (
     <div className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 bg-white">
       {faqs.map((item) => (
-        <FaqItem key={item.question} question={item.question} answer={item.answer} />
+        <FaqItem
+          key={item.question}
+          question={item.question}
+          answer={item.answer}
+        />
       ))}
     </div>
   );
