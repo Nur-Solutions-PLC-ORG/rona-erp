@@ -548,10 +548,10 @@ function Hero() {
             className="inline-flex items-center border border-[#581c87] bg-white px-3 py-1.5"
           >
             <span className="border-r border-[#581c87] pr-2 font-mono text-[10px] font-bold uppercase tracking-widest">
-              v2.6
+              New
             </span>
             <span className="pl-2 text-[12px] text-[#4a3a68]">
-              Real-time lot tracing is live across all modules
+              Rona AI assistant is now built into every module
             </span>
           </motion.div>
 
