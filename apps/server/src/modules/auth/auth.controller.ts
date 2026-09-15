@@ -18,6 +18,7 @@ import { RolesGuard } from './guards/roles.guard';
 import { AuthService } from './auth.service';
 
 import { ZodValidationPipe } from '@/modules/app/pipes/zod-validation.pipe';
+import { loadEnv } from '@/configs/env';
 import { COOKIE_NAME, SESSION_DURATION } from '@rona/config/auth';
 import {
   ForgotPasswordSchema,
@@ -36,7 +37,6 @@ import {
   signInSchema,
 } from '@rona/validation/auth';
 
-import { DEFAULT_CLIENT_URL } from '@rona/config/client';
 import { CLIENT_APP_ERROR_PAGE } from '@rona/routes/app';
 import { CLIENT_AUTH_GOOGLE_CALLBACK_PAGE } from '@rona/routes/auth';
 import { ApiResponse } from '@rona/types/api';
@@ -172,7 +172,7 @@ export class AuthController {
     @Query('state') state: string,
     @Res() res: Response,
   ) {
-    const clientUrl = process.env.CLIENT_URL || DEFAULT_CLIENT_URL;
+    const clientUrl = loadEnv().CLIENT_URL[0];
     try {
       if (!code) throw new Error('No code provided');
       const { token } = await this.authService.handleGoogleCallback(code);

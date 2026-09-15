@@ -6,7 +6,18 @@ const envSchema = z.object({
     .enum(['development', 'production', 'test'])
     .default('development'),
   PORT: z.coerce.number().int().positive().optional(),
-  CLIENT_URL: z.url().default(DEFAULT_CLIENT_URL),
+  CLIENT_URL: z
+    .string()
+    .optional()
+    .transform((value) =>
+      (value ?? DEFAULT_CLIENT_URL)
+        .split(',')
+        .map((url) => url.trim())
+        .filter(Boolean),
+    )
+    .pipe(
+      z.array(z.url()).min(1, 'CLIENT_URL must contain at least one valid URL'),
+    ),
 
   DATABASE_URL: z.url(),
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),

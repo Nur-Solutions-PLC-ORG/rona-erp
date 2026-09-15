@@ -1,5 +1,4 @@
 import { NestFactory } from '@nestjs/core';
-import { DEFAULT_CLIENT_URL } from '@rona/config/client';
 import { DEFAULT_PORT } from '@rona/config/server';
 import type { Express, NextFunction, Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
@@ -22,7 +21,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: env.CLIENT_URL ?? DEFAULT_CLIENT_URL,
+    origin: env.CLIENT_URL,
     credentials: true,
   });
 
