@@ -173,8 +173,24 @@ export class UsersService {
       await this.removeMembership(id, previousOrganizationId);
     }
 
-    if ((organizationChanged || positionChanged) && organizationId) {
-      await this.ensureMembership(id, organizationId, position);
+    if (organizationId) {
+      const membership = await this.usersRepository.findMembership(
+        id,
+        organizationId,
+      );
+      const needsSync =
+        organizationChanged ||
+        positionChanged ||
+        !membership ||
+        !(await this.matchesMappedRole(
+          membership,
+          organizationId,
+          position,
+        ));
+
+      if (needsSync) {
+        await this.ensureMembership(id, organizationId, position);
+      }
     }
 
     return this.getUser(id);
@@ -220,6 +236,21 @@ export class UsersService {
 
     await this.usersRepository.deleteMembership(userId, organizationId);
     await this.rbacService.invalidateMembership(membership.id, organizationId);
+  }
+
+  private async matchesMappedRole(
+    membership: Awaited<ReturnType<UsersRepository['findMembership']>>,
+    organizationId: string,
+    position: Position,
+  ): Promise<boolean> {
+    if (!membership) return false;
+
+    const roleKey = POSITION_TO_ROLE[position];
+    const currentRoles = await this.rbacRepository.findMembershipRoleKeys(
+      membership.id,
+      organizationId,
+    );
+    return currentRoles.includes(roleKey);
   }
 
   private toUserDto(
