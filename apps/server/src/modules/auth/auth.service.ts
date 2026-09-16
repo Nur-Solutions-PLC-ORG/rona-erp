@@ -51,13 +51,12 @@ export class AuthService {
   async validateCredentials(email: string, password: string) {
     const attemptKey = `auth:attempts:sign-in:${email.toLowerCase()}`;
 
-    // Upstash rate-limit check disabled temporarily (raising 500 errors).
-    // const allowed = await rateLimit(
-    //   attemptKey,
-    //   SIGN_IN_ATTEMPT_LIMIT,
-    //   SIGN_IN_WINDOW_SECONDS,
-    // );
-    // if (!allowed) throw new TooManyAttemptsException();
+    const allowed = await rateLimit(
+      attemptKey,
+      SIGN_IN_ATTEMPT_LIMIT,
+      SIGN_IN_WINDOW_SECONDS,
+    );
+    if (!allowed) throw new TooManyAttemptsException();
 
     const user = await this.validateUserByEmail(email);
 
@@ -67,7 +66,7 @@ export class AuthService {
       throw new InvalidCredentialsException();
     }
 
-    // await redisClient.del(attemptKey).catch(() => undefined);
+    await redisClient.del(attemptKey).catch(() => undefined);
     return user;
   }
 
@@ -109,15 +108,14 @@ export class AuthService {
 
   async verifyCode(email: string, code: string) {
     const codeKey = `auth:code:${email}`;
-    // const attemptKey = `auth:attempts:code:${email}`;
+    const attemptKey = `auth:attempts:code:${email}`;
 
-    // Upstash rate-limit check disabled temporarily (raising 500 errors).
-    // const allowed = await rateLimit(
-    //   attemptKey,
-    //   CODE_MAX_ATTEMPTS,
-    //   CODE_WINDOW_SECONDS,
-    // );
-    // if (!allowed) throw new TooManyAttemptsException();
+    const allowed = await rateLimit(
+      attemptKey,
+      CODE_MAX_ATTEMPTS,
+      CODE_WINDOW_SECONDS,
+    );
+    if (!allowed) throw new TooManyAttemptsException();
 
     const storedCode = String(await redisClient.get<string>(codeKey));
 
@@ -126,7 +124,7 @@ export class AuthService {
     }
 
     await redisClient.del(codeKey);
-    // await redisClient.del(attemptKey).catch(() => undefined);
+    await redisClient.del(attemptKey).catch(() => undefined);
   }
 
   async getRoles(userId: string): Promise<UserRole> {
@@ -239,22 +237,21 @@ export class AuthService {
 
   async forgotPassword(email: string) {
     const normalizedEmail = email.toLowerCase();
-    // const ip = getRequestContext()?.ip ?? 'unknown';
+    const ip = getRequestContext()?.ip ?? 'unknown';
 
-    // Upstash rate-limit check disabled temporarily (raising 500 errors).
-    // const ipAllowed = await rateLimit(
-    //   `auth:attempts:forgot-ip:${ip}`,
-    //   FORGOT_ATTEMPT_LIMIT,
-    //   FORGOT_WINDOW_SECONDS,
-    // );
-    // if (!ipAllowed) throw new TooManyAttemptsException();
+    const ipAllowed = await rateLimit(
+      `auth:attempts:forgot-ip:${ip}`,
+      FORGOT_ATTEMPT_LIMIT,
+      FORGOT_WINDOW_SECONDS,
+    );
+    if (!ipAllowed) throw new TooManyAttemptsException();
 
-    // const allowed = await rateLimit(
-    //   `auth:attempts:forgot:${normalizedEmail}`,
-    //   FORGOT_ATTEMPT_LIMIT,
-    //   FORGOT_WINDOW_SECONDS,
-    // );
-    // if (!allowed) throw new TooManyAttemptsException();
+    const allowed = await rateLimit(
+      `auth:attempts:forgot:${normalizedEmail}`,
+      FORGOT_ATTEMPT_LIMIT,
+      FORGOT_WINDOW_SECONDS,
+    );
+    if (!allowed) throw new TooManyAttemptsException();
 
     const user = await this.authRepository.findUserByEmail(email);
 
@@ -284,15 +281,14 @@ export class AuthService {
   async resetPassword(email: string, code: string, password: string) {
     const normalizedEmail = email.toLowerCase();
     const codeKey = `auth:reset-code:${normalizedEmail}`;
-    // const attemptKey = `auth:attempts:reset:${normalizedEmail}`;
+    const attemptKey = `auth:attempts:reset:${normalizedEmail}`;
 
-    // Upstash rate-limit check disabled temporarily (raising 500 errors).
-    // const allowed = await rateLimit(
-    //   attemptKey,
-    //   RESET_MAX_ATTEMPTS,
-    //   CODE_WINDOW_SECONDS,
-    // );
-    // if (!allowed) throw new TooManyAttemptsException();
+    const allowed = await rateLimit(
+      attemptKey,
+      RESET_MAX_ATTEMPTS,
+      CODE_WINDOW_SECONDS,
+    );
+    if (!allowed) throw new TooManyAttemptsException();
 
     const storedCode = await redisClient.get<string>(codeKey);
 
@@ -311,7 +307,7 @@ export class AuthService {
     await this.authRepository.updateUserPassword(user.id, passwordHash);
 
     await redisClient.del(codeKey);
-    // await redisClient.del(attemptKey).catch(() => undefined);
+    await redisClient.del(attemptKey).catch(() => undefined);
   }
 
   async changePassword(
