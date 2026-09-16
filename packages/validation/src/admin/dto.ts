@@ -25,7 +25,6 @@ export const userDto = z.object({
 
 export const userCredentialsDto = z.object({
   email: z.email(),
-  password: z.string(),
 });
 
 export const organizationDto = z.object({

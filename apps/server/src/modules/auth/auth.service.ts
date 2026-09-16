@@ -1,4 +1,4 @@
-import { sendPasswordResetEmail, sendVerificationEmail } from '@/emails/resend';
+import { sendPasswordResetEmail, sendVerificationEmail } from '@/emails/mailer';
 import {
   InvalidCodeException,
   InvalidCredentialsException,

@@ -1,4 +1,5 @@
 import { generateCombinations } from '@/lib/combinations';
+import { sendAccountCredentialsEmail } from '@/emails/mailer';
 import { redisClient } from '@/redis';
 import { Injectable } from '@nestjs/common';
 import type {
@@ -89,7 +90,9 @@ export class UsersService {
       );
     }
 
-    return { email: data.email, password };
+    await sendAccountCredentialsEmail(data.email, password, data.fullName);
+
+    return { email: data.email };
   }
 
   async resetUserPassword(id: string): Promise<UserCredentialsDto> {
@@ -103,7 +106,13 @@ export class UsersService {
       mustChangePassword: true,
     });
 
-    return { email: user.user.email, password };
+    await sendAccountCredentialsEmail(
+      user.user.email,
+      password,
+      user.user.fullName,
+    );
+
+    return { email: user.user.email };
   }
 
   async updateUser(id: string, data: UserUpdateSchema): Promise<UserDto> {
