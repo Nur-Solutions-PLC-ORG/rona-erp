@@ -1,5 +1,6 @@
 import { sendPasswordResetEmail, sendVerificationEmail } from '@/emails/mailer';
-import { sendTelegramCode } from '@/emails/telegram';
+import { TelegramService } from '@/modules/telegram/telegram.service';
+import { randomBytes } from 'crypto';
 import {
   InvalidCodeException,
   InvalidCredentialsException,
@@ -37,7 +38,10 @@ import { generateCombinations } from '@/lib/combinations';
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
-  constructor(private readonly authRepository: AuthRepository) {}
+  constructor(
+    private readonly authRepository: AuthRepository,
+    private readonly telegramService: TelegramService,
+  ) {}
 
   async validateUserByEmail(email: string) {
     const userRecord = await this.authRepository.findUserByEmail(email);
@@ -95,12 +99,14 @@ export class AuthService {
     }
 
     const code = this.generateRandomCode();
+    const telegramToken = randomBytes(16).toString('hex');
 
     await this.authRepository.saveCode(
       email,
       'login',
       code,
       new Date(Date.now() + CODE_EXPIRY_MS),
+      telegramToken,
     );
 
     try {
@@ -114,7 +120,18 @@ export class AuthService {
       this.logger.warn(`Verification cache write failed: ${String(error)}`);
     }
 
-    await this.deliverCode(email, code, 'login');
+    const chatId = await this.authRepository.findTelegramChatIdByEmail(email);
+    await this.deliverCode(email, code, 'login', chatId);
+
+    if (this.telegramService.isConfigured()) {
+      return {
+        telegramUrl: this.telegramService.getTelegramUrl(
+          this.codePayload(telegramToken),
+        ),
+      };
+    }
+
+    return {};
   }
 
   async resendVerificationCode(email: string) {
@@ -288,12 +305,14 @@ export class AuthService {
     }
 
     const code = this.generateRandomCode();
+    const telegramToken = randomBytes(16).toString('hex');
 
     await this.authRepository.saveCode(
       normalizedEmail,
       'reset',
       code,
       new Date(Date.now() + CODE_EXPIRY_MS),
+      telegramToken,
     );
 
     try {
@@ -304,7 +323,12 @@ export class AuthService {
       this.logger.warn(`Reset-code cache write failed: ${String(error)}`);
     }
 
-    await this.deliverCode(email, code, 'reset');
+    await this.deliverCode(
+      email,
+      code,
+      'reset',
+      user.telegramChatId ?? undefined,
+    );
 
     try {
       await redisClient.set(lastSendKey, Date.now(), {
@@ -313,6 +337,16 @@ export class AuthService {
     } catch (error) {
       this.logger.warn(`Reset-code cooldown write failed: ${String(error)}`);
     }
+
+    if (this.telegramService.isConfigured()) {
+      return {
+        telegramUrl: this.telegramService.getTelegramUrl(
+          this.codePayload(telegramToken),
+        ),
+      };
+    }
+
+    return {};
   }
 
   async resetPassword(email: string, code: string, password: string) {
@@ -375,6 +409,7 @@ export class AuthService {
     email: string,
     code: string,
     purpose: 'login' | 'reset',
+    telegramChatId?: string | undefined,
   ) {
     const sendEmail =
       purpose === 'reset' ? sendPasswordResetEmail : sendVerificationEmail;
@@ -388,13 +423,26 @@ export class AuthService {
         return false;
       });
 
-    const telegramSent = await sendTelegramCode(code, purpose);
-
-    if (!emailSent && !telegramSent) {
-      throw new Error(
-        'Code delivery failed: neither email nor Telegram delivered the code.',
+    let telegramSent = false;
+    if (telegramChatId) {
+      telegramSent = await this.telegramService.sendCodeToChat(
+        telegramChatId,
+        code,
+        purpose,
       );
     }
+
+    const deepLinkAvailable = this.telegramService.isConfigured();
+
+    if (!emailSent && !telegramSent && !deepLinkAvailable) {
+      throw new Error(
+        'Code delivery failed: email is unavailable and Telegram is not configured.',
+      );
+    }
+  }
+
+  private codePayload(telegramToken: string) {
+    return `code_${telegramToken}`;
   }
 
   private async readCode(

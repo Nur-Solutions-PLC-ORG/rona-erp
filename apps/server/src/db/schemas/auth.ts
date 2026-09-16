@@ -6,6 +6,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import {
@@ -34,6 +35,8 @@ export const users = pgTable('users', {
   tfaEnabled: boolean('tfa_enabled').default(false).notNull(),
 
   mustChangePassword: boolean('must_change_password').default(false).notNull(),
+
+  telegramChatId: text('telegram_chat_id'),
 
   status: statusesList('status').default('active').notNull(),
 
@@ -85,10 +88,15 @@ export const authCodes = pgTable(
     email: text('email').notNull(),
     purpose: text('purpose').notNull(),
     code: text('code').notNull(),
+    telegramToken: text('telegram_token'),
+    telegramChatId: text('telegram_chat_id'),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
   },
-  (table) => [primaryKey({ columns: [table.email, table.purpose] })],
+  (table) => [
+    primaryKey({ columns: [table.email, table.purpose] }),
+    uniqueIndex('auth_codes_telegram_token_idx').on(table.telegramToken),
+  ],
 );

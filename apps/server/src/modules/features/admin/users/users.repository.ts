@@ -78,6 +78,16 @@ export class UsersRepository {
     return records[0];
   }
 
+  async findTelegramChatIdByUserId(id: string) {
+    const records = await db
+      .select({ telegramChatId: users.telegramChatId })
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+
+    return records[0]?.telegramChatId ?? undefined;
+  }
+
   async findByEmailExceptId(email: string, id: string) {
     const records = await db
       .select({ id: users.id })

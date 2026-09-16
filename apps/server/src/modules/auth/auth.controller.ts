@@ -68,13 +68,15 @@ export class AuthController {
 
     if (user.tfaEnabled) {
       if (!body.code) {
-        await this.authService.sendVerificationCode(body.email);
+        const { telegramUrl } = await this.authService.sendVerificationCode(
+          body.email,
+        );
 
         return {
           success: true,
           message: 'Please enter the verification code to continue.',
           statusCode: HttpStatus.OK,
-          data: { tfaEnabled: true },
+          data: { tfaEnabled: true, telegramUrl },
         };
       }
 
@@ -206,13 +208,14 @@ export class AuthController {
   @UsePipes(new ZodValidationPipe(forgotPasswordSchema))
   async forgotPassword(
     @Body() body: ForgotPasswordSchema,
-  ): Promise<ApiResponse<ForgotPasswordSchema>> {
-    await this.authService.forgotPassword(body.email);
+  ): Promise<ApiResponse<{ telegramUrl?: string } | undefined>> {
+    const result = await this.authService.forgotPassword(body.email);
     return {
       success: true,
       statusCode: HttpStatus.OK,
       message:
         'If an account exists, a reset code has been sent to your email.',
+      data: result,
     };
   }
   @Post('reset-password')

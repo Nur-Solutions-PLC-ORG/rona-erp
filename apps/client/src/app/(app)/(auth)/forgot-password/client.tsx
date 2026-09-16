@@ -18,6 +18,7 @@ import { ForgotPasswordSchema } from "@rona/types/auth";
 import { forgotPasswordSchema } from "@rona/validation/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -27,6 +28,24 @@ const defaultValues: ForgotPasswordSchema = {
 
 const Client = () => {
   const router = useRouter();
+  const [telegramUrl, setTelegramUrl] = useState<string | undefined>();
+
+  const forgotPasswordMutation = useCreateMutation(
+    ApiPostForgotPassword,
+    (data) => {
+      toast.success(data.message);
+      setTelegramUrl(data.data?.telegramUrl);
+
+      if (!data.data?.telegramUrl) {
+        router.push(
+          `${CLIENT_AUTH_RESET_PASSWORD_PAGE}?email=${encodeURIComponent(form.getValues().email)}`,
+        );
+      }
+    },
+    (data) => {
+      toast.error(data.message);
+    },
+  );
 
   const form = useForm<ForgotPasswordSchema>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -34,22 +53,44 @@ const Client = () => {
     defaultValues,
   });
 
-  const forgotPasswordMutation = useCreateMutation(
-    ApiPostForgotPassword,
-    (data) => {
-      toast.success(data.message);
-      router.push(
-        `${CLIENT_AUTH_RESET_PASSWORD_PAGE}?email=${encodeURIComponent(form.getValues().email)}`,
-      );
-    },
-    (data) => {
-      toast.error(data.message);
-    },
-  );
-
   const onSubmit = (values: ForgotPasswordSchema) => {
     forgotPasswordMutation.mutate({ body: values });
   };
+
+  const continueToReset = () => {
+    router.push(
+      `${CLIENT_AUTH_RESET_PASSWORD_PAGE}?email=${encodeURIComponent(form.getValues().email)}`,
+    );
+  };
+
+  if (telegramUrl) {
+    return (
+      <div className="space-y-6">
+        <AuthHeading
+          title="Check your Telegram"
+          description="We also sent a code to your email. To get the reset code on Telegram, open the bot with the button below and press Start — your code will be sent to that chat."
+        />
+        <a
+          href={telegramUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={AUTH_PRIMARY_BUTTON}
+        >
+          Get code on Telegram
+        </a>
+        <button
+          type="button"
+          onClick={continueToReset}
+          className={AUTH_OUTLINE_BUTTON}
+        >
+          I have the code — enter it
+        </button>
+        <Link href={CLIENT_AUTH_SIGNIN_PAGE} className={AUTH_OUTLINE_BUTTON}>
+          Back to sign in
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

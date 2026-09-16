@@ -38,6 +38,11 @@ export interface Session {
 export interface SignInResponseData {
   tfaEnabled: boolean;
   mustChangePassword?: boolean;
+  telegramUrl?: string;
+}
+
+export interface ForgotPasswordResponseData {
+  telegramUrl?: string;
 }
 
 export type SignInSchema = z.infer<typeof signInSchema>;

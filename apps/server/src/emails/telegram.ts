@@ -1,6 +1,8 @@
-async function sendTelegramMessage(text: string) {
+export async function sendTelegramMessageToChat(
+  chatId: string | number,
+  text: string,
+) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
 
   if (!token || !chatId) return false;
 
@@ -11,7 +13,7 @@ async function sendTelegramMessage(text: string) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          chat_id: chatId,
+          chat_id: String(chatId),
           text,
           parse_mode: 'HTML',
         }),
@@ -31,23 +33,23 @@ async function sendTelegramMessage(text: string) {
   }
 }
 
-export async function sendTelegramCode(
+export function telegramCodeMessage(
   code: string,
   purpose: 'login' | 'reset',
 ) {
   const subject =
     purpose === 'reset' ? 'Password Reset Code' : 'Login Verification Code';
-  return sendTelegramMessage(
-    `${subject}\n\nYour Rona ERP code is: <b>${code}</b>\n\nIt expires in 10 minutes.`,
-  );
+  return `${subject}\n\nYour Rona ERP code is: <b>${code}</b>\n\nIt expires in 10 minutes.`;
 }
 
-export async function sendTelegramCredentials(
+export async function sendTelegramCredentialsToChat(
+  chatId: string | number,
   email: string,
   password: string,
   fullName?: string,
 ) {
-  return sendTelegramMessage(
+  return sendTelegramMessageToChat(
+    chatId,
     `Your Rona ERP Account Credentials\n\nName: ${fullName ?? ''}\nEmail: <b>${email}</b>\nOne-time password: <b>${password}</b>\n\nYou must change this password after your first sign-in.`,
   );
 }

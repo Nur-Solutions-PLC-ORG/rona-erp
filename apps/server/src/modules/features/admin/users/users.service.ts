@@ -1,6 +1,6 @@
 import { generateCombinations } from '@/lib/combinations';
 import { sendAccountCredentialsEmail } from '@/emails/mailer';
-import { sendTelegramCredentials } from '@/emails/telegram';
+import { sendTelegramCredentialsToChat } from '@/emails/telegram';
 import { redisClient } from '@/redis';
 import { Injectable } from '@nestjs/common';
 import type {
@@ -92,7 +92,6 @@ export class UsersService {
     }
 
     await sendAccountCredentialsEmail(data.email, password, data.fullName);
-    await sendTelegramCredentials(data.email, password, data.fullName);
 
     return { email: data.email };
   }
@@ -113,7 +112,17 @@ export class UsersService {
       password,
       user.user.fullName,
     );
-    await sendTelegramCredentials(user.user.email, password, user.user.fullName);
+
+    const telegramChatId =
+      await this.usersRepository.findTelegramChatIdByUserId(id);
+    if (telegramChatId) {
+      await sendTelegramCredentialsToChat(
+        telegramChatId,
+        user.user.email,
+        password,
+        user.user.fullName,
+      );
+    }
 
     return { email: user.user.email };
   }
