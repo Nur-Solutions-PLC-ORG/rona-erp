@@ -121,7 +121,7 @@ export class AuthService {
     }
 
     const chatId = await this.authRepository.findTelegramChatIdByEmail(email);
-    await this.deliverCode(email, code, 'login', chatId);
+    this.deliverCode(email, code, 'login', chatId);
 
     if (this.telegramService.isConfigured()) {
       return {
@@ -276,14 +276,16 @@ export class AuthService {
       `auth:attempts:forgot-ip:${ip}`,
       FORGOT_ATTEMPT_LIMIT,
       FORGOT_WINDOW_SECONDS,
-    );
+    ).then((ok) => ok)
+      .catch(() => true);
     if (!ipAllowed) throw new TooManyAttemptsException();
 
     const allowed = await rateLimit(
       `auth:attempts:forgot:${normalizedEmail}`,
       FORGOT_ATTEMPT_LIMIT,
       FORGOT_WINDOW_SECONDS,
-    );
+    ).then((ok) => ok)
+      .catch(() => true);
     if (!allowed) throw new TooManyAttemptsException();
 
     const user = await this.authRepository.findUserByEmail(email);
@@ -323,7 +325,7 @@ export class AuthService {
       this.logger.warn(`Reset-code cache write failed: ${String(error)}`);
     }
 
-    await this.deliverCode(
+    this.deliverCode(
       email,
       code,
       'reset',
@@ -405,7 +407,16 @@ export class AuthService {
     await this.authRepository.updateUserMustChangePassword(user.id, false);
   }
 
-  private async deliverCode(
+  private deliverCode(
+    email: string,
+    code: string,
+    purpose: 'login' | 'reset',
+    telegramChatId?: string | undefined,
+  ) {
+    void this.deliverCodeInBackground(email, code, purpose, telegramChatId);
+  }
+
+  private async deliverCodeInBackground(
     email: string,
     code: string,
     purpose: 'login' | 'reset',
@@ -435,8 +446,8 @@ export class AuthService {
     const deepLinkAvailable = this.telegramService.isConfigured();
 
     if (!emailSent && !telegramSent && !deepLinkAvailable) {
-      throw new Error(
-        'Code delivery failed: email is unavailable and Telegram is not configured.',
+      this.logger.warn(
+        `Code delivery failed: email is unavailable and Telegram is not configured.`,
       );
     }
   }
