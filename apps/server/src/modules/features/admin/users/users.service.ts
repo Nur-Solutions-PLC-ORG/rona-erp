@@ -155,7 +155,7 @@ export class UsersService {
         : undefined,
     );
 
-    if (data.role) await redisClient.del(`auth:role:${id}`);
+    if (data.role) await redisClient.del(`auth:role:${id}`).catch(() => undefined);
 
     const organizationId =
       data.organizationId !== undefined
@@ -184,7 +184,7 @@ export class UsersService {
     const deleted = await this.usersRepository.delete(id);
     if (!deleted) throw new AdminUserNotFoundException();
 
-    await redisClient.del(`auth:role:${id}`);
+    await redisClient.del(`auth:role:${id}`).catch(() => undefined);
   }
 
   private async ensureMembership(

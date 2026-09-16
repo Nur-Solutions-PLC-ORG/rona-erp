@@ -123,7 +123,7 @@ export class AuthService {
       throw new InvalidCodeException();
     }
 
-    await redisClient.del(codeKey);
+    await redisClient.del(codeKey).catch(() => undefined);
     await redisClient.del(attemptKey).catch(() => undefined);
   }
 
@@ -320,7 +320,7 @@ export class AuthService {
 
     await this.authRepository.updateUserPassword(user.id, passwordHash);
 
-    await redisClient.del(codeKey);
+    await redisClient.del(codeKey).catch(() => undefined);
     await redisClient.del(attemptKey).catch(() => undefined);
   }
 
