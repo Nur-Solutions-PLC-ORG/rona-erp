@@ -260,22 +260,36 @@ export class AuthService {
     }
 
     const lastSendKey = `auth:last_send_reset:${normalizedEmail}`;
-    const lastSend = await redisClient.get<number>(lastSendKey);
-    if (lastSend && Date.now() - lastSend < OPT_RESEND_DELAY_DURATION_MS) {
-      throw new WaitForResendException();
+
+    try {
+      const lastSend = await redisClient.get<number>(lastSendKey);
+      if (lastSend && Date.now() - lastSend < OPT_RESEND_DELAY_DURATION_MS) {
+        throw new WaitForResendException();
+      }
+    } catch (error) {
+      if (error instanceof WaitForResendException) throw error;
+      this.logger.warn(`Reset-code cooldown read failed: ${String(error)}`);
     }
 
     const code = this.generateRandomCode();
 
-    await redisClient.set(`auth:reset-code:${normalizedEmail}`, code, {
-      px: CODE_EXPIRY_MS,
-    });
+    try {
+      await redisClient.set(`auth:reset-code:${normalizedEmail}`, code, {
+        px: CODE_EXPIRY_MS,
+      });
+    } catch (error) {
+      this.logger.warn(`Reset-code cache write failed: ${String(error)}`);
+    }
 
     await sendPasswordResetEmail(email, code);
 
-    await redisClient.set(lastSendKey, Date.now(), {
-      px: OPT_RESEND_DELAY_DURATION_MS,
-    });
+    try {
+      await redisClient.set(lastSendKey, Date.now(), {
+        px: OPT_RESEND_DELAY_DURATION_MS,
+      });
+    } catch (error) {
+      this.logger.warn(`Reset-code cooldown write failed: ${String(error)}`);
+    }
   }
 
   async resetPassword(email: string, code: string, password: string) {

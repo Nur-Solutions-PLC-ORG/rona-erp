@@ -52,8 +52,9 @@ async function sendMail(to: string, subject: string, html: string) {
       html,
     });
   } catch (error) {
-    console.error(`Error sending email to ${to}:`, error);
-    throw new Error('Failed to send email.');
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error(`Error sending email to ${to}:`, detail);
+    throw new Error(`Failed to send email: ${detail}`);
   }
 }
 
