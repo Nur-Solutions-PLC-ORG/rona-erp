@@ -4,10 +4,22 @@ import { DEFAULT_CLIENT_URL } from '@rona/config/client';
 const emptyToUndefined = (value: unknown) =>
   typeof value === 'string' && value.trim() === '' ? undefined : value;
 
+const normalizeMailbox = (value: string) => {
+  let cleaned = value.trim();
+  if (
+    (cleaned.startsWith('"') && cleaned.endsWith('"')) ||
+    (cleaned.startsWith("'") && cleaned.endsWith("'"))
+  ) {
+    cleaned = cleaned.slice(1, -1).trim();
+  }
+  return cleaned;
+};
+
 const emailAddress = z.string().refine(
   (value) => {
-    const match = value.trim().match(/^.*<([^<>]+)>$/);
-    return z.email().safeParse(match ? match[1] : value.trim()).success;
+    const cleaned = normalizeMailbox(value);
+    const match = cleaned.match(/^.*<([^<>]+)>$/);
+    return z.email().safeParse(match ? match[1] : cleaned).success;
   },
   'Invalid email address',
 );

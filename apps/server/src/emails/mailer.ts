@@ -32,7 +32,15 @@ function getTransporter(): Transporter {
 }
 
 function getMailFrom(): string {
-  return process.env.MAIL_FROM || process.env.SMTP_USER || '';
+  const value = process.env.MAIL_FROM || process.env.SMTP_USER || '';
+  const trimmed = value.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
 }
 
 async function sendMail(to: string, subject: string, html: string) {
