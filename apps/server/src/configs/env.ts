@@ -1,6 +1,17 @@
 import { z } from 'zod';
 import { DEFAULT_CLIENT_URL } from '@rona/config/client';
 
+const emptyToUndefined = (value: unknown) =>
+  typeof value === 'string' && value.trim() === '' ? undefined : value;
+
+const emailAddress = z.string().refine(
+  (value) => {
+    const match = value.trim().match(/^.*<([^<>]+)>$/);
+    return z.email().safeParse(match ? match[1] : value.trim()).success;
+  },
+  'Invalid email address',
+);
+
 const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
@@ -25,17 +36,20 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_URL: z.url(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
 
-  RESEND_API_KEY: z.string().optional(),
-  RESEND_EMAIL_FROM: z.email().optional(),
+  RESEND_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
+  RESEND_EMAIL_FROM: z.preprocess(emptyToUndefined, z.email().optional()),
 
-  SMTP_HOST: z.string().optional(),
-  SMTP_PORT: z.coerce.number().int().positive().optional(),
-  SMTP_USER: z.string().optional(),
-  SMTP_PASS: z.string().optional(),
-  MAIL_FROM: z.email().optional(),
+  SMTP_HOST: z.preprocess(emptyToUndefined, z.string().optional()),
+  SMTP_PORT: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().positive().optional(),
+  ),
+  SMTP_USER: z.preprocess(emptyToUndefined, z.string().optional()),
+  SMTP_PASS: z.preprocess(emptyToUndefined, z.string().optional()),
+  MAIL_FROM: z.preprocess(emptyToUndefined, emailAddress.optional()),
 
-  GOOGLE_CLIENT_ID: z.string().optional(),
-  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_CLIENT_ID: z.preprocess(emptyToUndefined, z.string().optional()),
+  GOOGLE_CLIENT_SECRET: z.preprocess(emptyToUndefined, z.string().optional()),
 });
 
 export type Env = z.infer<typeof envSchema>;
