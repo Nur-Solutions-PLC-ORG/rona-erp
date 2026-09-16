@@ -67,8 +67,8 @@ const Client = () => {
     return (
       <div className="space-y-6">
         <AuthHeading
-          title="Check your Telegram"
-          description="We also sent a code to your email. To get the reset code on Telegram, open the bot with the button below and press Start — your code will be sent to that chat."
+          title="Get your verification code from Telegram"
+          description="Tap the button below to open the bot, then press Start in Telegram. Your verification code will be sent to that chat instantly."
         />
         <a
           href={telegramUrl}
@@ -76,15 +76,18 @@ const Client = () => {
           rel="noopener noreferrer"
           className={AUTH_PRIMARY_BUTTON}
         >
-          Get code on Telegram
+          Get verification code from Telegram
         </a>
         <button
           type="button"
           onClick={continueToReset}
           className={AUTH_OUTLINE_BUTTON}
         >
-          I have the code — enter it
+          I have my code — continue
         </button>
+        <p className="text-center text-xs text-muted-foreground">
+          A code is also sent to your email as a backup.
+        </p>
         <Link href={CLIENT_AUTH_SIGNIN_PAGE} className={AUTH_OUTLINE_BUTTON}>
           Back to sign in
         </Link>
