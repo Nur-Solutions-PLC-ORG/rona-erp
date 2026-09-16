@@ -14,7 +14,7 @@ const UserCredentialsModal = () => {
   return (
     <DialogWrapper
       title={modalData?.title ?? "User created successfully"}
-      info="A one-time password has been emailed to the user. They will be prompted to set a new password on first sign-in."
+      info="A one-time password has been sent to the email below. They will be prompted to set a new password on first sign-in."
       open={open === "admin-user-credentials"}
       onOpen={() => closeModal()}
       footer={

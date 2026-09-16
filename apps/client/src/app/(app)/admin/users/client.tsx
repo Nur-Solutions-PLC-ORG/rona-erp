@@ -107,7 +107,7 @@ const Client = () => {
           useConfirmationModalStore.getState().openModal({
             title: `reset ${row.original.fullName}'s password`,
             description:
-              "replace the user's current password with a new temporary password",
+              "a new one-time password will be sent to their email",
             onClick: async () => {
               const result = await resetPasswordMutation.mutateAsync({
                 slugReplacement: { id: row.original.id },

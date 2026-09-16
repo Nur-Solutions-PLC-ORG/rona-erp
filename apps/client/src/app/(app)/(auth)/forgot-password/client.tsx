@@ -55,7 +55,7 @@ const Client = () => {
     <div className="space-y-6">
       <AuthHeading
         title="Forgot password"
-        description="Enter your email and we will send you a reset token."
+        description="Enter your email and a reset code will be sent to your email."
       />
       <form
         onSubmit={form.handleSubmit(onSubmit)}
