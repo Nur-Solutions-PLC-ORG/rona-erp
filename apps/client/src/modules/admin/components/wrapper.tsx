@@ -184,7 +184,7 @@ function AdminSidebar({
         />
       ) : null}
 
-      <aside className="fixed lg:relative top-0 z-40 h-screen lg:h-full w-64 shrink-0 bg-white border-r border-zinc-200 flex flex-col transition-all duration-300">
+      <aside className={cn("fixed lg:relative top-0 z-40 h-screen lg:h-full w-64 shrink-0 bg-white border-r border-zinc-200 flex flex-col transition-all duration-300", mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0")}>
         <div className="px-4 pt-5 pb-4 border-b border-zinc-200 shrink-0">
           <button
             type="button"
