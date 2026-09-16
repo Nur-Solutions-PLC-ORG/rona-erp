@@ -1,7 +1,9 @@
 import { db } from '@/db';
-import { userRoles, users } from '@/db/schemas/auth';
+import { authCodes, userRoles, users } from '@/db/schemas/auth';
 import { Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+
+export type AuthCodePurpose = 'login' | 'reset';
 
 @Injectable()
 export class AuthRepository {
@@ -47,5 +49,44 @@ export class AuthRepository {
       .update(users)
       .set({ mustChangePassword })
       .where(eq(users.id, userId));
+  }
+
+  async saveCode(
+    email: string,
+    purpose: AuthCodePurpose,
+    code: string,
+    expiresAt: Date,
+  ) {
+    await db
+      .insert(authCodes)
+      .values({ email, purpose, code, expiresAt })
+      .onConflictDoUpdate({
+        target: [authCodes.email, authCodes.purpose],
+        set: { code, expiresAt, createdAt: new Date() },
+      });
+  }
+
+  async getCode(email: string, purpose: AuthCodePurpose) {
+    const records = await db
+      .select()
+      .from(authCodes)
+      .where(and(eq(authCodes.email, email), eq(authCodes.purpose, purpose)))
+      .limit(1);
+
+    const record = records[0];
+    if (!record) return undefined;
+
+    if (record.expiresAt.getTime() < Date.now()) {
+      await this.deleteCode(email, purpose);
+      return undefined;
+    }
+
+    return record.code;
+  }
+
+  async deleteCode(email: string, purpose: AuthCodePurpose) {
+    await db
+      .delete(authCodes)
+      .where(and(eq(authCodes.email, email), eq(authCodes.purpose, purpose)));
   }
 }

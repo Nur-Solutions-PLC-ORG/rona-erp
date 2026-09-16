@@ -1,4 +1,5 @@
 import { sendPasswordResetEmail, sendVerificationEmail } from '@/emails/mailer';
+import { sendTelegramCode } from '@/emails/telegram';
 import {
   InvalidCodeException,
   InvalidCredentialsException,
@@ -83,22 +84,37 @@ export class AuthService {
   async sendVerificationCode(email: string) {
     const lastSendKey = `auth:last_send:${email}`;
 
-    const lastSend = await redisClient.get<number>(lastSendKey);
-
-    if (lastSend && Date.now() - lastSend < OPT_RESEND_DELAY_DURATION_MS) {
-      throw new WaitForResendException();
+    try {
+      const lastSend = await redisClient.get<number>(lastSendKey);
+      if (lastSend && Date.now() - lastSend < OPT_RESEND_DELAY_DURATION_MS) {
+        throw new WaitForResendException();
+      }
+    } catch (error) {
+      if (error instanceof WaitForResendException) throw error;
+      this.logger.warn(`Verification cooldown read failed: ${String(error)}`);
     }
 
     const code = this.generateRandomCode();
 
-    const codeKey = `auth:code:${email}`;
+    await this.authRepository.saveCode(
+      email,
+      'login',
+      code,
+      new Date(Date.now() + CODE_EXPIRY_MS),
+    );
 
-    await redisClient.set(codeKey, code, { px: CODE_EXPIRY_MS });
-    await redisClient.set(lastSendKey, Date.now(), {
-      px: OPT_RESEND_DELAY_DURATION_MS,
-    });
+    try {
+      await redisClient.set(`auth:code:${email}`, code, {
+        px: CODE_EXPIRY_MS,
+      });
+      await redisClient.set(lastSendKey, Date.now(), {
+        px: OPT_RESEND_DELAY_DURATION_MS,
+      });
+    } catch (error) {
+      this.logger.warn(`Verification cache write failed: ${String(error)}`);
+    }
 
-    await sendVerificationEmail(email, code);
+    await this.deliverCode(email, code, 'login');
   }
 
   async resendVerificationCode(email: string) {
@@ -117,12 +133,12 @@ export class AuthService {
     );
     if (!allowed) throw new TooManyAttemptsException();
 
-    const storedCode = String(await redisClient.get<string>(codeKey));
-
+    const storedCode = await this.readCode(email, 'login', codeKey);
     if (!storedCode || storedCode !== code) {
       throw new InvalidCodeException();
     }
 
+    await this.authRepository.deleteCode(email, 'login');
     await redisClient.del(codeKey).catch(() => undefined);
     await redisClient.del(attemptKey).catch(() => undefined);
   }
@@ -273,6 +289,13 @@ export class AuthService {
 
     const code = this.generateRandomCode();
 
+    await this.authRepository.saveCode(
+      normalizedEmail,
+      'reset',
+      code,
+      new Date(Date.now() + CODE_EXPIRY_MS),
+    );
+
     try {
       await redisClient.set(`auth:reset-code:${normalizedEmail}`, code, {
         px: CODE_EXPIRY_MS,
@@ -281,7 +304,7 @@ export class AuthService {
       this.logger.warn(`Reset-code cache write failed: ${String(error)}`);
     }
 
-    await sendPasswordResetEmail(email, code);
+    await this.deliverCode(email, code, 'reset');
 
     try {
       await redisClient.set(lastSendKey, Date.now(), {
@@ -294,7 +317,6 @@ export class AuthService {
 
   async resetPassword(email: string, code: string, password: string) {
     const normalizedEmail = email.toLowerCase();
-    const codeKey = `auth:reset-code:${normalizedEmail}`;
     const attemptKey = `auth:attempts:reset:${normalizedEmail}`;
 
     const allowed = await rateLimit(
@@ -304,7 +326,11 @@ export class AuthService {
     );
     if (!allowed) throw new TooManyAttemptsException();
 
-    const storedCode = await redisClient.get<string>(codeKey);
+    const storedCode = await this.readCode(
+      normalizedEmail,
+      'reset',
+      `auth:reset-code:${normalizedEmail}`,
+    );
 
     if (!storedCode || storedCode !== code) {
       throw new InvalidResetTokenException();
@@ -320,7 +346,8 @@ export class AuthService {
 
     await this.authRepository.updateUserPassword(user.id, passwordHash);
 
-    await redisClient.del(codeKey).catch(() => undefined);
+    await this.authRepository.deleteCode(normalizedEmail, 'reset');
+    await redisClient.del(`auth:reset-code:${normalizedEmail}`).catch(() => undefined);
     await redisClient.del(attemptKey).catch(() => undefined);
   }
 
@@ -342,5 +369,49 @@ export class AuthService {
 
     await this.authRepository.updateUserPassword(user.id, passwordHash);
     await this.authRepository.updateUserMustChangePassword(user.id, false);
+  }
+
+  private async deliverCode(
+    email: string,
+    code: string,
+    purpose: 'login' | 'reset',
+  ) {
+    const sendEmail =
+      purpose === 'reset' ? sendPasswordResetEmail : sendVerificationEmail;
+
+    const emailSent = await sendEmail(email, code)
+      .then(() => true)
+      .catch((error) => {
+        this.logger.warn(
+          `Email delivery failed (${purpose}): ${String(error)}`,
+        );
+        return false;
+      });
+
+    const telegramSent = await sendTelegramCode(code, purpose);
+
+    if (!emailSent && !telegramSent) {
+      throw new Error(
+        'Code delivery failed: neither email nor Telegram delivered the code.',
+      );
+    }
+  }
+
+  private async readCode(
+    email: string,
+    purpose: 'login' | 'reset',
+    redisKey: string,
+  ): Promise<string | undefined> {
+    const dbCode = await this.authRepository.getCode(email, purpose);
+    if (dbCode) return dbCode;
+
+    try {
+      const cached = await redisClient.get<string>(redisKey);
+      if (cached !== null && cached !== undefined) return String(cached);
+    } catch (error) {
+      this.logger.warn(`Code cache read failed: ${String(error)}`);
+    }
+
+    return undefined;
   }
 }

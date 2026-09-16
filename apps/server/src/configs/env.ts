@@ -60,6 +60,9 @@ const envSchema = z.object({
   SMTP_PASS: z.preprocess(emptyToUndefined, z.string().optional()),
   MAIL_FROM: z.preprocess(emptyToUndefined, emailAddress.optional()),
 
+  TELEGRAM_BOT_TOKEN: z.preprocess(emptyToUndefined, z.string().optional()),
+  TELEGRAM_CHAT_ID: z.preprocess(emptyToUndefined, z.string().optional()),
+
   GOOGLE_CLIENT_ID: z.preprocess(emptyToUndefined, z.string().optional()),
   GOOGLE_CLIENT_SECRET: z.preprocess(emptyToUndefined, z.string().optional()),
 });

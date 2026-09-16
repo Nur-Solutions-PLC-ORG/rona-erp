@@ -3,6 +3,7 @@ import {
   index,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -77,3 +78,17 @@ export const usersRelations = relations(users, ({ one }) => ({
     references: [organizations.id],
   }),
 }));
+
+export const authCodes = pgTable(
+  'auth_codes',
+  {
+    email: text('email').notNull(),
+    purpose: text('purpose').notNull(),
+    code: text('code').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.email, table.purpose] })],
+);
