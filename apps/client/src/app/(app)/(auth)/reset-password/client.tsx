@@ -55,7 +55,7 @@ const Client = () => {
     <div className="space-y-6">
       <AuthHeading
         title="Reset password"
-        description="A reset code was sent to your email. Enter it below along with a new password."
+        description="A reset code was sent to your Telegram and email. Enter it below along with a new password."
       />
       <form
         onSubmit={form.handleSubmit(onSubmit)}
@@ -91,7 +91,9 @@ const Client = () => {
               label="Reset code"
               htmlFor="token-input"
               error={
-                fieldState.invalid ? "Enter the code from your email" : undefined
+                fieldState.invalid
+                  ? "Enter the code from your Telegram or email"
+                  : undefined
               }
             >
               <OTP {...field} length={CODE_LENGTH} />

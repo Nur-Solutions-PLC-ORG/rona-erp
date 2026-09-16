@@ -98,8 +98,8 @@ const Client = () => {
   return (
     <div className="space-y-6">
       <AuthHeading
-        title="Forgot password"
-        description="Enter your email and a reset code will be sent to your email."
+        title="Verify with Telegram"
+        description="Enter your email, then tap the button below. Open the bot in Telegram, press Start, and your verification code will be sent to that chat."
       />
       <form
         onSubmit={form.handleSubmit(onSubmit)}
@@ -129,7 +129,9 @@ const Client = () => {
           disabled={forgotPasswordMutation.isPending}
           className={AUTH_PRIMARY_BUTTON}
         >
-          {forgotPasswordMutation.isPending ? "Sending..." : "Send reset token"}
+          {forgotPasswordMutation.isPending
+            ? "Sending..."
+            : "Get verification code from Telegram"}
         </button>
       </form>
       <Link href={CLIENT_AUTH_SIGNIN_PAGE} className={AUTH_OUTLINE_BUTTON}>
