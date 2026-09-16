@@ -1,90 +1,157 @@
 "use client";
 
-import { ApiPostForgotPassword } from "@/api";
+import { ApiPostForgotPassword, ApiPostResetPassword } from "@/api";
 import {
   AuthField,
   AuthHeading,
+  AuthPasswordInput,
   AUTH_INPUT,
   AUTH_OUTLINE_BUTTON,
   AUTH_PRIMARY_BUTTON,
 } from "@/components/custom/auth-form";
+import OTP from "@/components/custom/otp";
 import { useCreateMutation } from "@/hooks/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  CLIENT_AUTH_RESET_PASSWORD_PAGE,
-  CLIENT_AUTH_SIGNIN_PAGE,
-} from "@rona/routes/auth";
-import { ForgotPasswordSchema } from "@rona/types/auth";
-import { forgotPasswordSchema } from "@rona/validation/auth";
+import { CODE_LENGTH } from "@rona/config/auth";
+import { CLIENT_AUTH_SIGNIN_PAGE } from "@rona/routes/auth";
+import { ForgotPasswordSchema, ResetPasswordSchema } from "@rona/types/auth";
+import { forgotPasswordSchema, resetPasswordSchema } from "@rona/validation/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-const defaultValues: ForgotPasswordSchema = {
+const forgotPasswordDefaultValues: ForgotPasswordSchema = {
   email: "",
 };
 
+const resetPasswordDefaultValues: ResetPasswordSchema = {
+  email: "",
+  token: "",
+  password: "",
+};
+
+type Phase = "request" | "code";
+
 const Client = () => {
   const router = useRouter();
+  const [phase, setPhase] = useState<Phase>("request");
   const [telegramUrl, setTelegramUrl] = useState<string | undefined>();
+
+  const forgotPasswordForm = useForm<ForgotPasswordSchema>({
+    resolver: zodResolver(forgotPasswordSchema),
+    reValidateMode: "onSubmit",
+    defaultValues: forgotPasswordDefaultValues,
+  });
 
   const forgotPasswordMutation = useCreateMutation(
     ApiPostForgotPassword,
     (data) => {
       toast.success(data.message);
       setTelegramUrl(data.data?.telegramUrl);
-
-      if (!data.data?.telegramUrl) {
-        router.push(
-          `${CLIENT_AUTH_RESET_PASSWORD_PAGE}?email=${encodeURIComponent(form.getValues().email)}`,
-        );
-      }
+      setPhase("code");
+      resetPasswordForm.setValue("email", forgotPasswordForm.getValues().email);
     },
     (data) => {
       toast.error(data.message);
     },
   );
 
-  const form = useForm<ForgotPasswordSchema>({
-    resolver: zodResolver(forgotPasswordSchema),
+  const resetPasswordForm = useForm<ResetPasswordSchema>({
+    resolver: zodResolver(resetPasswordSchema),
     reValidateMode: "onSubmit",
-    defaultValues,
+    defaultValues: resetPasswordDefaultValues,
   });
 
-  const onSubmit = (values: ForgotPasswordSchema) => {
+  const resetPasswordMutation = useCreateMutation(
+    ApiPostResetPassword,
+    (data) => {
+      toast.success(data.message);
+      router.push(CLIENT_AUTH_SIGNIN_PAGE);
+    },
+    (data) => {
+      toast.error(data.message);
+    },
+  );
+
+  const onRequestCode = (values: ForgotPasswordSchema) => {
     forgotPasswordMutation.mutate({ body: values });
   };
 
-  const continueToReset = () => {
-    router.push(
-      `${CLIENT_AUTH_RESET_PASSWORD_PAGE}?email=${encodeURIComponent(form.getValues().email)}`,
-    );
+  const onResetPassword = (values: ResetPasswordSchema) => {
+    resetPasswordMutation.mutate({ body: values });
   };
 
-  if (telegramUrl) {
+  if (phase === "code") {
     return (
       <div className="space-y-6">
         <AuthHeading
-          title="Get your verification code from Telegram"
-          description="Tap the button below to open the bot, then press Start in Telegram. Your verification code will be sent to that chat instantly."
+          title="Enter your verification code"
+          description="Open the bot with the button below if you have not done it yet, then press Start. Your code will be verified here along with your new password."
         />
-        <a
-          href={telegramUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={AUTH_PRIMARY_BUTTON}
+        {telegramUrl && (
+          <a
+            href={telegramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={AUTH_PRIMARY_BUTTON}
+          >
+            Get verification code from Telegram
+          </a>
+        )}
+        <form
+          onSubmit={resetPasswordForm.handleSubmit(onResetPassword)}
+          className="flex w-full flex-col space-y-5"
         >
-          Get verification code from Telegram
-        </a>
-        <button
-          type="button"
-          onClick={continueToReset}
-          className={AUTH_OUTLINE_BUTTON}
-        >
-          I have my code — continue
-        </button>
+          <Controller
+            control={resetPasswordForm.control}
+            name="token"
+            render={({ field, fieldState }) => (
+              <AuthField
+                label="Verification code"
+                htmlFor="verify-code-input"
+                error={
+                  fieldState.invalid
+                    ? "Enter the code from your Telegram or email"
+                    : undefined
+                }
+              >
+                <OTP {...field} length={CODE_LENGTH} />
+              </AuthField>
+            )}
+          />
+          <Controller
+            control={resetPasswordForm.control}
+            name="password"
+            render={({ field, fieldState }) => (
+              <AuthField
+                label="New password"
+                htmlFor="password-input"
+                error={
+                  fieldState.invalid
+                    ? "Password does not meet requirements"
+                    : undefined
+                }
+              >
+                <AuthPasswordInput
+                  {...field}
+                  id="password-input"
+                  aria-invalid={fieldState.invalid}
+                />
+              </AuthField>
+            )}
+          />
+          <button
+            type="submit"
+            disabled={resetPasswordMutation.isPending}
+            className={AUTH_PRIMARY_BUTTON}
+          >
+            {resetPasswordMutation.isPending
+              ? "Verifying..."
+              : "Verify and reset password"}
+          </button>
+        </form>
         <p className="text-center text-xs text-muted-foreground">
           A code is also sent to your email as a backup.
         </p>
@@ -102,11 +169,11 @@ const Client = () => {
         description="Enter your email, then tap the button below. Open the bot in Telegram, press Start, and your verification code will be sent to that chat."
       />
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={forgotPasswordForm.handleSubmit(onRequestCode)}
         className="flex w-full flex-col space-y-5"
       >
         <Controller
-          control={form.control}
+          control={forgotPasswordForm.control}
           name="email"
           render={({ field, fieldState }) => (
             <AuthField
