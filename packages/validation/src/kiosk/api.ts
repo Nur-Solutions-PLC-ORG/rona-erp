@@ -44,17 +44,15 @@ export const kioskPunchSchema = z.object({
   eventType: z.enum(ATTENDANCE_EVENT_TYPE_LIST),
 });
 
-export const kioskFacePunchSchema = z.object({
-  eventType: z.enum(ATTENDANCE_EVENT_TYPE_LIST),
-  faceId: z
-    .string()
-    .trim()
-    .uuid("Face ID must be a valid identifier"),
-});
-
 export const faceDescriptorSchema = z
   .array(z.number().finite())
   .length(128, "Face descriptor must contain exactly 128 values");
+
+export const kioskFacePunchSchema = z.object({
+  eventType: z.enum(ATTENDANCE_EVENT_TYPE_LIST),
+  eid: z.string().trim().min(1, "Employee ID is required").max(50),
+  descriptor: faceDescriptorSchema,
+});
 
 export const faceEnrollSchema = z.object({
   descriptor: faceDescriptorSchema,

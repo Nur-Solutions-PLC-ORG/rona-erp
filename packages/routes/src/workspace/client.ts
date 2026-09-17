@@ -12,6 +12,8 @@ export const CLIENT_POSITIONS_PAGE = "/workforce/positions";
 
 export const CLIENT_ATTENDANCE_PAGE = "/workforce/attendance";
 
+export const CLIENT_STAFF_PAGE = "/staff";
+
 export const CLIENT_SHIFTS_PAGE = "/workforce/shifts";
 
 export const CLIENT_KIOSKS_PAGE = "/organization/kiosks";

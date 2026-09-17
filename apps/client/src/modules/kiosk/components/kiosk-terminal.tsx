@@ -14,13 +14,12 @@ import {
 } from "react-icons/hi2";
 import Spinner from "@/components/custom/spinner";
 import {
-  getKioskFaceDescriptors,
   postKioskAttendance,
   postKioskAuthenticate,
   postKioskFaceAttendance,
   postKioskSignOut,
 } from "../api";
-import { authenticateFace, friendlyFaceError } from "../face-api";
+import { captureFace, friendlyFaceError } from "../face-api";
 
 type Screen = "setup" | "idle" | "success";
 
@@ -80,6 +79,10 @@ const EVENT_ORDER: AttendanceEventType[] = [
 const KIOSK_INPUT_CLASS =
   "w-full rounded-xl bg-white border border-slate-300 px-6 py-5 text-2xl text-center font-mono tracking-widest text-slate-900 placeholder:font-sans placeholder:tracking-normal placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 transition-colors";
 
+function scanExpired(expiresAt: number): boolean {
+  return expiresAt <= Date.now();
+}
+
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], {
     hour: "2-digit",
@@ -104,7 +107,15 @@ export default function KioskTerminal() {
   const [deviceToken, setDeviceToken] = useState("");
   const [eid, setEid] = useState("");
   const [passcode, setPasscode] = useState("");
-  const [faceToken, setFaceToken] = useState<string | null>(null);
+  const [faceScan, setFaceScan] = useState<{
+    eid: string;
+    descriptor: number[];
+    expiresAt: number;
+  } | null>(null);
+  const scanRef = useRef<typeof faceScan>(null);
+  const captureController = useRef<AbortController | null>(null);
+  const punchPending = useRef(false);
+  const scanTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [faceScanning, setFaceScanning] = useState(false);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState<{
@@ -130,6 +141,22 @@ export default function KioskTerminal() {
     setResetIn(null);
   }, []);
 
+  const clearFaceScan = useCallback(() => {
+    captureController.current?.abort();
+    captureController.current = null;
+    if (scanTimer.current) clearTimeout(scanTimer.current);
+    scanTimer.current = null;
+    scanRef.current = null;
+    setFaceScan(null);
+    setFaceScanning(false);
+  }, []);
+
+  useEffect(() => () => {
+    captureController.current?.abort();
+    if (scanTimer.current) clearTimeout(scanTimer.current);
+    scanRef.current = null;
+  }, []);
+
   const scheduleIdleReset = useCallback(() => {
     if (resetTimer.current) clearTimeout(resetTimer.current);
     setResetIn(IDLE_RESET_SECONDS);
@@ -138,10 +165,10 @@ export default function KioskTerminal() {
       setResetIn(null);
       setEid("");
       setPasscode("");
-      setFaceToken(null);
+      clearFaceScan();
       setScreen("idle");
     }, 1000 * IDLE_RESET_SECONDS);
-  }, []);
+  }, [clearFaceScan]);
 
   useEffect(() => {
     if (resetIn === null || resetIn <= 0) return;
@@ -177,14 +204,24 @@ export default function KioskTerminal() {
   };
 
   const handlePunch = async (eventType: AttendanceEventType) => {
-    if (busy) return;
+    if (busy || screen !== "idle" || faceScanning || captureController.current || punchPending.current || !eid.trim()) return;
+    const scan = scanRef.current;
+    if (scan && (scan.eid !== eid.trim() || scanExpired(scan.expiresAt))) {
+      clearFaceScan();
+      setMessage("Face scan expired or employee ID changed. Capture a new scan.");
+      return;
+    }
+    if (!scan && !passcode.trim()) return;
+    punchPending.current = true;
+    clearFaceScan();
     setBusy(true);
     setMessage("");
     try {
-      const response = faceToken
+      const response = scan
         ? await postKioskFaceAttendance({
             eventType,
-            faceId: faceToken,
+            eid: scan.eid,
+            descriptor: scan.descriptor,
           })
         : await postKioskAttendance({
             eid: eid.trim(),
@@ -206,76 +243,84 @@ export default function KioskTerminal() {
     } catch (error) {
       const status = (error as { response?: { status?: number } }).response
         ?.status;
-      if (status === 401) {
+      const apiMessage = (
+        error as { response?: { data?: { message?: string } } }
+      ).response?.data?.message;
+      const faceMismatch = Boolean(scan && typeof apiMessage === "string" && /face|match|recogniz/i.test(apiMessage));
+      if (status === 401 && !faceMismatch) {
         clearResetTimer();
         setScreen("setup");
         setDeviceToken("");
+        setEid("");
         setMessage("Kiosk session ended. Please re-enter the device credential.");
       } else if (status === 429) {
         setMessage("Too many attempts. Please try again in a few minutes.");
       } else {
-        const apiMessage = (
-          error as { response?: { data?: { message?: string } } }
-        ).response?.data?.message;
         setMessage(apiMessage ?? "Something went wrong. Please try again.");
-        setPasscode("");
       }
     } finally {
+      setPasscode("");
+      punchPending.current = false;
       setBusy(false);
     }
   };
 
-  const handleFaceSignIn = async () => {
-    if (busy || faceScanning) return;
-    setBusy(true);
+  const handleFaceCapture = async () => {
+    if (busy || captureController.current || punchPending.current || !eid.trim()) return;
+    clearFaceScan();
+    const controller = new AbortController();
+    const capturedEid = eid.trim();
+    captureController.current = controller;
     setFaceScanning(true);
-    setMessage("Looking for your face…");
+    setPasscode("");
+    setMessage("");
     try {
-      const response = await getKioskFaceDescriptors();
-      if (!response.success || !response.data) {
-        throw new Error("DESCRIPTORS_UNAVAILABLE");
-      }
-      const faceId = await authenticateFace(
-        response.data.faces.map((face) => ({
-          id: face.id,
-          descriptor: face.descriptor,
-        })),
-      );
-      setFaceToken(faceId);
-      setPasscode("");
-      setMessage("Face recognized. Choose an action.");
+      const descriptor = await captureFace(controller.signal);
+      if (controller.signal.aborted || captureController.current !== controller) return;
+      const scan = { eid: capturedEid, descriptor, expiresAt: Date.now() + 30000 };
+      scanRef.current = scan;
+      setFaceScan(scan);
+      setMessage("Face captured, not verified. Choose an action within 30 seconds for server matching.");
+      scanTimer.current = setTimeout(() => {
+        clearFaceScan();
+        setMessage("Face scan expired. Capture a new scan or use your passcode.");
+      }, 30000);
     } catch (error) {
-      if (error instanceof Error && error.message === "DESCRIPTORS_UNAVAILABLE") {
-        setMessage("Could not load enrolled faces. Check the kiosk connection.");
-      } else {
+      if (!controller.signal.aborted) {
+        clearFaceScan();
         setMessage(friendlyFaceError(error));
       }
     } finally {
-      setFaceScanning(false);
-      setBusy(false);
+      if (captureController.current === controller) {
+        captureController.current = null;
+        setFaceScanning(false);
+      }
     }
   };
 
   const handleSignOut = async () => {
+    if (busy || punchPending.current) return;
+    setBusy(true);
+    clearFaceScan();
+    clearResetTimer();
     try {
       await postKioskSignOut();
     } catch {
     }
-    clearResetTimer();
     setOrganizationName("");
     setKioskName("");
     setDeviceToken("");
     setEid("");
     setPasscode("");
-    setFaceToken(null);
     setSuccess(null);
     setMessage("");
     setScreen("setup");
+    setBusy(false);
   };
 
   const canPunch =
-    ((eid.trim().length > 0 && passcode.trim().length > 0) || faceToken !== null) &&
-    !busy;
+    eid.trim().length > 0 && (passcode.trim().length > 0 || faceScan !== null) &&
+    !busy && !faceScanning;
 
   return (
     <div className="min-h-screen flex flex-col select-none bg-slate-100 text-slate-900">
@@ -320,6 +365,7 @@ export default function KioskTerminal() {
             <button
               type="button"
               onClick={handleSignOut}
+              disabled={busy}
               className="rounded-lg px-4 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
             >
               End session
@@ -399,7 +445,14 @@ export default function KioskTerminal() {
                     type="text"
                     inputMode="numeric"
                     value={eid}
-                    onChange={(event) => setEid(event.target.value)}
+                    disabled={busy}
+                    maxLength={50}
+                    onChange={(event) => {
+                      clearFaceScan();
+                      setEid(event.target.value);
+                      setPasscode("");
+                      setMessage("");
+                    }}
                     placeholder="00000"
                     autoComplete="off"
                     className={KIOSK_INPUT_CLASS}
@@ -417,7 +470,12 @@ export default function KioskTerminal() {
                     type="password"
                     inputMode="numeric"
                     value={passcode}
-                    onChange={(event) => setPasscode(event.target.value)}
+                    disabled={busy || faceScanning}
+                    onChange={(event) => {
+                      clearFaceScan();
+                      setPasscode(event.target.value);
+                      setMessage("");
+                    }}
                     placeholder="•••••"
                     autoComplete="off"
                     className={KIOSK_INPUT_CLASS}
@@ -431,9 +489,9 @@ export default function KioskTerminal() {
                 </p>
               ) : (
                 <p className="text-center text-sm text-slate-400">
-                  {faceToken
-                    ? "Face recognized. Choose an action to record attendance."
-                    : "Enter your employee ID and passcode, or sign in with your face, then choose an action."}
+                  {faceScan
+                    ? "Face captured — not verified. Choose an action to record attendance."
+                    : "Enter your employee ID, then use a passcode or capture your face and choose an action."}
                 </p>
               )}
 
@@ -449,8 +507,8 @@ export default function KioskTerminal() {
                 <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
                   <button
                     type="button"
-                    onClick={handleFaceSignIn}
-                    disabled={busy || faceScanning || faceToken !== null}
+                    onClick={handleFaceCapture}
+                    disabled={busy || faceScanning || faceScan !== null || !eid.trim()}
                     className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white px-6 py-4 text-lg font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:pointer-events-none disabled:opacity-50"
                   >
                     {faceScanning ? (
@@ -458,23 +516,23 @@ export default function KioskTerminal() {
                         <Spinner className="h-5 w-5" />
                         Scanning…
                       </>
-                    ) : faceToken ? (
+                    ) : faceScan ? (
                       <>
                         <HiOutlineFaceSmile className="h-6 w-6 text-emerald-600" />
-                        Face recognized
+                        Face captured — not verified
                       </>
                     ) : (
                       <>
                         <HiOutlineFaceSmile className="h-6 w-6" />
-                        Sign in with Face
+                         Capture face
                       </>
                     )}
                   </button>
-                  {faceToken ? (
+                  {faceScan ? (
                     <button
                       type="button"
                       onClick={() => {
-                        setFaceToken(null);
+                        clearFaceScan();
                         setMessage("");
                       }}
                       className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-800"

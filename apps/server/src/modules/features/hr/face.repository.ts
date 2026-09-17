@@ -1,6 +1,6 @@
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { Injectable } from '@nestjs/common';
-import { db, pooledDb } from '@/db';
+import { db } from '@/db';
 import type { Executor } from '@/db/executor';
 import { employees } from '@/db/schemas/admin';
 import { employeeFaces } from '@/db/schemas/kiosk';
@@ -21,22 +21,7 @@ export class FaceRepository extends TenantScopedRepository {
       .orderBy(desc(employeeFaces.enrolledAt));
   }
 
-  async getById(faceId: string, employeeId: string) {
-    const [row] = await db
-      .select()
-      .from(employeeFaces)
-      .where(
-        this.tenantScope(
-          employeeFaces,
-          eq(employeeFaces.id, faceId),
-          eq(employeeFaces.employeeId, employeeId),
-        ),
-      )
-      .limit(1);
-    return row;
-  }
-
-  async findActiveById(faceId: string) {
+  async findActiveForEmployee(organizationId: string, employeeId: string) {
     const [row] = await db
       .select({
         id: employeeFaces.id,
@@ -60,28 +45,14 @@ export class FaceRepository extends TenantScopedRepository {
       )
       .where(
         and(
-          eq(employeeFaces.id, faceId),
+          eq(employeeFaces.organizationId, organizationId),
+          eq(employeeFaces.employeeId, employeeId),
           isNull(employeeFaces.revokedAt),
         ),
       )
       .orderBy(desc(employeeFaces.enrolledAt))
       .limit(1);
     return row;
-  }
-
-  async listDescriptorsByOrganization(organizationId: string) {
-    return db
-      .select({
-        id: employeeFaces.id,
-        descriptor: employeeFaces.descriptor,
-      })
-      .from(employeeFaces)
-      .where(
-        and(
-          eq(employeeFaces.organizationId, organizationId),
-          isNull(employeeFaces.revokedAt),
-        ),
-      );
   }
 
   async insertEnrollment(
@@ -97,40 +68,29 @@ export class FaceRepository extends TenantScopedRepository {
   }
 
   async revokeExisting(employeeId: string, tx: Executor) {
-    await tx
+    return tx
       .update(employeeFaces)
       .set({ revokedAt: new Date() })
       .where(
         and(
           eq(employeeFaces.organizationId, this.organizationId),
-          eq(employeeFaces.employeeId, employeeId),
-          isNull(employeeFaces.revokedAt),
-        ),
-      );
-  }
-
-  async revoke(faceId: string, employeeId: string, tx: Executor) {
-    const [row] = await tx
-      .update(employeeFaces)
-      .set({ revokedAt: new Date() })
-      .where(
-        and(
-          eq(employeeFaces.organizationId, this.organizationId),
-          eq(employeeFaces.id, faceId),
           eq(employeeFaces.employeeId, employeeId),
           isNull(employeeFaces.revokedAt),
         ),
       )
       .returning();
-    return row;
   }
 
-  async markUsed(faceId: string) {
+  async markUsed(organizationId: string, faceId: string) {
     await db
       .update(employeeFaces)
       .set({ lastUsedAt: new Date() })
       .where(
-        and(eq(employeeFaces.id, faceId), isNull(employeeFaces.revokedAt)),
+        and(
+          eq(employeeFaces.organizationId, organizationId),
+          eq(employeeFaces.id, faceId),
+          isNull(employeeFaces.revokedAt),
+        ),
       );
   }
 }

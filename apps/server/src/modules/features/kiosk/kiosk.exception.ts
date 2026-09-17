@@ -63,9 +63,6 @@ export class KioskInvalidPasscodeException extends ApiException {
 
 export class KioskFaceNotRecognizedException extends ApiException {
   constructor() {
-    super(
-      HttpStatus.UNAUTHORIZED,
-      'Face not recognized. Please stand in front of the camera and try again.',
-    );
+    super(HttpStatus.BAD_REQUEST, 'Face does not match EID.');
   }
 }

@@ -1,5 +1,3 @@
-// Shared test
-
 import { runWithRequestContext } from '@/context/request-context';
 import { pooledDb } from '@/db';
 import { rateLimit } from '@/redis';
@@ -22,8 +20,9 @@ export const DEVICE_ID = 'KSK-TEST001';
 export const EVENT_AT = new Date('2026-09-02T09:00:00Z');
 export const ENROLLED_AT = new Date('2026-09-01T08:00:00Z');
 
-export const DESCRIPTOR = Array.from({ length: 128 }, (_, index) =>
-  index / 128,
+export const DESCRIPTOR = Array.from(
+  { length: 128 },
+  (_, index) => index / 128,
 );
 
 export const DEVICE = {
@@ -34,6 +33,7 @@ export const DEVICE = {
 
 export const EMPLOYEE = {
   id: EMPLOYEE_ID,
+  userId: USER_A,
   organizationId: ORG_A,
   eid: '10001',
   fullName: 'Dawit Haile',
@@ -59,27 +59,25 @@ export const FACE_MATCH = {
 };
 
 export const repoList = jest.fn();
-export const repoGetById = jest.fn();
-export const repoFindActiveById = jest.fn();
-export const repoListDescriptorsByOrganization = jest.fn();
+export const repoFindActiveForEmployee = jest.fn();
 export const repoInsertEnrollment = jest.fn();
 export const repoRevokeExisting = jest.fn();
-export const repoRevoke = jest.fn();
 export const repoMarkUsed = jest.fn();
 export const faceRepository = {
   list: repoList,
-  getById: repoGetById,
-  findActiveById: repoFindActiveById,
-  listDescriptorsByOrganization: repoListDescriptorsByOrganization,
+  findActiveForEmployee: repoFindActiveForEmployee,
   insertEnrollment: repoInsertEnrollment,
   revokeExisting: repoRevokeExisting,
-  revoke: repoRevoke,
   markUsed: repoMarkUsed,
 } as unknown as FaceRepository;
 
-export const empFindById = jest.fn();
+export const empFindByUserId = jest.fn();
+export const empFindByEid = jest.fn();
+export const empFindByIdForUpdate = jest.fn();
 export const employeesRepository = {
-  findById: empFindById,
+  findByUserId: empFindByUserId,
+  findByEid: empFindByEid,
+  findByIdForUpdate: empFindByIdForUpdate,
 } as unknown as EmployeesRepository;
 
 export const punchKiosk = jest.fn();
@@ -107,13 +105,13 @@ export function setupTransactionMock(): void {
 }
 
 export function defaultMocks(): void {
-  empFindById.mockResolvedValue(EMPLOYEE);
+  empFindByUserId.mockResolvedValue(EMPLOYEE);
+  empFindByEid.mockResolvedValue(EMPLOYEE);
+  empFindByIdForUpdate.mockResolvedValue(EMPLOYEE);
   repoList.mockResolvedValue([]);
-  repoFindActiveById.mockResolvedValue(null);
-  repoListDescriptorsByOrganization.mockResolvedValue([]);
+  repoFindActiveForEmployee.mockResolvedValue(FACE_MATCH);
   repoInsertEnrollment.mockResolvedValue(FACE_ROW);
-  repoRevokeExisting.mockResolvedValue(undefined);
-  repoRevoke.mockResolvedValue(FACE_ROW);
+  repoRevokeExisting.mockResolvedValue([{ ...FACE_ROW, revokedAt: EVENT_AT }]);
   repoMarkUsed.mockResolvedValue(undefined);
   punchKiosk.mockResolvedValue({
     id: 'event-1',
@@ -133,8 +131,8 @@ export async function runInOrganizationA<T>(
       userId: USER_A,
       organizationId: ORG_A,
       membershipId: MEMBERSHIP_A,
-      roles: ['HR_MANAGER'],
-      permissions: ['hr.employee.update'],
+      roles: ['EMPLOYEE'],
+      permissions: ['hr.attendance.clock'],
     },
     callback,
   );

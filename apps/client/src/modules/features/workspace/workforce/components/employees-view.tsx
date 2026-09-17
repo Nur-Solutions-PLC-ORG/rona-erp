@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import {
   HiOutlineArchiveBox,
   HiOutlineArrowPath,
-  HiOutlineFaceSmile,
   HiOutlinePencilSquare,
   HiOutlineUserPlus,
   HiOutlineUsers,
@@ -49,7 +48,6 @@ import {
   useRestoreEmployee,
   useUpdateEmployee,
 } from "../hooks";
-import EmployeeFaceModal from "./employee-face-modal";
 
 const EMPTY_FORM = {
   eId: "",
@@ -80,7 +78,6 @@ export default function EmployeesView() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
-  const [faceEmployee, setFaceEmployee] = useState<Employee | null>(null);
 
   const { employees, meta, isLoading } = useEmployees(page, {
     status: statusFilter || undefined,
@@ -244,11 +241,6 @@ export default function EmployeesView() {
                     label: "Edit",
                     icon: <HiOutlinePencilSquare className="h-3.5 w-3.5" />,
                     onClick: () => openEdit(row),
-                  },
-                  {
-                    label: "Face ID",
-                    icon: <HiOutlineFaceSmile className="h-3.5 w-3.5" />,
-                    onClick: () => setFaceEmployee(row),
                   },
                 ]
               : []),
@@ -509,10 +501,6 @@ export default function EmployeesView() {
         />
       </FormModal>
     </div>
-    <EmployeeFaceModal
-      employee={faceEmployee}
-      onClose={() => setFaceEmployee(null)}
-    />
     </>
   );
 }

@@ -71,12 +71,3 @@ export interface EmployeeFaceEnrollResult {
 export interface EmployeeFaceRevokeResult {
   face: EmployeeFaceMetadata | null;
 }
-
-export interface KioskFaceDescriptorItem {
-  id: string;
-  descriptor: number[];
-}
-
-export interface KioskFaceDescriptorsResult {
-  faces: KioskFaceDescriptorItem[];
-}

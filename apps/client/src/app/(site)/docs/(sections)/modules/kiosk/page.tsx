@@ -24,7 +24,7 @@ export default function KioskPage() {
       <DocHeader
         eyebrow="Core Modules / 08"
         title="Kiosk"
-        lede="The Kiosk turns any tablet or shared device into a secure attendance terminal. Employees clock in, start breaks, end breaks, and clock out with their employee ID and a short passcode — or with a face scan — no personal login required."
+        lede="The Kiosk turns any tablet or shared device into a secure attendance terminal. Employees clock in, start breaks, end breaks, and clock out with their employee ID plus a short passcode or a fresh face scan — no personal login required at the terminal."
         tags={["ATTENDANCE", "SHARED DEVICE", "FACE RECOGNITION"]}
       />
 
@@ -35,7 +35,7 @@ export default function KioskPage() {
               "Dedicated terminal that runs without a user session",
               "One-time device credential ties the tablet to your organization",
               "Employee ID plus a short numeric passcode",
-              "Optional face sign-in (face-api.js, runs entirely on the device)",
+              "Optional EID plus face capture with server-side matching",
               "Clock in, clock out, break start, and break end",
               "Large touch-friendly actions for shop-floor tablets",
               "Success screen with automatic reset for the next employee",
@@ -56,11 +56,11 @@ export default function KioskPage() {
             },
             {
               title: "Activate the terminal",
-              body: "Open the kiosk terminal on the tablet and enter the device credential once. The device stays signed in until it is deactivated.",
+              body: "Open the kiosk terminal on the tablet and enter the device credential. The device remains signed in until its session expires, is ended, or the kiosk is deactivated.",
             },
             {
               title: "Employee identifies themselves",
-              body: "On the idle screen the employee enters their employee ID and five-digit passcode, or taps “Sign in with Face” and looks at the camera.",
+              body: "On the idle screen the employee enters their EID, then either a five-digit passcode or selects Capture face and uses the camera preview. Capture alone is not verification.",
             },
             {
               title: "Choose an attendance action",
@@ -115,16 +115,18 @@ export default function KioskPage() {
 
       <Section title="Face sign-in">
         <P>
-          Instead of typing an employee ID and passcode, an employee can tap{" "}
-          <strong>Sign in with Face</strong>. The terminal captures a face and
-          produces a recognition descriptor using face-api.js, which runs
-          entirely in the browser with models bundled into the app — no
-          third-party cloud service and no photos are ever uploaded. The
-          descriptor is matched against the organization’s enrolled employees,
-          and the punch is recorded the same way as a passcode punch — the
-          terminal never holds employee credentials. Each scan is a fresh
-          authentication; there are no stored kiosk sessions or shared face
-          tokens.
+          Enter your employee ID, then select <strong>Capture face</strong> as
+          an alternative to a passcode. A visible camera preview lets you position
+          your face and capture or cancel. face-api.js computes a numeric descriptor
+          locally; camera frames are not uploaded. Capture does not verify identity.
+          When you choose an attendance action, the terminal sends your EID,
+          descriptor, and event type to the server. The server matches against that
+          employee’s active enrollment in the kiosk organization before recording
+          attendance. Enrolled descriptors are never downloaded to the kiosk.
+          The pending scan expires after 30 seconds and is cleared when the EID
+          changes or a punch is attempted, whether it succeeds or fails. Each
+          subsequent face punch requires a fresh scan. Device sessions are separate
+          from face matching; a face mismatch does not end the device session.
         </P>
         <FieldTable
           label="Enrollment"
@@ -132,7 +134,7 @@ export default function KioskPage() {
             {
               field: "Enroll",
               description:
-                "An HR administrator opens the employee’s Face ID panel from the Employees list and scans the employee’s face once to capture a descriptor.",
+                "Sign in to your own account and open /staff with hr.attendance.clock permission. Review the biometric notice, consent, and capture your own face for your linked employee in the current organization.",
             },
             {
               field: "One active face",
@@ -142,12 +144,12 @@ export default function KioskPage() {
             {
               field: "Revoke",
               description:
-                "An enrolled face can be revoked at any time, which immediately removes that descriptor from kiosk matching.",
+                "Staff can revoke their own active enrollment in /staff at any time, disabling it for subsequent server matches.",
             },
             {
               field: "Privacy",
               description:
-                "Only the 128-value numeric descriptor is stored. Camera frames stay on the device and are discarded after each scan.",
+                "The 128-value descriptor is sensitive biometric data sent to the server for storage and matching, with consent. Camera frames stay in the browser. Ask your organization about retention, access and deletion; revocation disables matching, not necessarily record retention.",
             },
           ]}
         />
@@ -156,9 +158,9 @@ export default function KioskPage() {
           twins, and is not a guarantee of identity. Accuracy also depends on
           lighting and camera quality. Treat face sign-in as a convenience
           layer, keep passcodes available, and use it where the terminal can
-          be supervised. New employees cannot be recognized until an
-          administrator has enrolled their face and the kiosk has reloaded the
-          enrollment list.
+          be supervised. There is no liveness guarantee. Employees must register
+          their own face in /staff before using it; no kiosk enrollment-list reload
+          is needed because matching happens on the server.
         </Callout>
       </Section>
 
@@ -194,7 +196,7 @@ export default function KioskPage() {
             items={[
               "Employees never need a personal login on the shared device",
               "Each punch requires the employee ID and a five-digit passcode (or a face scan)",
-              "Every face scan is matched against the enrolled face descriptors on the device",
+              "The server matches each EID and fresh descriptor against that employee’s active enrollment; kiosks never download enrolled descriptors",
               "Enrolled faces can be revoked per employee at any time",
               "Authentication attempts and punches are rate limited",
               "Device sessions expire and can be revoked by deactivating the kiosk",

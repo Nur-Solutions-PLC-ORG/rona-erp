@@ -2,9 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   HttpStatus,
-  Param,
-  ParseUUIDPipe,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -23,28 +22,24 @@ import { PermissionGuard } from '@/modules/rbac/permission.guard';
 import { RequirePermissions } from '@/modules/rbac/require-permissions.decorator';
 import { FaceService } from './face.service';
 
-@Controller('employees/:employeeId/faces')
+@Controller('faces')
 @UseGuards(AuthGuard, TenantGuard, PermissionGuard)
+@RequirePermissions('hr.attendance.clock')
 export class EmployeeFacesController {
   constructor(private readonly faceService: FaceService) {}
 
   @Get()
-  @RequirePermissions('hr.employee.update')
-  async listFaces(
-    @Param('employeeId', ParseUUIDPipe) employeeId: string,
-  ): Promise<ApiResponse<EmployeeFacesResult>> {
+  async listFaces(): Promise<ApiResponse<EmployeeFacesResult>> {
     return {
       success: true,
       statusCode: HttpStatus.OK,
       message: 'Face enrollments retrieved successfully.',
-      data: await this.faceService.listFaces(employeeId),
+      data: await this.faceService.listFaces(),
     };
   }
 
-  @Post()
-  @RequirePermissions('hr.employee.update')
+  @Post('enroll')
   async enrollFace(
-    @Param('employeeId', ParseUUIDPipe) employeeId: string,
     @Body(new ZodValidationPipe(faceEnrollSchema))
     body: FaceEnrollInput,
   ): Promise<ApiResponse<EmployeeFaceEnrollResult>> {
@@ -52,21 +47,18 @@ export class EmployeeFacesController {
       success: true,
       statusCode: HttpStatus.CREATED,
       message: 'Face enrolled successfully.',
-      data: await this.faceService.enrollFace(employeeId, body),
+      data: await this.faceService.enrollFace(body),
     };
   }
 
-  @Post(':faceId/revoke')
-  @RequirePermissions('hr.employee.update')
-  async revokeFace(
-    @Param('employeeId', ParseUUIDPipe) employeeId: string,
-    @Param('faceId', ParseUUIDPipe) faceId: string,
-  ): Promise<ApiResponse<EmployeeFaceRevokeResult>> {
+  @Post('revoke')
+  @HttpCode(HttpStatus.OK)
+  async revokeFace(): Promise<ApiResponse<EmployeeFaceRevokeResult>> {
     return {
       success: true,
       statusCode: HttpStatus.OK,
       message: 'Face revoked successfully.',
-      data: await this.faceService.revokeFace(employeeId, faceId),
+      data: await this.faceService.revokeFace(),
     };
   }
 }

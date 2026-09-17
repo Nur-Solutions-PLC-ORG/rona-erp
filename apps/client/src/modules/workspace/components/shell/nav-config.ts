@@ -26,6 +26,7 @@ import {
   CLIENT_SALES_COMMISSIONS_PAGE,
   CLIENT_SALES_ORDERS_PAGE,
   CLIENT_SHIFTS_PAGE,
+  CLIENT_STAFF_PAGE,
   CLIENT_STOCK_PAGE,
   CLIENT_TRACEABILITY_PAGE,
   CLIENT_WAREHOUSES_PAGE,
@@ -148,6 +149,11 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Workforce",
     items: [
+      {
+        label: "Staff settings",
+        href: CLIENT_STAFF_PAGE,
+        permission: "hr.attendance.clock",
+      },
       {
         label: "Employees",
         href: CLIENT_EMPLOYEES_PAGE,

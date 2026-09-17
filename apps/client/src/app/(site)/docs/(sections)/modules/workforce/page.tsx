@@ -69,11 +69,12 @@ export default function WorkforcePage() {
           ]}
         />
         <Callout tone="info" title="Face enrollment" icon={Monitor}>
-          Under each employee’s <strong>Face ID</strong> action an
-          administrator can scan and enroll the employee’s face once, revoke
-          it, or replace it. Only one active face is kept per employee. Enrolled
-          employees can then sign in on kiosk terminals without a passcode. See
-          the{" "}
+          Staff sign in to their own account and open <strong>/staff</strong>
+          {" "}with <strong>hr.attendance.clock</strong> permission to enroll,
+          replace, or revoke their own face for their linked employee in the
+          current organization. HR no longer enrolls faces from the Employees list.
+          Only one active face is kept per employee. At the kiosk, enter your EID
+          and capture a fresh face scan for server matching instead of a passcode. See the{" "}
           <Link
             href="/docs/modules/kiosk"
             className="font-semibold text-[#581c87] underline underline-offset-4"
@@ -82,6 +83,15 @@ export default function WorkforcePage() {
           </Link>{" "}
           for how face sign-in works on the terminal.
         </Callout>
+        <P>
+          Enrollment requires your consent to biometric processing. Numeric face
+          descriptors are sensitive biometric data sent to the server for storage
+          and attendance matching; camera frames remain in the browser. Ask your
+          organization about access, retention and deletion. Revocation disables
+          matching but does not promise deletion of retained records. Face capture
+          has no liveness guarantee and can be fooled by photos or videos. Use the
+          passcode alternative if you do not consent.
+        </P>
       </Section>
 
       <Section title="Departments">
@@ -241,7 +251,7 @@ export default function WorkforcePage() {
       <Section title="Kiosk mode">
         <Callout tone="info" title="Shared-device attendance" icon={Monitor}>
           Employees can check in and out from a shared device using their
-          employee ID and a short passcode — or a face scan — through a large,
+          employee ID plus a short passcode or a fresh face scan — through a large,
           touch-friendly interface that also supports break start and break
           end. See the{" "}
           <Link

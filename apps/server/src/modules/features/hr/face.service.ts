@@ -1,15 +1,31 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { pooledDb } from '@/db';
-import { patchRequestContext } from '@/context/request-context';
+import {
+  getRequestContext,
+  runWithRequestContext,
+} from '@/context/request-context';
+import { generateRequestId } from '@/logger';
 import { rateLimit } from '@/redis';
-import { KIOSK_PUNCH_ATTEMPT_LIMIT, KIOSK_PUNCH_WINDOW_SECONDS } from '@rona/config/kiosk';
+import {
+  KIOSK_PUNCH_ATTEMPT_LIMIT,
+  KIOSK_PUNCH_WINDOW_SECONDS,
+} from '@rona/config/kiosk';
+import {
+  faceDescriptorSchema,
+  kioskFacePunchSchema,
+} from '@rona/validation/kiosk';
 import type {
   EmployeeFaceEnrollResult,
   EmployeeFaceMetadata,
   EmployeeFaceRevokeResult,
   EmployeeFacesResult,
   FaceEnrollInput,
-  KioskFaceDescriptorsResult,
   KioskFacePunchInput,
   KioskPunchResult,
 } from '@rona/types/kiosk';
@@ -20,8 +36,7 @@ import { EmployeesRepository } from './employees.repository';
 import { FaceRepository } from './face.repository';
 import {
   EmployeeArchivedException,
-  EmployeeFaceNotFoundException,
-  EmployeeNotFoundException,
+  EmployeeSelfNotFoundException,
 } from './hr.exception';
 import {
   KioskEmployeeInactiveException,
@@ -41,48 +56,39 @@ export class FaceService {
     private readonly auditService: AuditService,
   ) {}
 
-  async listFaces(employeeId: string): Promise<EmployeeFacesResult> {
-    await this.requireActiveEmployee(employeeId);
-    const rows = await this.faceRepository.list(employeeId);
+  async listFaces(): Promise<EmployeeFacesResult> {
+    const employee = await this.requireSelfEmployee();
+    const rows = await this.faceRepository.list(employee.id);
     return { faces: rows.map((row) => this.toMetadata(row)) };
   }
 
-  async listKioskDescriptors(
-    organizationId: string,
-  ): Promise<KioskFaceDescriptorsResult> {
-    const rows = await this.faceRepository.listDescriptorsByOrganization(
-      organizationId,
-    );
-    return {
-      faces: rows
-        .map((row) => ({
-          id: row.id,
-          descriptor: this.parseDescriptor(row.descriptor),
-        }))
-        .filter(
-          (
-            face,
-          ): face is { id: string; descriptor: number[] } =>
-            face.descriptor.length === 128,
-        ),
-    };
-  }
-
-  async enrollFace(
-    employeeId: string,
-    input: FaceEnrollInput,
-  ): Promise<EmployeeFaceEnrollResult> {
-    await this.requireActiveEmployee(employeeId);
-
+  async enrollFace(input: FaceEnrollInput): Promise<EmployeeFaceEnrollResult> {
+    const employee = await this.requireSelfEmployee();
+    const descriptor = faceDescriptorSchema.safeParse(input?.descriptor);
+    if (!descriptor.success) {
+      throw new BadRequestException('Invalid face descriptor.');
+    }
     const organizationId = this.tenantContext.organizationId;
 
     const face = await pooledDb.transaction(async (tx) => {
-      await this.faceRepository.revokeExisting(employeeId, tx);
+      const locked = await this.employeesRepository.findByIdForUpdate(
+        employee.id,
+        tx,
+      );
+      this.assertSelfEmployee(locked);
+      if (locked.archivedAt) throw new EmployeeArchivedException();
+      if (locked.status !== 'active') {
+        throw new HttpException(
+          'Inactive employees cannot enroll a face.',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+      await this.faceRepository.revokeExisting(employee.id, tx);
       const row = await this.faceRepository.insertEnrollment(
         {
           organizationId,
-          employeeId,
-          descriptor: JSON.stringify(input.descriptor),
+          employeeId: employee.id,
+          descriptor: JSON.stringify(descriptor.data),
         },
         tx,
       );
@@ -92,7 +98,7 @@ export class FaceService {
           action: 'hr.face.enroll',
           entityType: 'employee_face',
           entityId: row.id,
-          after: { employeeId },
+          after: { employeeId: employee.id },
         },
         tx,
       );
@@ -102,105 +108,175 @@ export class FaceService {
     return { face: this.toMetadata(face) };
   }
 
-  async revokeFace(
-    employeeId: string,
-    faceId: string,
-  ): Promise<EmployeeFaceRevokeResult> {
-    await this.requireActiveEmployee(employeeId);
-
+  async revokeFace(): Promise<EmployeeFaceRevokeResult> {
+    const employee = await this.requireSelfEmployee();
     const organizationId = this.tenantContext.organizationId;
 
     const face = await pooledDb.transaction(async (tx) => {
-      const row = await this.faceRepository.revoke(faceId, employeeId, tx);
-      if (!row) throw new EmployeeFaceNotFoundException();
+      const locked = await this.employeesRepository.findByIdForUpdate(
+        employee.id,
+        tx,
+      );
+      this.assertSelfEmployee(locked);
+      const [row] = await this.faceRepository.revokeExisting(employee.id, tx);
+      if (!row) return null;
       await this.auditService.record(
         {
           organizationId,
           action: 'hr.face.revoke',
           entityType: 'employee_face',
-          entityId: faceId,
-          after: { employeeId, faceId },
+          entityId: row.id,
+          after: { employeeId: employee.id, faceId: row.id },
         },
         tx,
       );
       return row;
     });
 
-    return { face: this.toMetadata(face) };
+    return { face: face ? this.toMetadata(face) : null };
   }
 
   async punchKiosk(
     device: KioskDeviceContext,
     input: KioskFacePunchInput,
   ): Promise<KioskPunchResult> {
-    const allowed = await rateLimit(
-      `kiosk:face:attempts:${device.kioskId}`,
-      KIOSK_PUNCH_ATTEMPT_LIMIT,
-      KIOSK_PUNCH_WINDOW_SECONDS,
-    );
-    if (!allowed) {
-      throw new HttpException(
-        'Too many attempts. Please try again later.',
-        HttpStatus.TOO_MANY_REQUESTS,
+    return this.withKioskTenant(device.organizationId, async () => {
+      const allowed = await rateLimit(
+        `kiosk:face:attempts:${device.kioskId}`,
+        KIOSK_PUNCH_ATTEMPT_LIMIT,
+        KIOSK_PUNCH_WINDOW_SECONDS,
       );
-    }
+      if (!allowed) {
+        await this.auditKioskPunch(
+          device.organizationId,
+          device.kioskId,
+          'kiosk.attendance.face_rate_limited',
+          { reason: 'attempt_limit' },
+        );
+        throw new HttpException(
+          'Too many attempts. Please try again later.',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
 
-    const match = await this.faceRepository.findActiveById(input.faceId);
-
-    if (!match || match.organizationId !== device.organizationId) {
-      await this.auditKioskPunch(
-        device.organizationId,
-        device.kioskId,
-        'kiosk.attendance.face_not_recognized',
-        { reason: 'no_active_matching_face' },
+      const parsed = kioskFacePunchSchema.safeParse(input);
+      if (!parsed.success) {
+        await this.rejectKioskFace(device, 'invalid_input');
+        throw new KioskFaceNotRecognizedException();
+      }
+      const employee = await this.employeesRepository.findByEid(
+        parsed.data.eid,
       );
-      throw new KioskFaceNotRecognizedException();
-    }
-
-    if (match.employeeStatus !== 'active' || match.employeeArchivedAt) {
-      await this.auditKioskPunch(
-        device.organizationId,
-        device.kioskId,
-        'kiosk.attendance.employee_inactive',
-        { employeeId: match.employeeId },
+      const match =
+        employee?.organizationId === device.organizationId &&
+        employee.eid === parsed.data.eid
+          ? await this.faceRepository.findActiveForEmployee(
+              device.organizationId,
+              employee.id,
+            )
+          : undefined;
+      const enrolledDescriptor = match
+        ? this.parseDescriptor(match.descriptor)
+        : [];
+      const distanceSquared = enrolledDescriptor.reduce(
+        (sum, value, index) =>
+          sum + (value - parsed.data.descriptor[index]) ** 2,
+        0,
       );
-      throw new KioskEmployeeInactiveException();
-    }
 
-    const event = await this.withKioskTenant(device.organizationId, () =>
-      this.attendanceService.punchKiosk(match.employeeId, input.eventType),
-    );
+      if (
+        !match ||
+        match.organizationId !== device.organizationId ||
+        match.employeeId !== employee?.id ||
+        match.revokedAt !== null ||
+        enrolledDescriptor.length !== 128 ||
+        !Number.isFinite(distanceSquared) ||
+        distanceSquared >= 0.55 ** 2
+      ) {
+        await this.rejectKioskFace(device, 'no_active_matching_face');
+        throw new KioskFaceNotRecognizedException();
+      }
 
-    await this.faceRepository.markUsed(match.id);
+      if (
+        employee?.status !== 'active' ||
+        employee.archivedAt ||
+        match.employeeStatus !== 'active' ||
+        match.employeeArchivedAt
+      ) {
+        await this.auditKioskPunch(
+          device.organizationId,
+          device.kioskId,
+          'kiosk.attendance.employee_inactive',
+          { employeeId: match.employeeId },
+        );
+        throw new KioskEmployeeInactiveException();
+      }
 
-    return {
-      employeeName: match.employeeFullName,
-      eventType: event.eventType,
-      eventAt: event.eventAt.toISOString(),
-    };
+      const event = await this.attendanceService.punchKiosk(
+        match.employeeId,
+        parsed.data.eventType,
+      );
+      await this.faceRepository.markUsed(device.organizationId, match.id);
+
+      return {
+        employeeName: match.employeeFullName,
+        eventType: event.eventType,
+        eventAt: event.eventAt.toISOString(),
+      };
+    });
   }
 
-  private async requireActiveEmployee(employeeId: string) {
-    const employee = await this.employeesRepository.findById(employeeId);
-    if (!employee) throw new EmployeeNotFoundException();
-    if (employee.archivedAt) throw new EmployeeArchivedException();
+  private async requireSelfEmployee() {
+    const employee = await this.employeesRepository.findByUserId(
+      this.tenantContext.userId,
+    );
+    this.assertSelfEmployee(employee);
     return employee;
   }
 
-  private async withKioskTenant<T>(
+  private assertSelfEmployee(
+    employee:
+      Awaited<ReturnType<EmployeesRepository['findByUserId']>> | undefined,
+  ): asserts employee is NonNullable<typeof employee> {
+    if (
+      !employee ||
+      employee.organizationId !== this.tenantContext.organizationId ||
+      employee.userId !== this.tenantContext.userId
+    ) {
+      throw new EmployeeSelfNotFoundException();
+    }
+  }
+
+  private withKioskTenant<T>(
     organizationId: string,
     callback: () => Promise<T>,
   ): Promise<T> {
-    patchRequestContext({ organizationId });
-    try {
-      return await callback();
-    } finally {
-      patchRequestContext({
-        organizationId: undefined,
+    const original = getRequestContext();
+    return runWithRequestContext(
+      {
+        ...original,
+        requestId: original?.requestId ?? generateRequestId(),
+        organizationId,
         userId: undefined,
         membershipId: undefined,
-      });
-    }
+        roles: [],
+        permissions: [],
+        modules: [],
+      },
+      callback,
+    );
+  }
+
+  private rejectKioskFace(
+    device: KioskDeviceContext,
+    reason: string,
+  ): Promise<void> {
+    return this.auditKioskPunch(
+      device.organizationId,
+      device.kioskId,
+      'kiosk.attendance.face_not_recognized',
+      { reason },
+    );
   }
 
   private async auditKioskPunch(
@@ -217,25 +293,18 @@ export class FaceService {
         entityType: 'kiosk',
         after: details,
       });
-    } catch (error) {
-      this.logger.warn(`kiosk face audit failed: ${String(error)}`);
+    } catch {
+      this.logger.warn('Kiosk face audit failed.');
     }
   }
 
   private parseDescriptor(raw: string): number[] {
     try {
-      const parsed = JSON.parse(raw);
-      if (
-        Array.isArray(parsed) &&
-        parsed.length === 128 &&
-        parsed.every((value) => typeof value === 'number' && isFinite(value))
-      ) {
-        return parsed;
-      }
+      const parsed = faceDescriptorSchema.safeParse(JSON.parse(raw));
+      return parsed.success ? parsed.data : [];
     } catch {
-      // fall through to empty result
+      return [];
     }
-    return [];
   }
 
   private toMetadata(row: {

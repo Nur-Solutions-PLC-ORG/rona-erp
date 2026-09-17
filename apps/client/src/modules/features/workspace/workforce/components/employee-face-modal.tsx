@@ -1,164 +1,150 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
 import { format } from "date-fns";
-import { toast } from "sonner";
 import { HiOutlineFaceSmile } from "react-icons/hi2";
-import type { Employee } from "@rona/types/hr";
-import type { EmployeeFaceMetadata } from "@rona/types/kiosk";
 import Spinner from "@/components/custom/spinner";
-import {
-  BTN_PRIMARY,
-  EmptyState,
-} from "@/modules/workspace/components/ui";
-import {
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-  ModalSection,
-  ModalWrapper,
-} from "@/modules/workspace/components/form";
-import {
-  enrollFace,
-  friendlyFaceError,
-} from "@/modules/kiosk/face-api";
-import { useEmployeeFaces, useEnrollFace, useRevokeFace } from "../hooks";
+import { BTN_PRIMARY, Card, EmptyState, PageHeader } from "@/modules/workspace/components/ui";
+import { useCurrentOrganization, usePermissions } from "@/modules/workspace/hooks";
+import { useSession } from "@/modules/auth/hooks";
+import { captureFace, friendlyFaceError } from "@/modules/kiosk/face-api";
+import { ApiGetSelfFaces, ApiPostSelfFaceEnroll, ApiPostSelfFaceRevoke } from "@/modules/staff/api";
 
-function EnrolledFaceRow({
-  face,
-  onRevoke,
-  isRevoking,
-}: {
-  face: EmployeeFaceMetadata;
-  onRevoke: () => void;
-  isRevoking: boolean;
-}) {
-  const revoked = face.revokedAt !== null;
+function apiError(error: unknown): string {
+  if (isAxiosError(error)) {
+    const message = error.response?.data?.message;
+    return typeof message === "string" ? message : "Request failed. Please try again.";
+  }
+  return error instanceof Error ? error.message : "Request failed. Please try again.";
+}
+
+function SelfFaceSettings({ organizationId, userId }: { organizationId: string; userId: string }) {
+  const [consent, setConsent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const operation = useRef<AbortController | null>(null);
+  const facesQuery = useQuery({
+    queryKey: ["staff-self-faces", organizationId, userId],
+    queryFn: async () => {
+      const response = await ApiGetSelfFaces();
+      if (!response.success || !response.data) throw new Error(response.message);
+      return response.data;
+    },
+    retry: false,
+    gcTime: 0,
+  });
+
+  useEffect(() => () => operation.current?.abort(), []);
+
+  const activeFace = facesQuery.data?.faces.find((face) => face.revokedAt === null);
+  const unavailable = facesQuery.isPending || facesQuery.isError || facesQuery.isFetching;
+
+  const handleEnroll = async () => {
+    if (!consent || operation.current || unavailable) return;
+    const controller = new AbortController();
+    operation.current = controller;
+    setBusy(true);
+    setMessage("");
+    let capturing = true;
+    try {
+      const descriptor = await captureFace(controller.signal);
+      controller.signal.throwIfAborted();
+      capturing = false;
+      const response = await ApiPostSelfFaceEnroll({ body: { descriptor } });
+      if (controller.signal.aborted) return;
+      if (!response.success || !response.data) throw new Error(response.message);
+      setConsent(false);
+      setMessage("Your face enrollment was saved. Use your EID and a fresh scan at the kiosk.");
+      await facesQuery.refetch();
+    } catch (error) {
+      if (!controller.signal.aborted) setMessage(capturing ? friendlyFaceError(error) : apiError(error));
+    } finally {
+      if (operation.current === controller) operation.current = null;
+      if (!controller.signal.aborted) setBusy(false);
+    }
+  };
+
+  const handleRevoke = async () => {
+    if (operation.current || unavailable || !activeFace) return;
+    if (!window.confirm("Revoke your active face enrollment? You can still use your kiosk passcode.")) return;
+    const controller = new AbortController();
+    operation.current = controller;
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await ApiPostSelfFaceRevoke();
+      if (controller.signal.aborted) return;
+      if (!response.success || !response.data) throw new Error(response.message);
+      setMessage(response.data.face ? "Your face enrollment was revoked." : "You have no active face enrollment.");
+      setConsent(false);
+      await facesQuery.refetch();
+    } catch (error) {
+      if (!controller.signal.aborted) setMessage(apiError(error));
+    } finally {
+      if (operation.current === controller) operation.current = null;
+      if (!controller.signal.aborted) setBusy(false);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
-      <div className="flex items-center gap-2.5 min-w-0">
-        <HiOutlineFaceSmile
-          className={`h-5 w-5 shrink-0 ${
-            revoked ? "text-zinc-300" : "text-emerald-600"
-          }`}
-        />
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-zinc-800 text-left">
-            {revoked ? "Revoked face" : "Active face"}
-          </p>
-          <p className="text-xs text-zinc-500 text-left">
-            Enrolled {format(new Date(face.enrolledAt), "MMM d, yyyy h:mm a")}
-            {face.lastUsedAt
-              ? ` · last used ${format(new Date(face.lastUsedAt), "MMM d, yyyy")}`
-              : ""}
-          </p>
+    <div className="space-y-4">
+      <PageHeader icon={<HiOutlineFaceSmile className="h-5 w-5" />} title="Staff settings" description="Manage your own face enrollment for kiosk attendance" />
+      <Card className="space-y-4 p-6">
+        <h2 className="text-lg font-semibold">My face enrollment</h2>
+        <p className="text-sm text-zinc-600">
+          Enrollment applies only to your linked employee in the current organization.
+          Replacing your face revokes the previous enrollment. HR cannot enroll a face on your behalf here.
+        </p>
+        {facesQuery.isPending ? <Spinner className="h-6 w-6" /> : facesQuery.isError ? (
+          <div role="alert" className="space-y-2 text-sm text-rose-600">
+            <p>{apiError(facesQuery.error)}</p>
+            <button type="button" className={BTN_PRIMARY} onClick={() => void facesQuery.refetch()} disabled={busy || facesQuery.isFetching}>Retry</button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {!activeFace ? <p className="text-sm text-zinc-600">No active face enrollment.</p> : null}
+            {facesQuery.data?.faces.map((face) => (
+              <div key={face.id} className="rounded-lg border border-zinc-200 p-3 text-sm">
+                <p className="font-medium">{face.revokedAt ? "Revoked face" : "Active face"}</p>
+                <p className="text-zinc-500">Enrolled {format(new Date(face.enrolledAt), "MMM d, yyyy h:mm a")}</p>
+                {face.lastUsedAt ? <p className="text-zinc-500">Last used {format(new Date(face.lastUsedAt), "MMM d, yyyy h:mm a")}</p> : null}
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="text-sm text-zinc-600">
+          Face descriptors are sensitive biometric data. Camera frames stay in your browser;
+          a numeric descriptor is sent to the server for storage and attendance matching.
+          Kiosks send your EID and a fresh descriptor, not photos, and do not download enrolled faces.
+          Revocation disables matching; it does not promise deletion of retained records.
+          Ask your organization about retention, access and deletion before consenting.
+          Face capture provides no liveness guarantee or proof of identity. A passcode remains available as an alternative.
+        </p>
+        <label className="flex items-start gap-2 text-sm text-zinc-700">
+          <input type="checkbox" checked={consent} disabled={busy || unavailable} onChange={(event) => setConsent(event.target.checked)} className="mt-1 accent-zinc-900" />
+          I consent to capturing and storing my face descriptor for attendance matching.
+        </label>
+        <div className="flex flex-wrap gap-3">
+          <button type="button" className={BTN_PRIMARY} onClick={handleEnroll} disabled={busy || unavailable || !consent}>
+            {busy ? "Working…" : activeFace ? "Replace my face" : "Enroll my face"}
+          </button>
+          <button type="button" className="rounded-lg border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 disabled:opacity-50" onClick={handleRevoke} disabled={busy || unavailable || !activeFace}>Revoke my face</button>
         </div>
-      </div>
-      {!revoked ? (
-        <button
-          type="button"
-          onClick={onRevoke}
-          disabled={isRevoking}
-          className="shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-50 disabled:pointer-events-none disabled:opacity-50"
-        >
-          {isRevoking ? "Revoking…" : "Revoke"}
-        </button>
-      ) : null}
+        {message ? <p role="status" className="text-sm text-zinc-700">{message}</p> : null}
+      </Card>
     </div>
   );
 }
 
-export default function EmployeeFaceModal({
-  employee,
-  onClose,
-}: {
-  employee: Employee | null;
-  onClose: () => void;
-}) {
-  const [busy, setBusy] = useState(false);
-  const facesQuery = useEmployeeFaces(employee?.id ?? null);
-  const enrollMutation = useEnrollFace();
-  const revokeMutation = useRevokeFace();
-
-  const faces = facesQuery.data?.data?.faces ?? [];
-
-  const handleEnroll = async () => {
-    if (!employee || busy) return;
-    setBusy(true);
-    try {
-      const descriptor = await enrollFace();
-      await enrollMutation.mutateAsync({ id: employee.id, descriptor });
-      toast.success("Face enrolled successfully.");
-    } catch (error) {
-      toast.error(friendlyFaceError(error));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleRevoke = (faceId: string) => {
-    if (!employee) return;
-    revokeMutation.mutate(
-      { id: employee.id, faceId },
-      { onSuccess: () => toast.success("Face revoked successfully.") },
-    );
-  };
-
-  return (
-    <ModalWrapper open={employee !== null} onClose={onClose}>
-      <ModalHeader
-        title="Face ID enrollment"
-        icon={<HiOutlineFaceSmile className="w-5 h-5" />}
-        onClose={onClose}
-      />
-      <ModalBody>
-        {employee ? (
-          <p className="text-sm text-zinc-500">
-            Enroll a face for{" "}
-            <span className="font-medium text-zinc-800">
-              {employee.eId} — {employee.fullName}
-            </span>{" "}
-            so they can sign in on kiosk terminals without a passcode. Each
-            employee keeps one active face; enrolling a new one revokes the
-            previous.
-          </p>
-        ) : null}
-
-        <ModalSection title="Face ID">
-          {facesQuery.isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Spinner className="h-6 w-6" />
-            </div>
-          ) : faces.length === 0 ? (
-            <EmptyState
-              icon={<HiOutlineFaceSmile className="w-5 h-5" />}
-              title="Not enrolled"
-              description="No face is enrolled for this employee yet."
-            />
-          ) : (
-            <div className="space-y-2">
-              {faces.map((face) => (
-                <EnrolledFaceRow
-                  key={face.id}
-                  face={face}
-                  isRevoking={revokeMutation.isPending}
-                  onRevoke={() => handleRevoke(face.id)}
-                />
-              ))}
-            </div>
-          )}
-        </ModalSection>
-      </ModalBody>
-      <ModalFooter>
-        <button
-          type="button"
-          className={BTN_PRIMARY}
-          onClick={handleEnroll}
-          disabled={busy || !employee}
-        >
-          {busy ? "Scanning…" : "Enroll Face"}
-        </button>
-      </ModalFooter>
-    </ModalWrapper>
-  );
+export default function StaffFaceSettings() {
+  const { hasPermission } = usePermissions();
+  const { organizationId, isLoading } = useCurrentOrganization();
+  const { user, isLoading: sessionLoading } = useSession();
+  if (isLoading || sessionLoading) return <Spinner className="h-6 w-6" />;
+  if (!organizationId || !user || !hasPermission("hr.attendance.clock")) {
+    return <EmptyState icon={<HiOutlineFaceSmile className="h-6 w-6" />} title="Staff settings unavailable" description="You need attendance clock permission and a linked employee in this organization." />;
+  }
+  return <SelfFaceSettings key={`${organizationId}:${user.id}`} organizationId={organizationId} userId={user.id} />;
 }
