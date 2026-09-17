@@ -43,13 +43,12 @@ const employeeSelection = {
   archivedAt: employees.archivedAt,
   createdAt: employees.createdAt,
   updatedAt: employees.updatedAt,
-  hasKioskPasscode: sql<boolean>`${employees.passcodeHash} is not null`,
 };
 
 @Injectable()
 export class EmployeesRepository extends TenantScopedRepository {
   async create(
-    data: Omit<EmployeeCreateInput, 'passcode'> & { passcodeHash?: string },
+    data: EmployeeCreateInput,
     tx?: Executor,
   ) {
     const executor = tx ?? pooledDb;
@@ -108,9 +107,7 @@ export class EmployeesRepository extends TenantScopedRepository {
 
   async update(
     employeeId: string,
-    data: Omit<EmployeeUpdateInput, 'passcode'> & {
-      passcodeHash?: string | null;
-    },
+    data: EmployeeUpdateInput,
     tx?: Executor,
   ) {
     const executor = tx ?? pooledDb;

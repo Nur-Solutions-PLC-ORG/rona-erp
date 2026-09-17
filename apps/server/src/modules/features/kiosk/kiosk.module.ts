@@ -9,11 +9,14 @@ import { KioskTerminalController } from './kiosk-terminal.controller';
 import { KiosksRepository } from './kiosks.repository';
 import { KioskService } from './kiosk.service';
 import { KioskSessionGuard } from './kiosk-session.guard';
+import { CredentialRepository } from './credential.repository';
+import { WebAuthnService } from './webauthn.service';
+import { WebAuthnAuthenticationController, WebAuthnEnrollmentController } from './webauthn.controller';
 
 @Module({
   imports: [AuthModule, TenancyModule, RbacModule, AuditModule, HrModule],
-  controllers: [KiosksController, KioskTerminalController],
-  providers: [KiosksRepository, KioskService, KioskSessionGuard],
+  controllers: [KiosksController, KioskTerminalController, WebAuthnAuthenticationController, WebAuthnEnrollmentController],
+  providers: [KiosksRepository, KioskService, KioskSessionGuard, CredentialRepository, WebAuthnService],
   exports: [KiosksRepository, KioskService],
 })
 export class KioskModule {}

@@ -268,7 +268,8 @@ export default function KiosksView() {
 
       <Card className="p-4 text-xs text-slate-500">
         Employees clock in at <code className="font-mono">{CLIENT_KIOSK_TERMINAL_PAGE}</code>{" "}
-        with their employee ID and passcode. A device only becomes a kiosk
+        using their own fingerprint / Face ID (passkey), after the employee&apos;s
+        HR department links a device to them. A device only becomes a kiosk
         after entering the credential issued here.
       </Card>
 

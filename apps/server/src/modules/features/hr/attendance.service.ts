@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { pooledDb } from '@/db';
+import type { Executor } from '@/db/executor';
 import { AuditService } from '@/modules/audit/audit.service';
 import { TenantContextService } from '@/modules/tenancy/tenant-context.service';
 import { HR_DEFAULT_PAGE, HR_DEFAULT_PAGE_SIZE } from '@rona/config/hr';
@@ -95,8 +96,8 @@ export class AttendanceService {
     return this.statusFor(employeeId);
   }
 
-  async punchKiosk(employeeId: string, eventType: AttendanceEventType) {
-    return this.punch(employeeId, eventType, new Date(), 'Kiosk');
+  async punchKiosk(employeeId: string, eventType: AttendanceEventType, tx?: Executor) {
+    return this.punch(employeeId, eventType, new Date(), 'Kiosk', tx);
   }
 
   private async punch(
@@ -104,8 +105,9 @@ export class AttendanceService {
     eventType: AttendanceEventType,
     eventAt: Date,
     notes?: string,
+    executor?: Executor,
   ) {
-    return pooledDb.transaction(async (tx) => {
+    const record = async (tx: Executor) => {
       const employee = await this.employeesRepository.findByIdForUpdate(
         employeeId,
         tx,
@@ -154,7 +156,8 @@ export class AttendanceService {
       );
 
       return created;
-    });
+    };
+    return executor ? record(executor) : pooledDb.transaction(record);
   }
 
   private validateSequence(eventTypes: readonly AttendanceEventType[]) {

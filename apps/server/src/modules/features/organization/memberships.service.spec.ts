@@ -58,11 +58,13 @@ const assignRoleToMembership = jest.fn();
 const replaceMembershipRoles = jest.fn();
 const findMembershipRoleKeys = jest.fn();
 const countActiveOwnerMemberships = jest.fn();
+const upsertDefaultRoles = jest.fn();
 const rbacRepository = {
   assignRoleToMembership,
   replaceMembershipRoles,
   findMembershipRoleKeys,
   countActiveOwnerMemberships,
+  upsertDefaultRoles,
 } as unknown as RbacRepository;
 
 const invalidateMembership = jest.fn();
@@ -137,6 +139,7 @@ describe('MembershipsService', () => {
 
     findMembershipRoleKeys.mockResolvedValue(['EMPLOYEE']);
     countActiveOwnerMemberships.mockResolvedValue(2);
+    upsertDefaultRoles.mockResolvedValue(undefined);
     assignRoleToMembership.mockResolvedValue(undefined);
     replaceMembershipRoles.mockResolvedValue(undefined);
 

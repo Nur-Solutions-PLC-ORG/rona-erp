@@ -241,6 +241,24 @@ export const API_KIOSK_SIGN_OUT_URL = "/api/kiosk/sign-out";
 
 export const API_KIOSK_ATTENDANCE_URL = "/api/kiosk/attendance";
 
+export const API_KIOSK_WEBAUTHN_AUTH_OPTIONS_URL =
+  "/api/kiosk/webauthn/authentication/options";
+
+export const API_KIOSK_WEBAUTHN_AUTH_VERIFY_URL =
+  "/api/kiosk/webauthn/authentication/verify";
+
+export const API_KIOSK_WEBAUTHN_CREDENTIALS_URL =
+  "/api/kiosk/webauthn/employees/:employeeId/credentials";
+
+export const API_KIOSK_WEBAUTHN_REG_OPTIONS_URL =
+  "/api/kiosk/webauthn/employees/:employeeId/registration/options";
+
+export const API_KIOSK_WEBAUTHN_REG_VERIFY_URL =
+  "/api/kiosk/webauthn/employees/:employeeId/registration/verify";
+
+export const API_KIOSK_WEBAUTHN_CREDENTIAL_REVOKE_URL =
+  "/api/kiosk/webauthn/employees/:employeeId/credentials/:credentialId/revoke";
+
 export const API_SALES_CUSTOMERS_URL = "/api/sales/customers";
 
 export const API_SALES_CUSTOMER_DETAILS_URL = "/api/sales/customers/:id";

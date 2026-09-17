@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   HiOutlineArchiveBox,
   HiOutlineArrowPath,
+  HiOutlineFingerPrint,
   HiOutlinePencilSquare,
   HiOutlineUserPlus,
   HiOutlineUsers,
@@ -48,6 +49,7 @@ import {
   useRestoreEmployee,
   useUpdateEmployee,
 } from "../hooks";
+import { EmployeeBiometricsModal } from "./employee-biometrics-modal";
 
 const EMPTY_FORM = {
   eId: "",
@@ -60,7 +62,6 @@ const EMPTY_FORM = {
   departmentId: "",
   positionId: "",
   hireDate: "",
-  passcode: "",
 };
 
 export default function EmployeesView() {
@@ -78,6 +79,9 @@ export default function EmployeesView() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
+  const [biometricsEmployee, setBiometricsEmployee] = useState<Employee | null>(
+    null,
+  );
 
   const { employees, meta, isLoading } = useEmployees(page, {
     status: statusFilter || undefined,
@@ -124,7 +128,6 @@ export default function EmployeesView() {
       departmentId: employee.departmentId ?? "",
       positionId: employee.positionId ?? "",
       hireDate: employee.hireDate ?? "",
-      passcode: "",
     });
     setIsFormOpen(true);
   };
@@ -147,7 +150,6 @@ export default function EmployeesView() {
         departmentId: form.departmentId === "" ? null : form.departmentId,
         positionId: form.positionId === "" ? null : form.positionId,
         hireDate: form.hireDate === "" ? null : form.hireDate,
-        passcode: form.passcode === "" ? undefined : form.passcode,
       });
 
       if (!parsed.success) {
@@ -169,7 +171,6 @@ export default function EmployeesView() {
       departmentId: form.departmentId || undefined,
       positionId: form.positionId || undefined,
       hireDate: form.hireDate || undefined,
-      passcode: form.passcode || undefined,
     });
 
     if (!parsed.success) {
@@ -241,6 +242,11 @@ export default function EmployeesView() {
                     label: "Edit",
                     icon: <HiOutlinePencilSquare className="h-3.5 w-3.5" />,
                     onClick: () => openEdit(row),
+                  },
+                  {
+                    label: "Biometrics",
+                    icon: <HiOutlineFingerPrint className="h-3.5 w-3.5" />,
+                    onClick: () => setBiometricsEmployee(row),
                   },
                 ]
               : []),
@@ -478,15 +484,6 @@ export default function EmployeesView() {
             ]}
             placeholder="Unassigned"
           />
-          <LabeledInput
-            label="Kiosk passcode (5 digits, optional)"
-            id="employee-passcode"
-            inputMode="numeric"
-            maxLength={5}
-            value={form.passcode}
-            onChange={(event) => updateForm("passcode", event.target.value)}
-            placeholder={editing ? "Leave blank to keep current" : "e.g. 12345"}
-          />
         </div>
         <ModalActions
           onCancel={closeForm}
@@ -499,6 +496,14 @@ export default function EmployeesView() {
           }
         />
       </FormModal>
+
+      <EmployeeBiometricsModal
+        open={biometricsEmployee !== null}
+        onClose={() => setBiometricsEmployee(null)}
+        employeeId={biometricsEmployee?.id ?? ""}
+        employeeName={biometricsEmployee?.fullName ?? ""}
+        canManage={canUpdate}
+      />
     </div>
   );
 }

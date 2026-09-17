@@ -49,7 +49,6 @@ export const employeeDto = z.object({
   archivedAt: z.date().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
-  hasKioskPasscode: z.boolean().nullable(),
 });
 
 export const emergencyContactDto = z.object({

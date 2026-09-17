@@ -8,14 +8,19 @@ import {
   HiOutlineArrowRightOnRectangle,
   HiOutlineCheckCircle,
   HiOutlineDevicePhoneMobile,
+  HiOutlineFingerPrint,
   HiOutlinePause,
   HiOutlinePlay,
+  HiOutlineXMark,
 } from "react-icons/hi2";
+import { startAuthentication } from "@simplewebauthn/browser";
 import Spinner from "@/components/custom/spinner";
 import {
   postKioskAttendance,
   postKioskAuthenticate,
   postKioskSignOut,
+  postKioskWebAuthnOptions,
+  postKioskWebAuthnVerify,
 } from "../api";
 
 type Screen = "setup" | "idle" | "success";
@@ -98,8 +103,10 @@ export default function KioskTerminal() {
   const [organizationName, setOrganizationName] = useState("");
   const [kioskName, setKioskName] = useState("");
   const [deviceToken, setDeviceToken] = useState("");
-  const [eid, setEid] = useState("");
-  const [passcode, setPasscode] = useState("");
+  const [employeeName, setEmployeeName] = useState<string | null>(null);
+  const [webauthnAvailable, setWebauthnAvailable] = useState<boolean | null>(
+    null,
+  );
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState<{
     employeeName: string;
@@ -116,6 +123,12 @@ export default function KioskTerminal() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const supported =
+      typeof window !== "undefined" && "PublicKeyCredential" in window;
+    setWebauthnAvailable(supported);
+  }, []);
+
   const clearResetTimer = useCallback(() => {
     if (resetTimer.current) {
       clearTimeout(resetTimer.current);
@@ -130,8 +143,8 @@ export default function KioskTerminal() {
     resetTimer.current = setTimeout(() => {
       resetTimer.current = null;
       setResetIn(null);
-      setEid("");
-      setPasscode("");
+      setEmployeeName(null);
+      setMessage("");
       setScreen("idle");
     }, 1000 * IDLE_RESET_SECONDS);
   }, []);
@@ -169,27 +182,25 @@ export default function KioskTerminal() {
     }
   };
 
-  const handlePunch = async (eventType: AttendanceEventType) => {
+  const handleFingerprint = async () => {
     if (busy) return;
     setBusy(true);
     setMessage("");
     try {
-      const response = await postKioskAttendance({
-        eid: eid.trim(),
-        passcode: passcode.trim(),
-        eventType,
+      const optionsResponse = await postKioskWebAuthnOptions({});
+      const payload = optionsResponse.data;
+      if (!payload) throw new Error("No authentication options returned");
+      const credential = await startAuthentication({
+        optionsJSON: payload.options,
       });
-      if (response.success && response.data) {
-        setSuccess({
-          employeeName: response.data.employeeName,
-          eventLabel: EVENT_META[response.data.eventType].heading,
-          eventTime: formatTime(response.data.eventAt),
-        });
-        setScreen("success");
-        scheduleIdleReset();
+      const verifyResponse = await postKioskWebAuthnVerify({
+        challengeId: payload.challengeId,
+        response: credential,
+      });
+      if (verifyResponse.success && verifyResponse.data) {
+        setEmployeeName(verifyResponse.data.employeeName);
       } else {
-        setMessage(response.message);
-        setPasscode("");
+        setMessage(verifyResponse.message);
       }
     } catch (error) {
       const status = (error as { response?: { status?: number } }).response
@@ -199,6 +210,48 @@ export default function KioskTerminal() {
         setScreen("setup");
         setDeviceToken("");
         setMessage("Kiosk session ended. Please re-enter the device credential.");
+        return;
+      }
+      setMessage(
+        "Sign-in failed or was cancelled. Try again, or verify the employee has a registered device.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleCancelEmployee = () => {
+    clearResetTimer();
+    setEmployeeName(null);
+    setMessage("");
+  };
+
+  const handlePunch = async (eventType: AttendanceEventType) => {
+    if (busy) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await postKioskAttendance({
+        eventType,
+      });
+      if (response.success && response.data) {
+        setEmployeeName(null);
+        setSuccess({
+          employeeName: response.data.employeeName,
+          eventLabel: EVENT_META[response.data.eventType].heading,
+          eventTime: formatTime(response.data.eventAt),
+        });
+        setScreen("success");
+        scheduleIdleReset();
+      } else {
+        setMessage(response.message);
+      }
+    } catch (error) {
+      const status = (error as { response?: { status?: number } }).response
+        ?.status;
+      if (status === 401) {
+        setEmployeeName(null);
+        setMessage("Session expired. Please sign in with your fingerprint again.");
       } else if (status === 429) {
         setMessage("Too many attempts. Please try again in a few minutes.");
       } else {
@@ -206,7 +259,6 @@ export default function KioskTerminal() {
           error as { response?: { data?: { message?: string } } }
         ).response?.data?.message;
         setMessage(apiMessage ?? "Something went wrong. Please try again.");
-        setPasscode("");
       }
     } finally {
       setBusy(false);
@@ -222,14 +274,13 @@ export default function KioskTerminal() {
     setOrganizationName("");
     setKioskName("");
     setDeviceToken("");
-    setEid("");
-    setPasscode("");
+    setEmployeeName(null);
     setSuccess(null);
     setMessage("");
     setScreen("setup");
   };
 
-  const canPunch = eid.trim().length > 0 && passcode.trim().length > 0 && !busy;
+  const canPunch = employeeName !== null && !busy;
 
   return (
     <div className="min-h-screen flex flex-col select-none bg-slate-100 text-slate-900">
@@ -339,74 +390,101 @@ export default function KioskTerminal() {
 
         {screen === "idle" ? (
           <div className="w-full max-w-3xl space-y-6">
-            <div className="space-y-8 rounded-2xl border border-slate-200 bg-white p-8 shadow-lg shadow-slate-900/5">
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="kiosk-eid"
-                    className="mb-2 block text-left text-xs font-semibold uppercase tracking-wider text-slate-400"
-                  >
-                    Employee ID
-                  </label>
-                  <input
-                    id="kiosk-eid"
-                    type="text"
-                    inputMode="numeric"
-                    value={eid}
-                    onChange={(event) => setEid(event.target.value)}
-                    placeholder="00000"
-                    autoComplete="off"
-                    className={KIOSK_INPUT_CLASS}
-                  />
+            {employeeName === null ? (
+              <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-lg shadow-slate-900/5">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-purple-50 text-purple-600">
+                  <HiOutlineFingerPrint className="h-9 w-9" />
                 </div>
-                <div>
-                  <label
-                    htmlFor="kiosk-passcode"
-                    className="mb-2 block text-left text-xs font-semibold uppercase tracking-wider text-slate-400"
+                <div className="space-y-1.5">
+                  <h2 className="font-heading text-3xl font-bold tracking-tight text-slate-900">
+                    Sign in with fingerprint
+                  </h2>
+                  <p className="text-base leading-relaxed text-slate-500">
+                    Use Face ID or fingerprint scan on your phone to clock in,
+                    take a break, or clock out.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleFingerprint}
+                  disabled={busy || webauthnAvailable === false}
+                  className="flex w-full items-center justify-center gap-3 rounded-xl bg-purple-600 px-6 py-6 text-2xl font-bold tracking-wide text-white transition-colors hover:bg-purple-700 active:bg-purple-800 disabled:pointer-events-none disabled:opacity-50"
+                >
+                  {busy ? (
+                    <>
+                      <Spinner className="h-6 w-6" />
+                      Verifying…
+                    </>
+                  ) : (
+                    <>
+                      <HiOutlineFingerPrint className="h-8 w-8" />
+                      USE FINGERPRINT
+                    </>
+                  )}
+                </button>
+                {webauthnAvailable === false ? (
+                  <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
+                    Fingerprint authentication is unavailable on this browser.
+                    Contact your administrator.
+                  </p>
+                ) : null}
+              </div>
+            ) : (
+              <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-8 shadow-lg shadow-slate-900/5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      Signed in
+                    </p>
+                    <p className="font-heading text-3xl font-bold tracking-tight text-slate-900">
+                      {employeeName}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCancelEmployee}
+                    disabled={busy}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-50"
                   >
-                    Passcode
-                  </label>
-                  <input
-                    id="kiosk-passcode"
-                    type="password"
-                    inputMode="numeric"
-                    value={passcode}
-                    onChange={(event) => setPasscode(event.target.value)}
-                    placeholder="•••••"
-                    autoComplete="off"
-                    className={KIOSK_INPUT_CLASS}
-                  />
+                    <HiOutlineXMark className="h-4 w-4" />
+                    Cancel
+                  </button>
+                </div>
+
+                {message ? (
+                  <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-center text-base font-medium text-rose-600">
+                    {message}
+                  </p>
+                ) : (
+                  <p className="text-center text-sm text-slate-400">
+                    Choose an action to record attendance.
+                  </p>
+                )}
+
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  {EVENT_ORDER.map((eventType) => {
+                    const { label, button, Icon } = EVENT_META[eventType];
+                    return (
+                      <button
+                        key={eventType}
+                        type="button"
+                        disabled={!canPunch}
+                        onClick={() => handlePunch(eventType)}
+                        className={`flex flex-col items-center justify-center gap-3 rounded-2xl px-6 py-10 text-2xl font-bold tracking-wide text-white transition-colors disabled:pointer-events-none disabled:opacity-40 sm:py-12 ${button}`}
+                      >
+                        <Icon className="h-9 w-9" />
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-
-              {message ? (
-                <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-center text-base font-medium text-rose-600">
-                  {message}
-                </p>
-              ) : (
-                <p className="text-center text-sm text-slate-400">
-                  Enter your employee ID and passcode, then choose an action.
-                </p>
-              )}
-
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {EVENT_ORDER.map((eventType) => {
-                  const { label, button, Icon } = EVENT_META[eventType];
-                  return (
-                    <button
-                      key={eventType}
-                      type="button"
-                      disabled={!canPunch}
-                      onClick={() => handlePunch(eventType)}
-                      className={`flex flex-col items-center justify-center gap-3 rounded-2xl px-6 py-10 text-2xl font-bold tracking-wide text-white transition-colors disabled:pointer-events-none disabled:opacity-40 sm:py-12 ${button}`}
-                    >
-                      <Icon className="h-9 w-9" />
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            )}
+            {employeeName === null && message ? (
+              <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-center text-base font-medium text-rose-600">
+                {message}
+              </p>
+            ) : null}
             <p className="text-center text-xs text-slate-400">
               Rona Workforce — secure attendance terminal
             </p>

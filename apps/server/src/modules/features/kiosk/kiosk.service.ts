@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import { WebAuthnService } from './webauthn.service';
 import * as jwt from 'jsonwebtoken';
 import { eq } from 'drizzle-orm';
 import { db, pooledDb } from '@/db';
@@ -8,7 +8,6 @@ import { organizations } from '@/db/schemas/admin';
 import { kiosks } from '@/db/schemas/kiosk';
 import {
   getRequestContext,
-  patchRequestContext,
 } from '@/context/request-context';
 import { AuditService } from '@/modules/audit/audit.service';
 import { rateLimit } from '@/redis';
@@ -33,15 +32,10 @@ import type {
   KioskUpdateInput,
   KioskUpdateResult,
 } from '@rona/types/kiosk';
-import { AttendanceService } from '@/modules/features/hr/attendance.service';
-import { EmployeesRepository } from '@/modules/features/hr/employees.repository';
 import {
   KioskAlreadyActiveException,
   KioskAlreadyInactiveException,
   KioskAuthenticationException,
-  KioskEmployeeInactiveException,
-  KioskEmployeeNotFoundException,
-  KioskInvalidPasscodeException,
   KioskNotFoundException,
   KioskTokenConflictException,
 } from './kiosk.exception';
@@ -51,12 +45,16 @@ export interface KioskDeviceContext {
   kioskId: string;
   deviceId: string;
   organizationId: string;
+  sessionHash: string;
+  tokenVersion: string;
 }
 
 interface KioskSessionClaims {
   kioskId: string;
   deviceId: string;
   organizationId: string;
+  tokenVersion: string;
+  jti: string;
 }
 
 @Injectable()
@@ -65,8 +63,7 @@ export class KioskService {
 
   constructor(
     private readonly kiosksRepository: KiosksRepository,
-    private readonly employeesRepository: EmployeesRepository,
-    private readonly attendanceService: AttendanceService,
+    private readonly webauthnService: WebAuthnService,
     private readonly auditService: AuditService,
   ) {}
 
@@ -288,7 +285,11 @@ export class KioskService {
       claims = jwt.verify(
         sessionToken,
         process.env.JWT_SECRET!,
+        { algorithms: ['HS256'], audience: 'kiosk', issuer: 'rona-erp' },
       ) as KioskSessionClaims;
+      if (!claims.jti || !claims.tokenVersion || typeof claims.kioskId !== 'string') {
+        throw new Error('Invalid kiosk session');
+      }
     } catch {
       throw new KioskAuthenticationException();
     }
@@ -298,19 +299,24 @@ export class KioskService {
         id: kiosks.id,
         organizationId: kiosks.organizationId,
         status: kiosks.status,
+        deviceId: kiosks.deviceId,
+        tokenHash: kiosks.tokenHash,
       })
       .from(kiosks)
       .where(eq(kiosks.id, claims.kioskId))
       .limit(1);
 
-    if (!kiosk || kiosk.status !== 'ACTIVE') {
+    if (!kiosk || kiosk.status !== 'ACTIVE' || kiosk.organizationId !== claims.organizationId ||
+      kiosk.deviceId !== claims.deviceId || this.hashToken(kiosk.tokenHash) !== claims.tokenVersion) {
       throw new KioskAuthenticationException();
     }
 
     return {
       kioskId: kiosk.id,
-      deviceId: claims.deviceId,
+      deviceId: kiosk.deviceId,
       organizationId: kiosk.organizationId,
+      sessionHash: this.hashToken(sessionToken),
+      tokenVersion: claims.tokenVersion,
     };
   }
 
@@ -321,6 +327,7 @@ export class KioskService {
   async punch(
     context: KioskDeviceContext,
     input: KioskPunchInput,
+    grant: unknown,
   ): Promise<KioskPunchResult> {
     const allowed = await rateLimit(
       `kiosk:punch:attempts:${context.kioskId}`,
@@ -334,55 +341,7 @@ export class KioskService {
       );
     }
 
-    const organizationId = context.organizationId;
-
-    const employee = await this.withKioskTenant(organizationId, () =>
-      this.employeesRepository.findByEid(input.eid),
-    );
-
-    if (!employee) {
-      await this.auditKioskAttendance(
-        organizationId,
-        context.kioskId,
-        'kiosk.attendance.unknown_eid',
-        { eid: input.eid, reason: 'eid_not_found_in_kiosk_organization' },
-      );
-      throw new KioskEmployeeNotFoundException();
-    }
-
-    if (employee.status !== 'active' || employee.archivedAt) {
-      await this.auditKioskAttendance(
-        organizationId,
-        context.kioskId,
-        'kiosk.attendance.employee_inactive',
-        { eid: input.eid, employeeId: employee.id },
-      );
-      throw new KioskEmployeeInactiveException();
-    }
-
-    const passcodeMatches =
-      employee.passcodeHash != null &&
-      (await bcrypt.compare(input.passcode, employee.passcodeHash));
-
-    if (!passcodeMatches) {
-      await this.auditKioskAttendance(
-        organizationId,
-        context.kioskId,
-        'kiosk.attendance.invalid_passcode',
-        { eid: input.eid, employeeId: employee.id },
-      );
-      throw new KioskInvalidPasscodeException();
-    }
-
-    const event = await this.withKioskTenant(organizationId, () =>
-      this.attendanceService.punchKiosk(employee.id, input.eventType),
-    );
-
-    return {
-      employeeName: employee.fullName,
-      eventType: event.eventType,
-      eventAt: event.eventAt.toISOString(),
-    };
+    return this.webauthnService.punch(context, input, grant);
   }
 
   private hashToken(token: string): string {
@@ -390,7 +349,7 @@ export class KioskService {
   }
 
   private createSessionToken(
-    kiosk: { id: string; deviceId: string; organizationId: string },
+    kiosk: { id: string; deviceId: string; organizationId: string; tokenHash: string },
     expires: Date,
   ): string {
     return jwt.sign(
@@ -398,26 +357,12 @@ export class KioskService {
         kioskId: kiosk.id,
         deviceId: kiosk.deviceId,
         organizationId: kiosk.organizationId,
+        tokenVersion: this.hashToken(kiosk.tokenHash),
       },
       process.env.JWT_SECRET!,
-      { expiresIn: Math.floor((expires.getTime() - Date.now()) / 1000) },
+      { expiresIn: Math.floor((expires.getTime() - Date.now()) / 1000),
+        algorithm: 'HS256', audience: 'kiosk', issuer: 'rona-erp', jwtid: randomBytes(16).toString('hex') },
     );
-  }
-
-  private async withKioskTenant<T>(
-    organizationId: string,
-    callback: () => Promise<T>,
-  ): Promise<T> {
-    patchRequestContext({ organizationId });
-    try {
-      return await callback();
-    } finally {
-      patchRequestContext({
-        organizationId: undefined,
-        userId: undefined,
-        membershipId: undefined,
-      });
-    }
   }
 
   private currentOrganizationId(): string {
@@ -444,25 +389,6 @@ export class KioskService {
       });
     } catch (error) {
       this.logger.warn(`kiosk auth audit failed: ${String(error)}`);
-    }
-  }
-
-  private async auditKioskAttendance(
-    organizationId: string,
-    kioskId: string,
-    action: string,
-    details: Record<string, unknown>,
-  ): Promise<void> {
-    try {
-      await this.auditService.record({
-        organizationId,
-        entityId: kioskId,
-        action,
-        entityType: 'kiosk',
-        after: details,
-      });
-    } catch (error) {
-      this.logger.warn(`kiosk attendance audit failed: ${String(error)}`);
     }
   }
 

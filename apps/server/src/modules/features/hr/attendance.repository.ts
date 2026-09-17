@@ -38,8 +38,8 @@ export class AttendanceRepository extends TenantScopedRepository {
     return row;
   }
 
-  async listEventsForEmployee(employeeId: string) {
-    return db
+  async listEventsForEmployee(employeeId: string, tx?: Executor) {
+    return (tx ?? db)
       .select()
       .from(attendanceEvents)
       .where(

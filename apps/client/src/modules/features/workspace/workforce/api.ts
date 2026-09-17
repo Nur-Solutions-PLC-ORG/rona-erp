@@ -13,6 +13,10 @@ import {
   API_HR_POSITION_RESTORE_URL,
   API_HR_SHIFTS_URL,
   API_HR_SHIFT_DETAILS_URL,
+  API_KIOSK_WEBAUTHN_CREDENTIAL_REVOKE_URL,
+  API_KIOSK_WEBAUTHN_CREDENTIALS_URL,
+  API_KIOSK_WEBAUTHN_REG_OPTIONS_URL,
+  API_KIOSK_WEBAUTHN_REG_VERIFY_URL,
 } from "@rona/routes/workspace";
 import type {
   AttendanceEvent,
@@ -30,6 +34,14 @@ import type {
   ShiftCreateInput,
   ShiftUpdateInput,
 } from "@rona/types/hr";
+import type {
+  KioskWebAuthnOptions,
+  WebAuthnCredentialMetadata,
+} from "@rona/types/kiosk";
+import type {
+  PublicKeyCredentialCreationOptionsJSON,
+  RegistrationResponseJSON,
+} from "@simplewebauthn/browser";
 
 export const ApiGetEmployees = Request<Employee[]>("get", API_HR_EMPLOYEES_URL);
 
@@ -119,4 +131,24 @@ export const ApiPostShift = Request<Shift, ShiftCreateInput>(
 export const ApiPatchShift = Request<Shift, ShiftUpdateInput>(
   "patch",
   API_HR_SHIFT_DETAILS_URL,
+);
+
+export const ApiGetEmployeeCredentials = Request<WebAuthnCredentialMetadata[]>(
+  "get",
+  API_KIOSK_WEBAUTHN_CREDENTIALS_URL,
+);
+
+export const ApiPostEmployeeCredentialOptions = Request<
+  KioskWebAuthnOptions<PublicKeyCredentialCreationOptionsJSON>,
+  { deviceName: string }
+>("post", API_KIOSK_WEBAUTHN_REG_OPTIONS_URL);
+
+export const ApiPostEmployeeCredentialVerify = Request<
+  WebAuthnCredentialMetadata,
+  { challengeId: string; response: RegistrationResponseJSON }
+>("post", API_KIOSK_WEBAUTHN_REG_VERIFY_URL);
+
+export const ApiPostEmployeeCredentialRevoke = Request<WebAuthnCredentialMetadata>(
+  "post",
+  API_KIOSK_WEBAUTHN_CREDENTIAL_REVOKE_URL,
 );
