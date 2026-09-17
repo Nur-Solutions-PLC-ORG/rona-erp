@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { db, pooledDb } from '@/db';
 import type { Executor } from '@/db/executor';
 import { organizations, organizationSettings } from '@/db/schemas/admin';
-import { users } from '@/db/schemas/auth';
+import { userRoles, users } from '@/db/schemas/auth';
 import { organizationMemberships } from '@/db/schemas/tenancy';
 import { TenantScopedRepository } from '@/modules/tenancy/tenant-scoped.repository';
 
@@ -154,6 +154,42 @@ export class OrganizationRepository extends TenantScopedRepository {
       .where(eq(users.id, userId))
       .limit(1);
     return row;
+  }
+
+  async findUserByEmail(email: string) {
+    const [row] = await db
+      .select({
+        id: users.id,
+        fullName: users.fullName,
+        email: users.email,
+      })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+    return row;
+  }
+
+  async findTelegramChatIdByEmail(email: string) {
+    const [row] = await db
+      .select({ telegramChatId: users.telegramChatId })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+    return row?.telegramChatId ?? undefined;
+  }
+
+  async createUserWithRole(
+    data: typeof users.$inferInsert,
+    role: Omit<typeof userRoles.$inferInsert, 'userId'>,
+  ) {
+    return pooledDb.transaction(async (tx) => {
+      const [created] = await tx
+        .insert(users)
+        .values(data)
+        .returning({ id: users.id });
+      await tx.insert(userRoles).values({ ...role, userId: created!.id });
+      return created!.id;
+    });
   }
 
   async searchCandidateUsers(searchQuery: string, limit = 20) {

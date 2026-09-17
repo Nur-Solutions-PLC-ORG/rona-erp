@@ -32,6 +32,17 @@ export const membershipCreateSchema = z.object({
     .min(1, "At least one role is required"),
 });
 
+export const memberCreateSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Full name must be at least 2 characters long"),
+  email: z.email("Invalid email address"),
+  roleKeys: z
+    .array(z.enum(DEFAULT_ROLE_LIST))
+    .min(1, "At least one role is required"),
+});
+
 export const membershipCandidateSearchParamsSchema =
   paginationSearchParamsSchema;
 

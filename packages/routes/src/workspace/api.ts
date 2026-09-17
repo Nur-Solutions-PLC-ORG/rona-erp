@@ -17,6 +17,9 @@ export const API_MEMBERSHIP_DETAILS_URL = "/api/organization/memberships/:id";
 export const API_ORGANIZATION_USER_CANDIDATES_URL =
   "/api/organization/users";
 
+export const API_ORGANIZATION_MEMBERS_CREATE_URL =
+  "/api/organization/members";
+
 export const API_MEMBERSHIP_UPDATE_URL = "/api/organization/memberships/:id";
 
 export const API_MEMBERSHIP_DELETE_URL = "/api/organization/memberships/:id";

@@ -14,6 +14,7 @@ import {
 import { ApiResponse } from '@rona/types/api';
 import type {
   AuditListSearchParamsSchema,
+  MemberCreateSchema,
   MembershipCandidateDto,
   MembershipCandidateSearchParams,
   MembershipCreateSchema,
@@ -25,6 +26,7 @@ import type {
 } from '@rona/types/tenancy';
 import {
   auditListSearchParamsSchema,
+  memberCreateSchema,
   membershipCandidateSearchParamsSchema,
   membershipCreateSchema,
   membershipUpdateSchema,
@@ -121,6 +123,21 @@ export class OrganizationController {
       statusCode: HttpStatus.CREATED,
       message: 'Membership created successfully.',
       data: await this.membershipsService.createMembership(body),
+    };
+  }
+
+  @Post('members')
+  @RequirePermissions('membership.create')
+  async createMember(
+    @Body(new ZodValidationPipe(memberCreateSchema))
+    body: MemberCreateSchema,
+  ): Promise<ApiResponse<{ email: string }>> {
+    const credentials = await this.membershipsService.createMemberAccount(body);
+    return {
+      success: true,
+      statusCode: HttpStatus.CREATED,
+      message: 'Member created successfully.',
+      data: credentials,
     };
   }
 

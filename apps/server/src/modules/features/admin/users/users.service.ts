@@ -2,7 +2,7 @@ import { generateCombinations } from '@/lib/combinations';
 import { sendAccountCredentialsEmail } from '@/emails/mailer';
 import { sendTelegramCredentialsToChat } from '@/emails/telegram';
 import { redisClient } from '@/redis';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import type {
   UserCredentialsDto,
   UserDto,
@@ -33,6 +33,8 @@ const POSITION_TO_ROLE: Record<Position, RoleKey> = {
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly rbacRepository: RbacRepository,
@@ -91,7 +93,7 @@ export class UsersService {
       );
     }
 
-    await sendAccountCredentialsEmail(data.email, password, data.fullName);
+    this.deliverCredentials(data.email, password, data.fullName);
 
     return { email: data.email };
   }
@@ -107,22 +109,14 @@ export class UsersService {
       mustChangePassword: true,
     });
 
-    await sendAccountCredentialsEmail(
+    const telegramChatId =
+      await this.usersRepository.findTelegramChatIdByUserId(id);
+    this.deliverCredentials(
       user.user.email,
       password,
       user.user.fullName,
+      telegramChatId,
     );
-
-    const telegramChatId =
-      await this.usersRepository.findTelegramChatIdByUserId(id);
-    if (telegramChatId) {
-      await sendTelegramCredentialsToChat(
-        telegramChatId,
-        user.user.email,
-        password,
-        user.user.fullName,
-      );
-    }
 
     return { email: user.user.email };
   }
@@ -285,5 +279,27 @@ export class UsersService {
       includeLowercase: true,
       includeSymbols: false,
     });
+  }
+
+  private deliverCredentials(
+    email: string,
+    password: string,
+    fullName?: string,
+    telegramChatId?: string,
+  ) {
+    sendAccountCredentialsEmail(email, password, fullName).catch((error) => {
+      this.logger.warn(`Credential email failed: ${String(error)}`);
+    });
+
+    if (telegramChatId) {
+      void sendTelegramCredentialsToChat(
+        telegramChatId,
+        email,
+        password,
+        fullName ?? '',
+      ).catch((error) => {
+        this.logger.warn(`Credential telegram failed: ${String(error)}`);
+      });
+    }
   }
 }

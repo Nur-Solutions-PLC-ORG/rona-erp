@@ -7,6 +7,7 @@ import {
   auditListSearchParamsSchema,
   membershipCandidateSearchParamsSchema,
   membershipCreateSchema,
+  memberCreateSchema,
   membershipListSearchParamsSchema,
   membershipStatusUpdateSchema,
   membershipUpdateSchema,
@@ -25,6 +26,7 @@ export type RoleKey = (typeof DEFAULT_ROLE_LIST)[number];
 export type Permission = (typeof PERMISSION_LIST)[number];
 
 export type MembershipCreateSchema = z.infer<typeof membershipCreateSchema>;
+export type MemberCreateSchema = z.infer<typeof memberCreateSchema>;
 export type MembershipUpdateSchema = z.infer<typeof membershipUpdateSchema>;
 export type MembershipStatusUpdateSchema = z.infer<
   typeof membershipStatusUpdateSchema

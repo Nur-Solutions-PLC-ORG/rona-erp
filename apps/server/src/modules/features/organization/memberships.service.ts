@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import type {
+  MemberCreateSchema,
   MembershipCreateSchema,
   MembershipUpdateSchema,
 } from '@rona/types/tenancy';
+import type { Position } from '@rona/types/auth';
+import type { RoleKey } from '@rona/types/tenancy';
+import { MODULE_LIST } from '@rona/config/auth';
 import { AuditService } from '@/modules/audit/audit.service';
 import { RbacService } from '@/modules/rbac/rbac.service';
 import { RbacRepository } from '@/modules/rbac/rbac.repository';
@@ -10,14 +14,21 @@ import { TenantContextService } from '@/modules/tenancy/tenant-context.service';
 import { OrganizationRepository } from './organization.repository';
 import {
   LastOwnerMembershipException,
+  MemberEmailExistsException,
   MembershipAlreadyExistsException,
   MembershipNotFoundException,
   UserNotFoundException,
 } from '@/modules/tenancy/tenancy.exception';
 import { pooledDb } from '@/db';
+import * as bcrypt from 'bcrypt';
+import { generateCombinations } from '@/lib/combinations';
+import { sendAccountCredentialsEmail } from '@/emails/mailer';
+import { sendTelegramCredentialsToChat } from '@/emails/telegram';
 
 @Injectable()
 export class MembershipsService {
+  private readonly logger = new Logger(MembershipsService.name);
+
   constructor(
     private readonly organizationRepository: OrganizationRepository,
     private readonly rbacRepository: RbacRepository,
@@ -92,6 +103,8 @@ export class MembershipsService {
     );
     if (existing) throw new MembershipAlreadyExistsException();
 
+    await this.rbacRepository.upsertDefaultRoles(organizationId);
+
     const created = await pooledDb.transaction(async (tx) => {
       const membership = await this.organizationRepository.createMembership(
         data.userId,
@@ -131,6 +144,134 @@ export class MembershipsService {
     await this.rbacService.invalidateMembership(created.id, organizationId);
 
     return created;
+  }
+
+  async createMemberAccount(data: MemberCreateSchema) {
+    const organizationId = this.tenantContext.organizationId;
+    const actorId = this.tenantContext.userId;
+
+    const existingUser = await this.organizationRepository.findUserByEmail(
+      data.email,
+    );
+    if (existingUser) throw new MemberEmailExistsException();
+
+    const password = this.generatePassword();
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const newUserId = await this.organizationRepository.createUserWithRole(
+      {
+        fullName: data.fullName,
+        email: data.email.toLowerCase(),
+        passwordHash,
+        status: 'active',
+        mustChangePassword: true,
+        isEmailVerified: true,
+      },
+      {
+        position: this.derivePosition(data.roleKeys),
+        module: [...MODULE_LIST],
+      },
+    );
+
+    await this.rbacRepository.upsertDefaultRoles(organizationId);
+
+    const created = await pooledDb.transaction(async (tx) => {
+      const membership = await this.organizationRepository.createMembership(
+        newUserId,
+        'active',
+        tx,
+      );
+      if (!membership) throw new MembershipAlreadyExistsException();
+
+      for (const roleKey of data.roleKeys) {
+        await this.rbacRepository.assignRoleToMembership(
+          membership.id,
+          roleKey,
+          organizationId,
+          tx,
+        );
+      }
+
+      await this.auditService.record(
+        {
+          organizationId,
+          actorId,
+          action: 'member.created',
+          entityType: 'membership',
+          entityId: membership.id,
+          after: {
+            userId: newUserId,
+            fullName: data.fullName,
+            email: data.email,
+            roles: data.roleKeys,
+          },
+        },
+        tx,
+      );
+
+      return membership;
+    });
+
+    await this.rbacService.invalidateMembership(created.id, organizationId);
+
+    void this.deliverMemberCredentials(
+      data.email,
+      password,
+      data.fullName ?? undefined,
+    );
+
+    return { email: data.email };
+  }
+
+  private derivePosition(roleKeys: RoleKey[]): Position {
+    if (roleKeys.includes('OWNER')) return 'owner';
+    if (roleKeys.includes('ADMIN')) return 'admin';
+    if (
+      roleKeys.includes('MANAGER') ||
+      roleKeys.includes('WAREHOUSE_MANAGER') ||
+      roleKeys.includes('PRODUCTION_MANAGER') ||
+      roleKeys.includes('QUALITY_MANAGER') ||
+      roleKeys.includes('HR_MANAGER') ||
+      roleKeys.includes('SALES_MANAGER') ||
+      roleKeys.includes('FINANCE_MANAGER')
+    ) {
+      return 'manager';
+    }
+    return 'staff';
+  }
+
+  private generatePassword(): string {
+    return generateCombinations({
+      length: 10,
+      includeNumbers: true,
+      includeUppercase: true,
+      includeLowercase: true,
+      includeSymbols: false,
+    });
+  }
+
+  private async deliverMemberCredentials(
+    email: string,
+    password: string,
+    fullName?: string,
+  ) {
+    const chatId =
+      await this.organizationRepository.findTelegramChatIdByEmail(email);
+
+    sendAccountCredentialsEmail(email, password, fullName).catch((error) => {
+      this.logger.warn(`Member credential email failed: ${String(error)}`);
+    });
+
+    if (chatId) {
+      void sendTelegramCredentialsToChat(
+        chatId,
+        email,
+        password,
+        fullName ?? '',
+      ).catch((error) => {
+        this.logger.warn(`Member credential telegram failed: ${String(error)}`);
+      });
+    }
   }
 
   async updateMembership(id: string, data: MembershipUpdateSchema) {

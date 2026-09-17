@@ -15,8 +15,13 @@ import {
   MEMBERSHIP_STATUS_LIST,
   ROLE_GROUPS,
 } from "@rona/config/tenancy";
-import { membershipCreateSchema, membershipUpdateSchema } from "@rona/validation/tenancy";
+import {
+  memberCreateSchema,
+  membershipCreateSchema,
+  membershipUpdateSchema,
+} from "@rona/validation/tenancy";
 import type {
+  MemberCreateSchema,
   MembershipCandidateDto,
   MembershipCreateSchema,
   MembershipWithUserDto,
@@ -35,10 +40,12 @@ import {
 } from "@/modules/workspace/components/ui";
 import {
   FormModal,
+  LabeledInput,
   LabeledSelect,
   ModalActions,
 } from "@/modules/workspace/components/form";
 import {
+  useCreateMember,
   useCreateMembership,
   useDeleteMembership,
   useMembershipCandidates,
@@ -49,6 +56,11 @@ import {
 interface CreateForm {
   userId: string;
   roleKeys: RoleKey[];
+}
+
+interface NewMemberForm {
+  fullName: string;
+  email: string;
 }
 
 interface EditForm {
@@ -122,6 +134,11 @@ export default function MembersView() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editing, setEditing] = useState<MembershipWithUserDto | null>(null);
   const [createForm, setCreateForm] = useState<CreateForm>({ userId: "", roleKeys: [] });
+  const [newMemberForm, setNewMemberForm] = useState<NewMemberForm>({
+    fullName: "",
+    email: "",
+  });
+  const [createMode, setCreateMode] = useState<"existing" | "new">("existing");
   const [editForm, setEditForm] = useState<EditForm>({ roleKeys: [], status: "" });
   const [search, setSearch] = useState("");
   const [candidateSearch, setCandidateSearch] = useState("");
@@ -132,6 +149,7 @@ export default function MembersView() {
 
   const { memberships, isLoading } = useMemberships();
   const createMembership = useCreateMembership();
+  const createMember = useCreateMember();
   const updateMembership = useUpdateMembership();
   const deleteMembership = useDeleteMembership();
   const { candidates } = useMembershipCandidates(candidateSearch);
@@ -150,6 +168,8 @@ export default function MembersView() {
   const resetCreate = () => {
     setIsCreateOpen(false);
     setCreateForm({ userId: "", roleKeys: [] });
+    setNewMemberForm({ fullName: "", email: "" });
+    setCreateMode("existing");
     setCandidateSearch("");
     setSelectedUser(null);
   };
@@ -196,6 +216,21 @@ export default function MembersView() {
     }));
 
   const submitCreate = () => {
+    if (createMode === "new") {
+      const parsed = memberCreateSchema.safeParse({
+        ...newMemberForm,
+        roleKeys: createForm.roleKeys,
+      });
+      if (!parsed.success) {
+        toast.error(parsed.error.issues[0]?.message ?? "Invalid member details");
+        return;
+      }
+      createMember.mutate(parsed.data as MemberCreateSchema, {
+        onSuccess: resetCreate,
+      });
+      return;
+    }
+
     if (!createForm.userId || !selectedUser) {
       toast.error("Search and select a user to add.");
       return;
@@ -332,8 +367,9 @@ export default function MembersView() {
             placeholder="Search name, email, status or role…"
           />
           <p className="text-xs text-zinc-500">
-            Members are added by user ID. The backend creates an active membership and
-            assigns the selected roles; the last active owner is always protected.
+            Add a platform user or create a new one. The backend creates an
+            active membership and assigns the selected roles; the last active
+            owner is always protected.
           </p>
         </div>
       </Card>
@@ -343,7 +379,7 @@ export default function MembersView() {
         rows={filteredMemberships}
         isLoading={isLoading}
         emptyMessage="No members found."
-        emptyDescription="Add a member by user ID to grant access to this organization."
+        emptyDescription="Add a member — create a new account or invite an existing user — to grant access to this organization."
         emptyAction={
           canCreate ? (
             <button
@@ -366,63 +402,121 @@ export default function MembersView() {
         maxWidth="max-w-xl"
       >
         <div className="space-y-3">
-          <div>
-            <p className="mb-1.5 text-xs font-medium text-zinc-700">Member</p>
-            <SearchInput
-              value={candidateSearch}
-              onChange={(event) => {
-                setCandidateSearch(event.target.value);
-                setSelectedUser(null);
-              }}
-              placeholder="Search by name or email…"
-            />
-            {selectedUser ? (
-              <div className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-zinc-800">
-                    {selectedUser.fullName}
-                  </p>
-                  <p className="truncate text-xs text-zinc-500">
-                    {selectedUser.email ?? "No email"}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={clearSelectedUser}
-                  className="shrink-0 text-xs font-medium text-rose-600 hover:text-rose-700"
-                >
-                  Clear
-                </button>
-              </div>
-            ) : candidates.length > 0 ? (
-              <ul className="mt-2 max-h-44 divide-y overflow-y-auto rounded-lg border border-zinc-200 bg-white">
-                {candidates.map((candidate) => (
-                  <li key={candidate.id}>
-                    <button
-                      type="button"
-                      onClick={() => selectCandidate(candidate)}
-                      className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-zinc-50"
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium text-zinc-800">
-                          {candidate.fullName}
-                        </span>
-                        <span className="block truncate text-xs text-zinc-500">
-                          {candidate.email ?? candidate.id}
-                        </span>
-                      </span>
-                      <HiOutlineUserPlus className="h-4 w-4 shrink-0 text-zinc-400" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : candidateSearch.trim().length > 0 ? (
-              <p className="mt-2 text-xs text-zinc-500">
-                No users found. User accounts must be created by the platform
-                admin before they can be added.
-              </p>
-            ) : null}
+          <div className="flex rounded-lg bg-zinc-100 p-0.5">
+            <button
+              type="button"
+              onClick={() => setCreateMode("existing")}
+              className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                createMode === "existing"
+                  ? "bg-white text-zinc-900 shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-700"
+              }`}
+            >
+              Existing user
+            </button>
+            <button
+              type="button"
+              onClick={() => setCreateMode("new")}
+              className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                createMode === "new"
+                  ? "bg-white text-zinc-900 shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-700"
+              }`}
+            >
+              New user
+            </button>
           </div>
+          {createMode === "existing" ? (
+            <div>
+              <p className="mb-1.5 text-xs font-medium text-zinc-700">Member</p>
+              <SearchInput
+                value={candidateSearch}
+                onChange={(event) => {
+                  setCandidateSearch(event.target.value);
+                  setSelectedUser(null);
+                }}
+                placeholder="Search by name or email…"
+              />
+              {selectedUser ? (
+                <div className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-zinc-800">
+                      {selectedUser.fullName}
+                    </p>
+                    <p className="truncate text-xs text-zinc-500">
+                      {selectedUser.email ?? "No email"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={clearSelectedUser}
+                    className="shrink-0 text-xs font-medium text-rose-600 hover:text-rose-700"
+                  >
+                    Clear
+                  </button>
+                </div>
+              ) : candidates.length > 0 ? (
+                <ul className="mt-2 max-h-44 divide-y overflow-y-auto rounded-lg border border-zinc-200 bg-white">
+                  {candidates.map((candidate) => (
+                    <li key={candidate.id}>
+                      <button
+                        type="button"
+                        onClick={() => selectCandidate(candidate)}
+                        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-zinc-50"
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-medium text-zinc-800">
+                            {candidate.fullName}
+                          </span>
+                          <span className="block truncate text-xs text-zinc-500">
+                            {candidate.email ?? candidate.id}
+                          </span>
+                        </span>
+                        <HiOutlineUserPlus className="h-4 w-4 shrink-0 text-zinc-400" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : candidateSearch.trim().length > 0 ? (
+                <p className="mt-2 text-xs text-zinc-500">
+                  No platform users match. Switch to &quot;New user&quot; to
+                  create the account right here.
+                </p>
+              ) : null}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <LabeledInput
+                label="Full name"
+                id="member-name"
+                value={newMemberForm.fullName}
+                onChange={(event) =>
+                  setNewMemberForm((previous) => ({
+                    ...previous,
+                    fullName: event.target.value,
+                  }))
+                }
+                placeholder="Jane Doe"
+              />
+              <LabeledInput
+                label="Email"
+                id="member-email"
+                type="email"
+                value={newMemberForm.email}
+                onChange={(event) =>
+                  setNewMemberForm((previous) => ({
+                    ...previous,
+                    email: event.target.value,
+                  }))
+                }
+                placeholder="you@company.com"
+              />
+              <p className="text-[10px] leading-relaxed text-zinc-400">
+                A new account is created and added to this organization. A
+                temporary password is sent to the email (and Telegram if bound).
+              </p>
+            </div>
+          )}
           <div>
             <p className="mb-1.5 text-xs font-medium text-zinc-700">Roles</p>
             <RoleChecklist selected={createForm.roleKeys} onToggle={toggleRole} />
@@ -432,7 +526,7 @@ export default function MembersView() {
           onCancel={resetCreate}
           onSubmit={submitCreate}
           submitLabel="Add Member"
-          isPending={createMembership.isPending}
+          isPending={createMembership.isPending || createMember.isPending}
         />
       </FormModal>
 

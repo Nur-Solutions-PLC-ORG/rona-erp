@@ -5,6 +5,7 @@ import {
   API_MEMBERSHIP_DELETE_URL,
   API_MEMBERSHIP_UPDATE_URL,
   API_MEMBERSHIPS_URL,
+  API_ORGANIZATION_MEMBERS_CREATE_URL,
   API_ORGANIZATION_SETTINGS_URL,
   API_ORGANIZATION_UPDATE_URL,
   API_ORGANIZATION_URL,
@@ -14,6 +15,7 @@ import {
 } from "@rona/routes/workspace";
 import type {
   AuditLogDto,
+  MemberCreateSchema,
   MembershipCandidateDto,
   MembershipCreateSchema,
   MembershipUpdateSchema,
@@ -67,6 +69,11 @@ export const ApiPostMembership = Request<
   MembershipWithUserDto,
   MembershipCreateSchema
 >("post", API_MEMBERSHIPS_CREATE_URL);
+
+export const ApiPostMember = Request<{ email: string }, MemberCreateSchema>(
+  "post",
+  API_ORGANIZATION_MEMBERS_CREATE_URL,
+);
 
 export const ApiPatchMembership = Request<
   MembershipWithUserDto,

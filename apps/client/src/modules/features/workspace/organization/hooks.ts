@@ -15,11 +15,13 @@ import {
   ApiPatchMembership,
   ApiPatchOrganization,
   ApiPatchRole,
+  ApiPostMember,
   ApiPostMembership,
   ApiDeleteMembership,
 } from "./api";
 import type { OrganizationRow } from "./api";
 import type {
+  MemberCreateSchema,
   MembershipCreateSchema,
   MembershipUpdateSchema,
   MembershipWithUserDto,
@@ -120,6 +122,19 @@ export const useCreateMembership = () => {
 
   return useCreateMutation<MembershipWithUserDto, MembershipCreateSchema>(
     (input) => ApiPostMembership({ body: input }),
+    (data) => {
+      toast.success(data.message);
+      void queryClient.invalidateQueries({ queryKey: ["organization-memberships"] });
+    },
+    (error) => toast.error(error.message),
+  );
+};
+
+export const useCreateMember = () => {
+  const queryClient = useQueryClient();
+
+  return useCreateMutation<{ email: string }, MemberCreateSchema>(
+    (input) => ApiPostMember({ body: input }),
     (data) => {
       toast.success(data.message);
       void queryClient.invalidateQueries({ queryKey: ["organization-memberships"] });
