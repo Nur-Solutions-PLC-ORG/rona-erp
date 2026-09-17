@@ -217,7 +217,7 @@ export default function UsersPage() {
         ]}
       />
       <Pager
-        prev={{ label: "Workforce", href: "/docs/modules/workforce" }}
+        prev={{ label: "Kiosk", href: "/docs/modules/kiosk" }}
         next={{ label: "Roles", href: "/docs/admin/roles" }}
       />
     </article>

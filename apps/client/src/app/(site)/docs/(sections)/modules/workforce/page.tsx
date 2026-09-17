@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Monitor } from "lucide-react";
 import {
   Callout,
@@ -218,8 +219,15 @@ export default function WorkforcePage() {
       <Section title="Kiosk mode">
         <Callout tone="info" title="Shared-device attendance" icon={Monitor}>
           Employees can check in and out from a shared device using their
-          employee ID — simple interface, shift display, and live status of who
-          is already clocked in.
+          employee ID and a short passcode — a large, touch-friendly interface
+          that also supports break start and break end. See the{" "}
+          <Link
+            href="/docs/modules/kiosk"
+            className="font-semibold text-[#581c87] underline underline-offset-4"
+          >
+            Kiosk guide
+          </Link>{" "}
+          to register and manage terminals.
         </Callout>
       </Section>
 
@@ -248,11 +256,12 @@ export default function WorkforcePage() {
             href: "/docs/admin/users",
             primary: true,
           },
+          { label: "Kiosk terminal", href: "/docs/modules/kiosk" },
         ]}
       />
       <Pager
         prev={{ label: "Finance", href: "/docs/modules/finance" }}
-        next={{ label: "Users", href: "/docs/admin/users" }}
+        next={{ label: "Kiosk", href: "/docs/modules/kiosk" }}
       />
     </article>
   );

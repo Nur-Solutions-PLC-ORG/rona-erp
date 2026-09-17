@@ -39,6 +39,7 @@ const sidebarSections = [
       { title: "Traceability", href: "/docs/modules/traceability" },
       { title: "Finance", href: "/docs/modules/finance" },
       { title: "Workforce", href: "/docs/modules/workforce" },
+      { title: "Kiosk", href: "/docs/modules/kiosk" },
     ],
   },
   {

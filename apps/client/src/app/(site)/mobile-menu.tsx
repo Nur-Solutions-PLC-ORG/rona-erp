@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   HiOutlineArrowRight,
   HiOutlineBars3,
@@ -10,10 +10,27 @@ import {
 
 type Props = {
   links: { label: string; href: string }[];
+  ctaHref?: string;
+  ctaLabel?: string;
 };
 
-export function MobileMenu({ links }: Props) {
+export function MobileMenu({
+  links,
+  ctaHref = "/sign-in",
+  ctaLabel = "Launch Workspace",
+}: Props) {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
   return (
     <div className="md:hidden">
@@ -21,8 +38,9 @@ export function MobileMenu({ links }: Props) {
         type="button"
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 text-zinc-600 transition-colors hover:bg-zinc-50"
+        aria-controls="site-mobile-menu"
+        onClick={() => setOpen((value) => !value)}
+        className="inline-flex h-9 w-9 items-center justify-center border border-[#e9e2f2] text-[#5c4d77] transition-colors hover:bg-[#f3eefb] hover:text-[#581c87]"
       >
         {open ? (
           <HiOutlineXMark className="h-5 w-5" />
@@ -32,25 +50,28 @@ export function MobileMenu({ links }: Props) {
       </button>
 
       {open ? (
-        <div className="absolute inset-x-0 top-16 border-b border-zinc-200 bg-white px-4 pb-6 shadow-sm">
-          <nav className="mx-auto max-w-6xl flex flex-col">
+        <div
+          id="site-mobile-menu"
+          className="absolute inset-x-0 top-14 border-b border-[#581c87] bg-white shadow-sm"
+        >
+          <nav className="mx-auto flex w-full max-w-7xl flex-col px-4 pb-6 pt-2 sm:px-6">
             {links.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="border-b border-zinc-100 py-3.5 text-sm font-medium text-zinc-700 last:border-0"
+                className="border-b border-[#e9e2f2] py-3.5 text-[13px] font-medium text-[#5c4d77] hover:text-[#581c87] last:border-0"
               >
                 {link.label}
               </a>
             ))}
             <Link
-              href="/sign-in"
+              href={ctaHref}
               onClick={() => setOpen(false)}
-              className="group mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-950 px-4 py-3 text-sm font-semibold text-white hover:bg-zinc-800"
+              className="mt-4 inline-flex items-center justify-center gap-2 border border-[#581c87] bg-[#581c87] px-4 py-3 text-[13px] font-semibold text-white transition-colors hover:bg-white hover:text-[#581c87]"
             >
-              Launch Workspace
-              <HiOutlineArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+              {ctaLabel}
+              <HiOutlineArrowRight className="h-4 w-4" />
             </Link>
           </nav>
         </div>

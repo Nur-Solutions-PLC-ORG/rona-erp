@@ -105,7 +105,7 @@ export default function FinanceApiPage() {
 
       <NextSteps
         title="Back to the docs hub"
-        body="Search all 24 guides, jump between sections, or revisit any topic."
+        body="Search all 25 guides, jump between sections, or revisit any topic."
         links={[
           { label: "Docs hub", href: "/docs", primary: true },
           { label: "Introduction", href: "/docs/getting-started/introduction" },

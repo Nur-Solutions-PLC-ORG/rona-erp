@@ -85,6 +85,11 @@ const docCategories = [
         href: "/docs/modules/workforce",
         meta: "Employees, shifts, attendance",
       },
+      {
+        title: "Kiosk",
+        href: "/docs/modules/kiosk",
+        meta: "Shared-device attendance terminal",
+      },
     ],
   },
   {
@@ -228,7 +233,7 @@ export default function DocsPage() {
         </h1>
         <p className="mt-4 max-w-2xl text-[14px] leading-relaxed text-[#5c4d77]">
           Everything you need to master Rona ERP — from your first warehouse to
-          five-hop lot tracing, Rona AI queries, and the full REST API. 24
+          five-hop lot tracing, Rona AI queries, and the full REST API. 25
           guides · 5 sections · updated with every release.
         </p>
       </header>

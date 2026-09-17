@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useSession } from "@/modules/auth/hooks";
 import { CLIENT_APP_LAUNCHER_PAGE } from "@rona/routes/app";
+import { MobileMenu } from "./mobile-menu";
 
 const container = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
 const hairline = "border-[#581c87]";
@@ -97,11 +98,17 @@ function Navbar() {
           )}
           <Link
             href={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
-            className="group flex items-center gap-2 bg-[#581c87] px-4 py-2 text-[13px] font-semibold text-white border border-[#581c87] hover:bg-white hover:text-[#581c87]"
+            className="group hidden items-center gap-2 border border-[#581c87] bg-[#581c87] px-4 py-2 text-[13px] font-semibold text-white hover:bg-white hover:text-[#581c87] sm:flex"
           >
             {user ? "Go to workspace" : "Launch Workspace"}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
+
+          <MobileMenu
+            links={navLinks}
+            ctaHref={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
+            ctaLabel={user ? "Go to workspace" : "Launch Workspace"}
+          />
         </div>
       </nav>
     </header>
