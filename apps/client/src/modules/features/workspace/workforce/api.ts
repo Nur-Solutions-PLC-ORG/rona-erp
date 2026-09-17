@@ -6,6 +6,8 @@ import {
   API_HR_DEPARTMENTS_URL,
   API_HR_EMPLOYEE_ARCHIVE_URL,
   API_HR_EMPLOYEE_DETAILS_URL,
+  API_HR_EMPLOYEE_FACE_REVOKE_URL,
+  API_HR_EMPLOYEE_FACES_URL,
   API_HR_EMPLOYEE_RESTORE_URL,
   API_HR_EMPLOYEES_URL,
   API_HR_POSITION_ARCHIVE_URL,
@@ -30,6 +32,12 @@ import type {
   ShiftCreateInput,
   ShiftUpdateInput,
 } from "@rona/types/hr";
+import type {
+  EmployeeFaceEnrollResult,
+  EmployeeFaceRevokeResult,
+  EmployeeFacesResult,
+  FaceEnrollInput,
+} from "@rona/types/kiosk";
 
 export const ApiGetEmployees = Request<Employee[]>("get", API_HR_EMPLOYEES_URL);
 
@@ -119,4 +127,19 @@ export const ApiPostShift = Request<Shift, ShiftCreateInput>(
 export const ApiPatchShift = Request<Shift, ShiftUpdateInput>(
   "patch",
   API_HR_SHIFT_DETAILS_URL,
+);
+
+export const ApiGetEmployeeFaces = Request<EmployeeFacesResult>(
+  "get",
+  API_HR_EMPLOYEE_FACES_URL,
+);
+
+export const ApiPostEmployeeFaceEnroll = Request<
+  EmployeeFaceEnrollResult,
+  FaceEnrollInput
+>("post", API_HR_EMPLOYEE_FACES_URL);
+
+export const ApiPostEmployeeFaceRevoke = Request<EmployeeFaceRevokeResult>(
+  "post",
+  API_HR_EMPLOYEE_FACE_REVOKE_URL,
 );

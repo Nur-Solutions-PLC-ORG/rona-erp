@@ -198,6 +198,11 @@ export const API_HR_EMPLOYEE_SHIFTS_URL = "/api/hr/employees/:id/shifts";
 export const API_HR_EMPLOYEE_SHIFT_END_URL =
   "/api/hr/employees/:id/shifts/:assignmentId/end";
 
+export const API_HR_EMPLOYEE_FACES_URL = "/api/hr/employees/:id/faces";
+
+export const API_HR_EMPLOYEE_FACE_REVOKE_URL =
+  "/api/hr/employees/:id/faces/:faceId/revoke";
+
 export const API_HR_DEPARTMENTS_URL = "/api/hr/departments";
 
 export const API_HR_DEPARTMENT_DETAILS_URL = "/api/hr/departments/:id";
@@ -240,6 +245,8 @@ export const API_KIOSK_AUTHENTICATE_URL = "/api/kiosk/authenticate";
 export const API_KIOSK_SIGN_OUT_URL = "/api/kiosk/sign-out";
 
 export const API_KIOSK_ATTENDANCE_URL = "/api/kiosk/attendance";
+
+export const API_KIOSK_FACE_PUNCH_URL = "/api/kiosk/face/punch";
 
 export const API_SALES_CUSTOMERS_URL = "/api/sales/customers";
 

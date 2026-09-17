@@ -7,10 +7,16 @@ import { useCreateMutation } from "@/hooks/utils";
 import type { ApiResponse, ResponseMeta } from "@rona/types/api";
 import type { Permission } from "@rona/types/tenancy";
 import type { AttendanceEvent, AttendanceEventType } from "@rona/types/hr";
+import type {
+  EmployeeFaceEnrollResult,
+  EmployeeFaceRevokeResult,
+  EmployeeFacesResult,
+} from "@rona/types/kiosk";
 import {
   ApiGetAttendanceEvents,
   ApiGetAttendanceSelfStatus,
   ApiGetDepartments,
+  ApiGetEmployeeFaces,
   ApiGetEmployees,
   ApiGetPositions,
   ApiGetShifts,
@@ -24,6 +30,8 @@ import {
   ApiPostAttendanceSelf,
   ApiPostDepartment,
   ApiPostEmployee,
+  ApiPostEmployeeFaceEnroll,
+  ApiPostEmployeeFaceRevoke,
   ApiPostPosition,
   ApiPostShift,
 } from "./api";
@@ -422,6 +430,55 @@ export const useUpdateShift = () => {
     (data) => {
       toast.success(data.message);
       void queryClient.invalidateQueries({ queryKey: ["hr-shifts"] });
+    },
+    (error) => toast.error(error.message),
+  );
+};
+
+export const useEmployeeFaces = (employeeId: string | null) => {
+  const { hasPermission } = usePermissions();
+
+  return useQuery({
+    queryKey: ["hr-employee-faces", employeeId],
+    queryFn: TryCatchNullWrap(() =>
+      ApiGetEmployeeFaces({ slugReplacement: { id: employeeId! } }),
+    ),
+    enabled: hasPermission("hr.employee.update") && Boolean(employeeId),
+  });
+};
+
+export const useEnrollFace = () => {
+  const queryClient = useQueryClient();
+
+  return useCreateMutation<
+    EmployeeFaceEnrollResult,
+    { id: string; facialId: string }
+  >(
+    ({ id, facialId }) =>
+      ApiPostEmployeeFaceEnroll({
+        slugReplacement: { id },
+        body: { facialId },
+      }),
+    () => {
+      void queryClient.invalidateQueries({ queryKey: ["hr-employee-faces"] });
+    },
+    (error) => toast.error(error.message),
+  );
+};
+
+export const useRevokeFace = () => {
+  const queryClient = useQueryClient();
+
+  return useCreateMutation<
+    EmployeeFaceRevokeResult,
+    { id: string; faceId: string }
+  >(
+    ({ id, faceId }) =>
+      ApiPostEmployeeFaceRevoke({
+        slugReplacement: { id, faceId },
+      }),
+    () => {
+      void queryClient.invalidateQueries({ queryKey: ["hr-employee-faces"] });
     },
     (error) => toast.error(error.message),
   );

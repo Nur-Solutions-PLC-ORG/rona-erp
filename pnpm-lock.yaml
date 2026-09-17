@@ -220,6 +220,9 @@ importers:
 
   apps/client:
     dependencies:
+      '@faceio/fiojs':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@hookform/resolvers':
         specifier: ^5.5.5
         version: 5.5.7(@sinclair/typebox@0.34.52)(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.83.0(react@19.2.4))(zod@3.25.76)
@@ -1304,6 +1307,9 @@ packages:
   '@eslint/plugin-kit@0.4.1':
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@faceio/fiojs@3.0.0':
+    resolution: {integrity: sha512-40kbDV00L/4ytNAzfJfEh2lPp3ES/P2gjMGbLtf/8+LCF+FSlKIZGAfnvbAnlJF54ElBYlM3oiXDUlPlP3sw1A==}
 
   '@fast-csv/format@4.3.5':
     resolution: {integrity: sha512-8iRn6QF3I8Ak78lNAa+Gdl5MJJBM5vRHivFtMRUWINdevNo00K7OXxS2PshawLKTejVwieIlPmK5YlLu6w4u8A==}
@@ -7904,6 +7910,8 @@ snapshots:
     dependencies:
       '@eslint/core': 0.17.0
       levn: 0.4.1
+
+  '@faceio/fiojs@3.0.0': {}
 
   '@fast-csv/format@4.3.5':
     dependencies:

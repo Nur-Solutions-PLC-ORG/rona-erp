@@ -5,6 +5,8 @@ import type {
   kioskListSearchParamsSchema,
   kioskAuthenticateSchema,
   kioskPunchSchema,
+  kioskFacePunchSchema,
+  faceEnrollSchema,
   kioskDto,
 } from "@rona/validation/kiosk";
 import type { AttendanceEventType } from "../hr/index.js";
@@ -18,6 +20,8 @@ export type KioskUpdateInput = z.infer<typeof kioskUpdateSchema>;
 export type KioskListSearchParams = z.infer<typeof kioskListSearchParamsSchema>;
 export type KioskAuthenticateInput = z.infer<typeof kioskAuthenticateSchema>;
 export type KioskPunchInput = z.infer<typeof kioskPunchSchema>;
+export type KioskFacePunchInput = z.infer<typeof kioskFacePunchSchema>;
+export type FaceEnrollInput = z.infer<typeof faceEnrollSchema>;
 
 export interface Paginated {
   readonly page: number;
@@ -47,4 +51,23 @@ export interface KioskPunchResult {
   employeeName: string;
   eventType: AttendanceEventType;
   eventAt: string;
+}
+
+export interface EmployeeFaceMetadata {
+  id: string;
+  enrolledAt: string;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+}
+
+export interface EmployeeFacesResult {
+  faces: EmployeeFaceMetadata[];
+}
+
+export interface EmployeeFaceEnrollResult {
+  face: EmployeeFaceMetadata;
+}
+
+export interface EmployeeFaceRevokeResult {
+  face: EmployeeFaceMetadata | null;
 }

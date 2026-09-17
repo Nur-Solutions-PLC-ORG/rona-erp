@@ -7,15 +7,18 @@ import { EmployeesController } from './employees.controller';
 import { DepartmentsController } from './departments.controller';
 import { AttendanceController } from './attendance.controller';
 import { ShiftsController } from './shifts.controller';
+import { EmployeeFacesController } from './employee-faces.controller';
 import { EmployeesRepository } from './employees.repository';
 import { DepartmentsRepository } from './departments.repository';
 import { AttendanceRepository } from './attendance.repository';
 import { ShiftsRepository } from './shifts.repository';
+import { FaceRepository } from './face.repository';
 import { EmployeesService } from './employees.service';
 import { EmergencyContactsService } from './contacts.service';
 import { DepartmentsService } from './departments.service';
 import { AttendanceService } from './attendance.service';
 import { ShiftsService } from './shifts.service';
+import { FaceService } from './face.service';
 
 @Module({
   imports: [AuthModule, TenancyModule, RbacModule, AuditModule],
@@ -24,18 +27,26 @@ import { ShiftsService } from './shifts.service';
     DepartmentsController,
     AttendanceController,
     ShiftsController,
+    EmployeeFacesController,
   ],
   providers: [
     EmployeesRepository,
     DepartmentsRepository,
     AttendanceRepository,
     ShiftsRepository,
+    FaceRepository,
     EmployeesService,
     EmergencyContactsService,
     DepartmentsService,
     AttendanceService,
     ShiftsService,
+    FaceService,
   ],
-  exports: [AttendanceService, EmployeesRepository, AttendanceRepository],
+  exports: [
+    AttendanceService,
+    EmployeesRepository,
+    AttendanceRepository,
+    FaceService,
+  ],
 })
 export class HrModule {}

@@ -43,3 +43,18 @@ export const kioskPunchSchema = z.object({
     ),
   eventType: z.enum(ATTENDANCE_EVENT_TYPE_LIST),
 });
+
+export const kioskFacePunchSchema = z.object({
+  eventType: z.enum(ATTENDANCE_EVENT_TYPE_LIST),
+  facialId: z
+    .string()
+    .trim()
+    .uuid("Facial ID must be a valid identifier"),
+});
+
+export const faceEnrollSchema = z.object({
+  facialId: z
+    .string()
+    .trim()
+    .uuid("Facial ID must be a valid identifier"),
+});

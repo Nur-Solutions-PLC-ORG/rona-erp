@@ -1,4 +1,4 @@
-import { Monitor, ShieldCheck } from "lucide-react";
+import { Monitor, ScanFace, ShieldCheck } from "lucide-react";
 import {
   Callout,
   Card,
@@ -24,8 +24,8 @@ export default function KioskPage() {
       <DocHeader
         eyebrow="Core Modules / 08"
         title="Kiosk"
-        lede="The Kiosk turns any tablet or shared device into a secure attendance terminal. Employees clock in, start breaks, end breaks, and clock out with their employee ID and a short passcode — no personal login required."
-        tags={["ATTENDANCE", "SHARED DEVICE", "PASSCODE"]}
+        lede="The Kiosk turns any tablet or shared device into a secure attendance terminal. Employees clock in, start breaks, end breaks, and clock out with their employee ID and a short passcode — or with a face scan — no personal login required."
+        tags={["ATTENDANCE", "SHARED DEVICE", "FACE RECOGNITION"]}
       />
 
       <Section title="Key features">
@@ -35,6 +35,7 @@ export default function KioskPage() {
               "Dedicated terminal that runs without a user session",
               "One-time device credential ties the tablet to your organization",
               "Employee ID plus a short numeric passcode",
+              "Optional face sign-in powered by FaceIO",
               "Clock in, clock out, break start, and break end",
               "Large touch-friendly actions for shop-floor tablets",
               "Success screen with automatic reset for the next employee",
@@ -59,7 +60,7 @@ export default function KioskPage() {
             },
             {
               title: "Employee identifies themselves",
-              body: "On the idle screen the employee enters their employee ID and five-digit passcode.",
+              body: "On the idle screen the employee enters their employee ID and five-digit passcode, or taps “Sign in with Face” and looks at the camera.",
             },
             {
               title: "Choose an attendance action",
@@ -85,7 +86,7 @@ export default function KioskPage() {
             {
               field: "Idle",
               description:
-                "The main entry screen — employee ID, passcode, and the four attendance actions, with a live clock.",
+                "The main entry screen — employee ID, passcode, or face sign-in, and the four attendance actions, with a live clock.",
             },
             {
               field: "Success",
@@ -110,6 +111,51 @@ export default function KioskPage() {
             { field: "BREAK_END", description: "The employee returns from a break" },
           ]}
         />
+      </Section>
+
+      <Section title="Face sign-in">
+        <P>
+          Instead of typing an employee ID and passcode, an employee can tap{" "}
+          <strong>Sign in with Face</strong>. A face scan is matched against
+          the employee’s enrolled facial ID (FaceIO cloud), and the punch is
+          recorded the same way as a passcode punch — the terminal never holds
+          employee credentials. Each scan is a fresh authentication; there are
+          no stored kiosk sessions or shared face tokens.
+        </P>
+        <FieldTable
+          label="Enrollment"
+          rows={[
+            {
+              field: "Enroll",
+              description:
+                "An HR administrator opens the employee’s Face ID panel from the Employees list and scans the employee’s face once.",
+            },
+            {
+              field: "One active face",
+              description:
+                "Each employee keeps a single active face; enrolling a new one automatically revokes the previous.",
+            },
+            {
+              field: "Revoke",
+              description:
+                "An enrolled face can be revoked at any time, which immediately blocks that facial ID at every kiosk.",
+            },
+            {
+              field: "Configuration",
+              description:
+                "Requires the NEXT_PUBLIC_FACEIO_PUBLIC_ID setting on the terminal build. The face option is hidden when unset.",
+            },
+          ]}
+        />
+        <Callout tone="warn" title="Face recognition is not absolute" icon={ScanFace}>
+          Facial recognition can be defeated by photos, videos, or identical
+          twins, and is not a guarantee of identity. Treat face sign-in as a
+          convenience layer, keep passcodes available, and use it where the
+          terminal can be supervised. Face data and images are processed and
+          stored by the FaceIO cloud service; make employees aware of this
+          consent before enrolling them. The FaceIO free tier is limited, so
+          plan enrollment capacity for your workforce size.
+        </Callout>
       </Section>
 
       <Section title="Device credentials">
@@ -143,7 +189,9 @@ export default function KioskPage() {
           <CheckList
             items={[
               "Employees never need a personal login on the shared device",
-              "Each punch requires the employee ID and a five-digit passcode",
+              "Each punch requires the employee ID and a five-digit passcode (or a face scan)",
+              "Every face scan is authenticated against the enrolled facial ID",
+              "Enrolled faces can be revoked per employee at any time",
               "Authentication attempts and punches are rate limited",
               "Device sessions expire and can be revoked by deactivating the kiosk",
               "Only administrators with kiosk permissions can manage devices",

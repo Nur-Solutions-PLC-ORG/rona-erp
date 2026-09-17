@@ -6,13 +6,18 @@ import { AuditModule } from '@/modules/audit/audit.module';
 import { HrModule } from '@/modules/features/hr/hr.module';
 import { KiosksController } from './kiosks.controller';
 import { KioskTerminalController } from './kiosk-terminal.controller';
+import { KioskFaceController } from './kiosk-face.controller';
 import { KiosksRepository } from './kiosks.repository';
 import { KioskService } from './kiosk.service';
 import { KioskSessionGuard } from './kiosk-session.guard';
 
 @Module({
   imports: [AuthModule, TenancyModule, RbacModule, AuditModule, HrModule],
-  controllers: [KiosksController, KioskTerminalController],
+  controllers: [
+    KiosksController,
+    KioskTerminalController,
+    KioskFaceController,
+  ],
   providers: [KiosksRepository, KioskService, KioskSessionGuard],
   exports: [KiosksRepository, KioskService],
 })

@@ -57,9 +57,31 @@ export default function WorkforcePage() {
             },
             { field: "Position", description: "Job title or role" },
             { field: "Shift", description: "Assigned shift schedule" },
+            {
+              field: "Kiosk passcode",
+              description: "Five-digit code for kiosk terminal punches",
+            },
+            {
+              field: "Face ID",
+              description: "Optional enrolled facial ID for kiosk face sign-in",
+            },
             { field: "Status", description: "ACTIVE or INACTIVE" },
           ]}
         />
+        <Callout tone="info" title="Face enrollment" icon={Monitor}>
+          Under each employee’s <strong>Face ID</strong> action an
+          administrator can scan and enroll the employee’s face once, revoke
+          it, or replace it. Only one active face is kept per employee. Enrolled
+          employees can then sign in on kiosk terminals without a passcode. See
+          the{" "}
+          <Link
+            href="/docs/modules/kiosk"
+            className="font-semibold text-[#581c87] underline underline-offset-4"
+          >
+            Kiosk guide
+          </Link>{" "}
+          for how face sign-in works on the terminal.
+        </Callout>
       </Section>
 
       <Section title="Departments">
@@ -219,8 +241,9 @@ export default function WorkforcePage() {
       <Section title="Kiosk mode">
         <Callout tone="info" title="Shared-device attendance" icon={Monitor}>
           Employees can check in and out from a shared device using their
-          employee ID and a short passcode — a large, touch-friendly interface
-          that also supports break start and break end. See the{" "}
+          employee ID and a short passcode — or a face scan — through a large,
+          touch-friendly interface that also supports break start and break
+          end. See the{" "}
           <Link
             href="/docs/modules/kiosk"
             className="font-semibold text-[#581c87] underline underline-offset-4"

@@ -8,6 +8,7 @@ import {
   HiOutlineArrowRightOnRectangle,
   HiOutlineCheckCircle,
   HiOutlineDevicePhoneMobile,
+  HiOutlineFaceSmile,
   HiOutlinePause,
   HiOutlinePlay,
 } from "react-icons/hi2";
@@ -15,8 +16,14 @@ import Spinner from "@/components/custom/spinner";
 import {
   postKioskAttendance,
   postKioskAuthenticate,
+  postKioskFaceAttendance,
   postKioskSignOut,
 } from "../api";
+import {
+  authenticateFace,
+  friendlyFaceIoError,
+  isFaceIoConfigured,
+} from "../faceio";
 
 type Screen = "setup" | "idle" | "success";
 
@@ -100,6 +107,8 @@ export default function KioskTerminal() {
   const [deviceToken, setDeviceToken] = useState("");
   const [eid, setEid] = useState("");
   const [passcode, setPasscode] = useState("");
+  const [faceToken, setFaceToken] = useState<string | null>(null);
+  const [faceScanning, setFaceScanning] = useState(false);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState<{
     employeeName: string;
@@ -132,6 +141,7 @@ export default function KioskTerminal() {
       setResetIn(null);
       setEid("");
       setPasscode("");
+      setFaceToken(null);
       setScreen("idle");
     }, 1000 * IDLE_RESET_SECONDS);
   }, []);
@@ -174,11 +184,16 @@ export default function KioskTerminal() {
     setBusy(true);
     setMessage("");
     try {
-      const response = await postKioskAttendance({
-        eid: eid.trim(),
-        passcode: passcode.trim(),
-        eventType,
-      });
+      const response = faceToken
+        ? await postKioskFaceAttendance({
+            eventType,
+            facialId: faceToken,
+          })
+        : await postKioskAttendance({
+            eid: eid.trim(),
+            passcode: passcode.trim(),
+            eventType,
+          });
       if (response.success && response.data) {
         setSuccess({
           employeeName: response.data.employeeName,
@@ -213,6 +228,28 @@ export default function KioskTerminal() {
     }
   };
 
+  const handleFaceSignIn = async () => {
+    if (busy || faceScanning) return;
+    if (!isFaceIoConfigured()) {
+      setMessage("Face sign-in is not configured on this kiosk.");
+      return;
+    }
+    setBusy(true);
+    setFaceScanning(true);
+    setMessage("");
+    try {
+      const facialId = await authenticateFace();
+      setFaceToken(facialId);
+      setPasscode("");
+      setMessage("Face recognized. Choose an action.");
+    } catch (error) {
+      setMessage(friendlyFaceIoError(error));
+    } finally {
+      setFaceScanning(false);
+      setBusy(false);
+    }
+  };
+
   const handleSignOut = async () => {
     try {
       await postKioskSignOut();
@@ -224,12 +261,15 @@ export default function KioskTerminal() {
     setDeviceToken("");
     setEid("");
     setPasscode("");
+    setFaceToken(null);
     setSuccess(null);
     setMessage("");
     setScreen("setup");
   };
 
-  const canPunch = eid.trim().length > 0 && passcode.trim().length > 0 && !busy;
+  const canPunch =
+    ((eid.trim().length > 0 && passcode.trim().length > 0) || faceToken !== null) &&
+    !busy;
 
   return (
     <div className="min-h-screen flex flex-col select-none bg-slate-100 text-slate-900">
@@ -385,9 +425,64 @@ export default function KioskTerminal() {
                 </p>
               ) : (
                 <p className="text-center text-sm text-slate-400">
-                  Enter your employee ID and passcode, then choose an action.
+                  {faceToken
+                    ? "Face recognized. Choose an action to record attendance."
+                    : "Enter your employee ID and passcode, or sign in with your face, then choose an action."}
                 </p>
               )}
+
+              <div>
+                <div className="relative flex items-center gap-3">
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Or
+                  </span>
+                  <div className="h-px flex-1 bg-slate-200" />
+                </div>
+
+                <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleFaceSignIn}
+                    disabled={busy || faceScanning || faceToken !== null}
+                    className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white px-6 py-4 text-lg font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-slate-900 disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    {faceScanning ? (
+                      <>
+                        <Spinner className="h-5 w-5" />
+                        Scanning…
+                      </>
+                    ) : faceToken ? (
+                      <>
+                        <HiOutlineFaceSmile className="h-6 w-6 text-emerald-600" />
+                        Face recognized
+                      </>
+                    ) : (
+                      <>
+                        <HiOutlineFaceSmile className="h-6 w-6" />
+                        Sign in with Face
+                      </>
+                    )}
+                  </button>
+                  {faceToken ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFaceToken(null);
+                        setMessage("");
+                      }}
+                      className="text-sm font-medium text-slate-500 transition-colors hover:text-slate-800"
+                    >
+                      Clear face
+                    </button>
+                  ) : null}
+                </div>
+                {!isFaceIoConfigured() ? (
+                  <p className="mt-2 text-center text-xs text-slate-400">
+                    Face sign-in is not configured on this terminal.
+                  </p>
+                ) : null}
+              </div>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 {EVENT_ORDER.map((eventType) => {

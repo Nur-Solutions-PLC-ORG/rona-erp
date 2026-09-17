@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@faceio/fiojs": "^3.0.0",
     "@hookform/resolvers": "^5.5.5",
     "@rona/config": "workspace:*",
     "@rona/routes": "workspace:*",

@@ -165,3 +165,21 @@ export class EmployeeShiftConflictException extends ApiException {
     super(HttpStatus.CONFLICT, message);
   }
 }
+
+export class EmployeeFaceConflictException extends ApiException {
+  constructor() {
+    super(
+      HttpStatus.CONFLICT,
+      'This face is already registered for an employee.',
+    );
+  }
+}
+
+export class EmployeeFaceNotFoundException extends ApiException {
+  constructor() {
+    super(
+      HttpStatus.NOT_FOUND,
+      'This face is not enrolled for the employee.',
+    );
+  }
+}
