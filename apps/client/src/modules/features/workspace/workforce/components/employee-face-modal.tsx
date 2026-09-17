@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { HiOutlineFaceSmile, HiOutlineTrash } from "react-icons/hi2";
+import { HiOutlineFaceSmile } from "react-icons/hi2";
 import type { Employee } from "@rona/types/hr";
 import type { EmployeeFaceMetadata } from "@rona/types/kiosk";
 import Spinner from "@/components/custom/spinner";
@@ -20,9 +20,8 @@ import {
 } from "@/modules/workspace/components/form";
 import {
   enrollFace,
-  isFaceIoConfigured,
-  friendlyFaceIoError,
-} from "@/modules/kiosk/faceio";
+  friendlyFaceError,
+} from "@/modules/kiosk/face-api";
 import { useEmployeeFaces, useEnrollFace, useRevokeFace } from "../hooks";
 
 function EnrolledFaceRow({
@@ -82,21 +81,16 @@ export default function EmployeeFaceModal({
   const revokeMutation = useRevokeFace();
 
   const faces = facesQuery.data?.data?.faces ?? [];
-  const configured = isFaceIoConfigured();
 
   const handleEnroll = async () => {
     if (!employee || busy) return;
-    if (!configured) {
-      toast.info("Face authentication is not configured on this device.");
-      return;
-    }
     setBusy(true);
     try {
-      const facialId = await enrollFace({ employeeId: employee.id });
-      await enrollMutation.mutateAsync({ id: employee.id, facialId });
+      const descriptor = await enrollFace();
+      await enrollMutation.mutateAsync({ id: employee.id, descriptor });
       toast.success("Face enrolled successfully.");
     } catch (error) {
-      toast.error(friendlyFaceIoError(error));
+      toast.error(friendlyFaceError(error));
     } finally {
       setBusy(false);
     }
@@ -156,7 +150,12 @@ export default function EmployeeFaceModal({
         </ModalSection>
       </ModalBody>
       <ModalFooter>
-        <button type="button" className={BTN_PRIMARY} onClick={handleEnroll}>
+        <button
+          type="button"
+          className={BTN_PRIMARY}
+          onClick={handleEnroll}
+          disabled={busy || !employee}
+        >
           {busy ? "Scanning…" : "Enroll Face"}
         </button>
       </ModalFooter>

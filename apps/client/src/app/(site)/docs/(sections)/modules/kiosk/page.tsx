@@ -35,7 +35,7 @@ export default function KioskPage() {
               "Dedicated terminal that runs without a user session",
               "One-time device credential ties the tablet to your organization",
               "Employee ID plus a short numeric passcode",
-              "Optional face sign-in powered by FaceIO",
+              "Optional face sign-in (face-api.js, runs entirely on the device)",
               "Clock in, clock out, break start, and break end",
               "Large touch-friendly actions for shop-floor tablets",
               "Success screen with automatic reset for the next employee",
@@ -116,11 +116,15 @@ export default function KioskPage() {
       <Section title="Face sign-in">
         <P>
           Instead of typing an employee ID and passcode, an employee can tap{" "}
-          <strong>Sign in with Face</strong>. A face scan is matched against
-          the employee’s enrolled facial ID (FaceIO cloud), and the punch is
-          recorded the same way as a passcode punch — the terminal never holds
-          employee credentials. Each scan is a fresh authentication; there are
-          no stored kiosk sessions or shared face tokens.
+          <strong>Sign in with Face</strong>. The terminal captures a face and
+          produces a recognition descriptor using face-api.js, which runs
+          entirely in the browser with models bundled into the app — no
+          third-party cloud service and no photos are ever uploaded. The
+          descriptor is matched against the organization’s enrolled employees,
+          and the punch is recorded the same way as a passcode punch — the
+          terminal never holds employee credentials. Each scan is a fresh
+          authentication; there are no stored kiosk sessions or shared face
+          tokens.
         </P>
         <FieldTable
           label="Enrollment"
@@ -128,7 +132,7 @@ export default function KioskPage() {
             {
               field: "Enroll",
               description:
-                "An HR administrator opens the employee’s Face ID panel from the Employees list and scans the employee’s face once.",
+                "An HR administrator opens the employee’s Face ID panel from the Employees list and scans the employee’s face once to capture a descriptor.",
             },
             {
               field: "One active face",
@@ -138,23 +142,23 @@ export default function KioskPage() {
             {
               field: "Revoke",
               description:
-                "An enrolled face can be revoked at any time, which immediately blocks that facial ID at every kiosk.",
+                "An enrolled face can be revoked at any time, which immediately removes that descriptor from kiosk matching.",
             },
             {
-              field: "Configuration",
+              field: "Privacy",
               description:
-                "Requires the NEXT_PUBLIC_FACEIO_PUBLIC_ID setting on the terminal build. The face option is hidden when unset.",
+                "Only the 128-value numeric descriptor is stored. Camera frames stay on the device and are discarded after each scan.",
             },
           ]}
         />
         <Callout tone="warn" title="Face recognition is not absolute" icon={ScanFace}>
           Facial recognition can be defeated by photos, videos, or identical
-          twins, and is not a guarantee of identity. Treat face sign-in as a
-          convenience layer, keep passcodes available, and use it where the
-          terminal can be supervised. Face data and images are processed and
-          stored by the FaceIO cloud service; make employees aware of this
-          consent before enrolling them. The FaceIO free tier is limited, so
-          plan enrollment capacity for your workforce size.
+          twins, and is not a guarantee of identity. Accuracy also depends on
+          lighting and camera quality. Treat face sign-in as a convenience
+          layer, keep passcodes available, and use it where the terminal can
+          be supervised. New employees cannot be recognized until an
+          administrator has enrolled their face and the kiosk has reloaded the
+          enrollment list.
         </Callout>
       </Section>
 
@@ -190,7 +194,7 @@ export default function KioskPage() {
             items={[
               "Employees never need a personal login on the shared device",
               "Each punch requires the employee ID and a five-digit passcode (or a face scan)",
-              "Every face scan is authenticated against the enrolled facial ID",
+              "Every face scan is matched against the enrolled face descriptors on the device",
               "Enrolled faces can be revoked per employee at any time",
               "Authentication attempts and punches are rate limited",
               "Device sessions expire and can be revoked by deactivating the kiosk",

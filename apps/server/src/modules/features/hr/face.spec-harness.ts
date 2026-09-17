@@ -17,11 +17,14 @@ export const MEMBERSHIP_A = '33333333-3333-4333-8333-333333333333';
 
 export const EMPLOYEE_ID = 'employee-1';
 export const FACE_ID = 'face-1';
-export const FACIAL_ID = 'facial-1';
 export const KIOSK_ID = 'kiosk-1';
 export const DEVICE_ID = 'KSK-TEST001';
 export const EVENT_AT = new Date('2026-09-02T09:00:00Z');
 export const ENROLLED_AT = new Date('2026-09-01T08:00:00Z');
+
+export const DESCRIPTOR = Array.from({ length: 128 }, (_, index) =>
+  index / 128,
+);
 
 export const DEVICE = {
   kioskId: KIOSK_ID,
@@ -42,7 +45,7 @@ export const FACE_ROW = {
   id: FACE_ID,
   organizationId: ORG_A,
   employeeId: EMPLOYEE_ID,
-  facialId: FACIAL_ID,
+  descriptor: JSON.stringify(DESCRIPTOR),
   enrolledAt: ENROLLED_AT,
   lastUsedAt: null,
   revokedAt: null,
@@ -57,7 +60,8 @@ export const FACE_MATCH = {
 
 export const repoList = jest.fn();
 export const repoGetById = jest.fn();
-export const repoFindActiveByFacialId = jest.fn();
+export const repoFindActiveById = jest.fn();
+export const repoListDescriptorsByOrganization = jest.fn();
 export const repoInsertEnrollment = jest.fn();
 export const repoRevokeExisting = jest.fn();
 export const repoRevoke = jest.fn();
@@ -65,7 +69,8 @@ export const repoMarkUsed = jest.fn();
 export const faceRepository = {
   list: repoList,
   getById: repoGetById,
-  findActiveByFacialId: repoFindActiveByFacialId,
+  findActiveById: repoFindActiveById,
+  listDescriptorsByOrganization: repoListDescriptorsByOrganization,
   insertEnrollment: repoInsertEnrollment,
   revokeExisting: repoRevokeExisting,
   revoke: repoRevoke,
@@ -104,7 +109,8 @@ export function setupTransactionMock(): void {
 export function defaultMocks(): void {
   empFindById.mockResolvedValue(EMPLOYEE);
   repoList.mockResolvedValue([]);
-  repoFindActiveByFacialId.mockResolvedValue(null);
+  repoFindActiveById.mockResolvedValue(null);
+  repoListDescriptorsByOrganization.mockResolvedValue([]);
   repoInsertEnrollment.mockResolvedValue(FACE_ROW);
   repoRevokeExisting.mockResolvedValue(undefined);
   repoRevoke.mockResolvedValue(FACE_ROW);

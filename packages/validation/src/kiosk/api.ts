@@ -46,15 +46,16 @@ export const kioskPunchSchema = z.object({
 
 export const kioskFacePunchSchema = z.object({
   eventType: z.enum(ATTENDANCE_EVENT_TYPE_LIST),
-  facialId: z
+  faceId: z
     .string()
     .trim()
-    .uuid("Facial ID must be a valid identifier"),
+    .uuid("Face ID must be a valid identifier"),
 });
 
+export const faceDescriptorSchema = z
+  .array(z.number().finite())
+  .length(128, "Face descriptor must contain exactly 128 values");
+
 export const faceEnrollSchema = z.object({
-  facialId: z
-    .string()
-    .trim()
-    .uuid("Facial ID must be a valid identifier"),
+  descriptor: faceDescriptorSchema,
 });

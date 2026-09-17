@@ -14,16 +14,13 @@ import {
 } from "react-icons/hi2";
 import Spinner from "@/components/custom/spinner";
 import {
+  getKioskFaceDescriptors,
   postKioskAttendance,
   postKioskAuthenticate,
   postKioskFaceAttendance,
   postKioskSignOut,
 } from "../api";
-import {
-  authenticateFace,
-  friendlyFaceIoError,
-  isFaceIoConfigured,
-} from "../faceio";
+import { authenticateFace, friendlyFaceError } from "../face-api";
 
 type Screen = "setup" | "idle" | "success";
 
@@ -187,7 +184,7 @@ export default function KioskTerminal() {
       const response = faceToken
         ? await postKioskFaceAttendance({
             eventType,
-            facialId: faceToken,
+            faceId: faceToken,
           })
         : await postKioskAttendance({
             eid: eid.trim(),
@@ -230,20 +227,29 @@ export default function KioskTerminal() {
 
   const handleFaceSignIn = async () => {
     if (busy || faceScanning) return;
-    if (!isFaceIoConfigured()) {
-      setMessage("Face sign-in is not configured on this kiosk.");
-      return;
-    }
     setBusy(true);
     setFaceScanning(true);
-    setMessage("");
+    setMessage("Looking for your face…");
     try {
-      const facialId = await authenticateFace();
-      setFaceToken(facialId);
+      const response = await getKioskFaceDescriptors();
+      if (!response.success || !response.data) {
+        throw new Error("DESCRIPTORS_UNAVAILABLE");
+      }
+      const faceId = await authenticateFace(
+        response.data.faces.map((face) => ({
+          id: face.id,
+          descriptor: face.descriptor,
+        })),
+      );
+      setFaceToken(faceId);
       setPasscode("");
       setMessage("Face recognized. Choose an action.");
     } catch (error) {
-      setMessage(friendlyFaceIoError(error));
+      if (error instanceof Error && error.message === "DESCRIPTORS_UNAVAILABLE") {
+        setMessage("Could not load enrolled faces. Check the kiosk connection.");
+      } else {
+        setMessage(friendlyFaceError(error));
+      }
     } finally {
       setFaceScanning(false);
       setBusy(false);
@@ -477,11 +483,6 @@ export default function KioskTerminal() {
                     </button>
                   ) : null}
                 </div>
-                {!isFaceIoConfigured() ? (
-                  <p className="mt-2 text-center text-xs text-slate-400">
-                    Face sign-in is not configured on this terminal.
-                  </p>
-                ) : null}
               </div>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

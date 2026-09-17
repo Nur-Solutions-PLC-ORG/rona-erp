@@ -452,12 +452,12 @@ export const useEnrollFace = () => {
 
   return useCreateMutation<
     EmployeeFaceEnrollResult,
-    { id: string; facialId: string }
+    { id: string; descriptor: number[] }
   >(
-    ({ id, facialId }) =>
+    ({ id, descriptor }) =>
       ApiPostEmployeeFaceEnroll({
         slugReplacement: { id },
-        body: { facialId },
+        body: { descriptor },
       }),
     () => {
       void queryClient.invalidateQueries({ queryKey: ["hr-employee-faces"] });

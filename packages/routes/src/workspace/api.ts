@@ -248,6 +248,8 @@ export const API_KIOSK_ATTENDANCE_URL = "/api/kiosk/attendance";
 
 export const API_KIOSK_FACE_PUNCH_URL = "/api/kiosk/face/punch";
 
+export const API_KIOSK_FACE_DESCRIPTORS_URL = "/api/kiosk/face/descriptors";
+
 export const API_SALES_CUSTOMERS_URL = "/api/sales/customers";
 
 export const API_SALES_CUSTOMER_DETAILS_URL = "/api/sales/customers/:id";

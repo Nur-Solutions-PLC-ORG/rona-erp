@@ -17,7 +17,7 @@ export const employeeFaces = pgTable(
       .references(() => organizations.id, { onDelete: 'cascade' })
       .notNull(),
     employeeId: uuid('employee_id').notNull(),
-    facialId: text('facial_id').notNull(),
+    descriptor: text('descriptor').notNull(),
     enrolledAt: timestamp('enrolled_at', { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -29,7 +29,6 @@ export const employeeFaces = pgTable(
       table.id,
       table.organizationId,
     ),
-    unique('employee_faces_facial_id_unique').on(table.facialId),
     index('employee_faces_organization_employee_idx').on(
       table.organizationId,
       table.employeeId,

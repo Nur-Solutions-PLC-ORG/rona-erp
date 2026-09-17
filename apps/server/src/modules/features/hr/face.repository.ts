@@ -36,13 +36,13 @@ export class FaceRepository extends TenantScopedRepository {
     return row;
   }
 
-  async findActiveByFacialId(facialId: string) {
+  async findActiveById(faceId: string) {
     const [row] = await db
       .select({
         id: employeeFaces.id,
         organizationId: employeeFaces.organizationId,
         employeeId: employeeFaces.employeeId,
-        facialId: employeeFaces.facialId,
+        descriptor: employeeFaces.descriptor,
         enrolledAt: employeeFaces.enrolledAt,
         lastUsedAt: employeeFaces.lastUsedAt,
         revokedAt: employeeFaces.revokedAt,
@@ -60,7 +60,7 @@ export class FaceRepository extends TenantScopedRepository {
       )
       .where(
         and(
-          eq(employeeFaces.facialId, facialId),
+          eq(employeeFaces.id, faceId),
           isNull(employeeFaces.revokedAt),
         ),
       )
@@ -69,11 +69,26 @@ export class FaceRepository extends TenantScopedRepository {
     return row;
   }
 
+  async listDescriptorsByOrganization(organizationId: string) {
+    return db
+      .select({
+        id: employeeFaces.id,
+        descriptor: employeeFaces.descriptor,
+      })
+      .from(employeeFaces)
+      .where(
+        and(
+          eq(employeeFaces.organizationId, organizationId),
+          isNull(employeeFaces.revokedAt),
+        ),
+      );
+  }
+
   async insertEnrollment(
     data: {
       organizationId: string;
       employeeId: string;
-      facialId: string;
+      descriptor: string;
     },
     tx: Executor,
   ) {

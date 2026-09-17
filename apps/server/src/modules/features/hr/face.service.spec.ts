@@ -1,4 +1,5 @@
 import {
+  DESCRIPTOR,
   DEVICE,
   EMPLOYEE,
   EMPLOYEE_ID,
@@ -7,7 +8,6 @@ import {
   FACE_ID,
   FACE_MATCH,
   FACE_ROW,
-  FACIAL_ID,
   KIOSK_ID,
   ORG_A,
   ORG_B,
@@ -17,9 +17,10 @@ import {
   faceRepository,
   mockTx,
   punchKiosk,
-  repoFindActiveByFacialId,
+  repoFindActiveById,
   repoInsertEnrollment,
   repoList,
+  repoListDescriptorsByOrganization,
   repoMarkUsed,
   repoRevoke,
   repoRevokeExisting,
@@ -30,7 +31,6 @@ import {
 import { rateLimit } from '@/redis';
 import {
   EmployeeArchivedException,
-  EmployeeFaceConflictException,
   EmployeeFaceNotFoundException,
   EmployeeNotFoundException,
 } from './hr.exception';
@@ -99,19 +99,47 @@ describe('FaceService', () => {
     });
   });
 
+  describe('listKioskDescriptors', () => {
+    it('returns parsed descriptors for the organization', async () => {
+      repoListDescriptorsByOrganization.mockResolvedValue([
+        { id: FACE_ID, descriptor: JSON.stringify(DESCRIPTOR) },
+      ]);
+
+      const result = await service.listKioskDescriptors(ORG_A);
+
+      expect(repoListDescriptorsByOrganization).toHaveBeenCalledWith(ORG_A);
+      expect(result.faces).toEqual([
+        { id: FACE_ID, descriptor: DESCRIPTOR },
+      ]);
+    });
+
+    it('omits malformed descriptors', async () => {
+      repoListDescriptorsByOrganization.mockResolvedValue([
+        { id: FACE_ID, descriptor: JSON.stringify(DESCRIPTOR) },
+        { id: 'face-bad', descriptor: 'not-json' },
+        { id: 'face-short', descriptor: JSON.stringify([1, 2]) },
+      ]);
+
+      const result = await service.listKioskDescriptors(ORG_A);
+
+      expect(result.faces).toEqual([
+        { id: FACE_ID, descriptor: DESCRIPTOR },
+      ]);
+    });
+  });
+
   describe('enrollFace', () => {
     it('stores an enrollment, revokes previous faces and audits', async () => {
       const result = await runInOrganizationA(() =>
-        service.enrollFace(EMPLOYEE_ID, { facialId: FACIAL_ID }),
+        service.enrollFace(EMPLOYEE_ID, { descriptor: DESCRIPTOR }),
       );
 
-      expect(repoFindActiveByFacialId).toHaveBeenCalledWith(FACIAL_ID);
       expect(repoRevokeExisting).toHaveBeenCalledWith(EMPLOYEE_ID, mockTx);
       expect(repoInsertEnrollment).toHaveBeenCalledWith(
         {
           organizationId: ORG_A,
           employeeId: EMPLOYEE_ID,
-          facialId: FACIAL_ID,
+          descriptor: JSON.stringify(DESCRIPTOR),
         },
         mockTx,
       );
@@ -132,23 +160,12 @@ describe('FaceService', () => {
       });
     });
 
-    it('rejects when the facial ID is already active for an employee', async () => {
-      repoFindActiveByFacialId.mockResolvedValue(FACE_MATCH);
-
-      await expect(
-        runInOrganizationA(() =>
-          service.enrollFace(EMPLOYEE_ID, { facialId: FACIAL_ID }),
-        ),
-      ).rejects.toThrow(EmployeeFaceConflictException);
-      expect(repoInsertEnrollment).not.toHaveBeenCalled();
-    });
-
     it('rejects when the employee does not exist', async () => {
       empFindById.mockResolvedValue(undefined);
 
       await expect(
         runInOrganizationA(() =>
-          service.enrollFace(EMPLOYEE_ID, { facialId: FACIAL_ID }),
+          service.enrollFace(EMPLOYEE_ID, { descriptor: DESCRIPTOR }),
         ),
       ).rejects.toThrow(EmployeeNotFoundException);
     });
@@ -190,12 +207,12 @@ describe('FaceService', () => {
 
   describe('punchKiosk', () => {
     it('records attendance for a recognized face and marks it used', async () => {
-      repoFindActiveByFacialId.mockResolvedValue(FACE_MATCH);
+      repoFindActiveById.mockResolvedValue(FACE_MATCH);
 
       const result = await runInOrganizationA(() =>
         service.punchKiosk(DEVICE, {
           eventType: 'CLOCK_IN',
-          facialId: FACIAL_ID,
+          faceId: FACE_ID,
         }),
       );
 
@@ -213,14 +230,14 @@ describe('FaceService', () => {
       });
     });
 
-    it('rejects an unknown facial ID on the kiosk device', async () => {
-      repoFindActiveByFacialId.mockResolvedValue(undefined);
+    it('rejects an unknown face on the kiosk device', async () => {
+      repoFindActiveById.mockResolvedValue(undefined);
 
       await expect(
         runInOrganizationA(() =>
           service.punchKiosk(DEVICE, {
             eventType: 'CLOCK_IN',
-            facialId: FACIAL_ID,
+            faceId: FACE_ID,
           }),
         ),
       ).rejects.toThrow(KioskFaceNotRecognizedException);
@@ -236,7 +253,7 @@ describe('FaceService', () => {
     });
 
     it('rejects a face enrolled in another organization', async () => {
-      repoFindActiveByFacialId.mockResolvedValue({
+      repoFindActiveById.mockResolvedValue({
         ...FACE_MATCH,
         organizationId: ORG_B,
       });
@@ -245,7 +262,7 @@ describe('FaceService', () => {
         runInOrganizationA(() =>
           service.punchKiosk(DEVICE, {
             eventType: 'CLOCK_IN',
-            facialId: FACIAL_ID,
+            faceId: FACE_ID,
           }),
         ),
       ).rejects.toThrow(KioskFaceNotRecognizedException);
@@ -253,7 +270,7 @@ describe('FaceService', () => {
     });
 
     it('rejects punches for an inactive employee', async () => {
-      repoFindActiveByFacialId.mockResolvedValue({
+      repoFindActiveById.mockResolvedValue({
         ...FACE_MATCH,
         employeeStatus: 'on_leave',
       });
@@ -262,7 +279,7 @@ describe('FaceService', () => {
         runInOrganizationA(() =>
           service.punchKiosk(DEVICE, {
             eventType: 'CLOCK_IN',
-            facialId: FACIAL_ID,
+            faceId: FACE_ID,
           }),
         ),
       ).rejects.toThrow(KioskEmployeeInactiveException);
@@ -276,11 +293,11 @@ describe('FaceService', () => {
         runInOrganizationA(() =>
           service.punchKiosk(DEVICE, {
             eventType: 'CLOCK_IN',
-            facialId: FACIAL_ID,
+            faceId: FACE_ID,
           }),
         ),
       ).rejects.toMatchObject({ status: 429 });
-      expect(faceRepository.findActiveByFacialId).not.toHaveBeenCalled();
+      expect(faceRepository.findActiveById).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   Post,
   Req,
@@ -9,6 +10,7 @@ import {
 import type { Request } from 'express';
 import { ApiResponse } from '@rona/types/api';
 import type {
+  KioskFaceDescriptorsResult,
   KioskFacePunchInput,
   KioskPunchResult,
 } from '@rona/types/kiosk';
@@ -28,6 +30,22 @@ interface KioskRequest extends Request {
 @Controller('kiosk/face')
 export class KioskFaceController {
   constructor(private readonly faceService: FaceService) {}
+
+  @Get('descriptors')
+  @UseGuards(KioskSessionGuard)
+  async descriptors(
+    @Req() request: KioskRequest,
+  ): Promise<ApiResponse<KioskFaceDescriptorsResult>> {
+    const device = request.kiosk!;
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'Face descriptors retrieved successfully.',
+      data: await this.faceService.listKioskDescriptors(
+        device.organizationId,
+      ),
+    };
+  }
 
   @Post('punch')
   @UseGuards(KioskSessionGuard)

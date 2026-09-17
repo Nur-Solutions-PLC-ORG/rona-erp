@@ -9,6 +9,7 @@ import type {
   EmployeeFaceRevokeResult,
   EmployeeFacesResult,
   FaceEnrollInput,
+  KioskFaceDescriptorsResult,
   KioskFacePunchInput,
   KioskPunchResult,
 } from '@rona/types/kiosk';
@@ -19,7 +20,6 @@ import { EmployeesRepository } from './employees.repository';
 import { FaceRepository } from './face.repository';
 import {
   EmployeeArchivedException,
-  EmployeeFaceConflictException,
   EmployeeFaceNotFoundException,
   EmployeeNotFoundException,
 } from './hr.exception';
@@ -47,18 +47,32 @@ export class FaceService {
     return { faces: rows.map((row) => this.toMetadata(row)) };
   }
 
+  async listKioskDescriptors(
+    organizationId: string,
+  ): Promise<KioskFaceDescriptorsResult> {
+    const rows = await this.faceRepository.listDescriptorsByOrganization(
+      organizationId,
+    );
+    return {
+      faces: rows
+        .map((row) => ({
+          id: row.id,
+          descriptor: this.parseDescriptor(row.descriptor),
+        }))
+        .filter(
+          (
+            face,
+          ): face is { id: string; descriptor: number[] } =>
+            face.descriptor.length === 128,
+        ),
+    };
+  }
+
   async enrollFace(
     employeeId: string,
     input: FaceEnrollInput,
   ): Promise<EmployeeFaceEnrollResult> {
     await this.requireActiveEmployee(employeeId);
-
-    const existing = await this.faceRepository.findActiveByFacialId(
-      input.facialId,
-    );
-    if (existing) {
-      throw new EmployeeFaceConflictException();
-    }
 
     const organizationId = this.tenantContext.organizationId;
 
@@ -68,7 +82,7 @@ export class FaceService {
         {
           organizationId,
           employeeId,
-          facialId: input.facialId,
+          descriptor: JSON.stringify(input.descriptor),
         },
         tx,
       );
@@ -78,7 +92,7 @@ export class FaceService {
           action: 'hr.face.enroll',
           entityType: 'employee_face',
           entityId: row.id,
-          after: { employeeId, facialId: row.facialId },
+          after: { employeeId },
         },
         tx,
       );
@@ -131,9 +145,7 @@ export class FaceService {
       );
     }
 
-    const match = await this.faceRepository.findActiveByFacialId(
-      input.facialId,
-    );
+    const match = await this.faceRepository.findActiveById(input.faceId);
 
     if (!match || match.organizationId !== device.organizationId) {
       await this.auditKioskPunch(
@@ -208,6 +220,22 @@ export class FaceService {
     } catch (error) {
       this.logger.warn(`kiosk face audit failed: ${String(error)}`);
     }
+  }
+
+  private parseDescriptor(raw: string): number[] {
+    try {
+      const parsed = JSON.parse(raw);
+      if (
+        Array.isArray(parsed) &&
+        parsed.length === 128 &&
+        parsed.every((value) => typeof value === 'number' && isFinite(value))
+      ) {
+        return parsed;
+      }
+    } catch {
+      // fall through to empty result
+    }
+    return [];
   }
 
   private toMetadata(row: {
