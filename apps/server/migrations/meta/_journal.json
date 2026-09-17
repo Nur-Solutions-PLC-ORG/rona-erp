@@ -134,13 +134,6 @@
       "when": 1789361876891,
       "tag": "0018_ambiguous_landau",
       "breakpoints": true
-    },
-    {
-      "idx": 19,
-      "version": "7",
-      "when": 1789667932858,
-      "tag": "0019_kiosk_webauthn",
-      "breakpoints": true
     }
   ]
 }

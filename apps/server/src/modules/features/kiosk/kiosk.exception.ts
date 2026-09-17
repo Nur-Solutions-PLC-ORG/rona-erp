@@ -52,3 +52,11 @@ export class KioskEmployeeInactiveException extends ApiException {
   }
 }
 
+export class KioskInvalidPasscodeException extends ApiException {
+  constructor() {
+    super(
+      HttpStatus.BAD_REQUEST,
+      'The passcode is invalid. Confirm the employee has a kiosk passcode set up.',
+    );
+  }
+}

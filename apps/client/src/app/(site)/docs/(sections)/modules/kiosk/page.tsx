@@ -24,8 +24,8 @@ export default function KioskPage() {
       <DocHeader
         eyebrow="Core Modules / 08"
         title="Kiosk"
-        lede="The Kiosk turns any tablet or shared device into a secure attendance terminal. Employees clock in, start breaks, end breaks, and clock out with their own fingerprint or Face ID (passkey) on their phone — no shared codes, no personal login required."
-        tags={["ATTENDANCE", "SHARED DEVICE", "PASSKEY"]}
+        lede="The Kiosk turns any tablet or shared device into a secure attendance terminal. Employees clock in, start breaks, end breaks, and clock out with their employee ID and a short passcode — no personal login required."
+        tags={["ATTENDANCE", "SHARED DEVICE", "PASSCODE"]}
       />
 
       <Section title="Key features">
@@ -34,7 +34,7 @@ export default function KioskPage() {
             items={[
               "Dedicated terminal that runs without a user session",
               "One-time device credential ties the tablet to your organization",
-              "WebAuthn fingerprint / Face ID sign-in from the employee's own device",
+              "Employee ID plus a short numeric passcode",
               "Clock in, clock out, break start, and break end",
               "Large touch-friendly actions for shop-floor tablets",
               "Success screen with automatic reset for the next employee",
@@ -58,12 +58,8 @@ export default function KioskPage() {
               body: "Open the kiosk terminal on the tablet and enter the device credential once. The device stays signed in until it is deactivated.",
             },
             {
-              title: "HR links a device to the employee",
-              body: "An HR administrator opens the employee's Biometrics panel and registers a device. The employee scans a QR or passkey prompt with their own phone and verifies with fingerprint / Face ID. Only public WebAuthn metadata — never the raw fingerprint — is stored.",
-            },
-            {
               title: "Employee identifies themselves",
-              body: "On the idle screen the employee taps USE FINGERPRINT. The terminal shows a cross-device prompt and the employee authenticates on their phone.",
+              body: "On the idle screen the employee enters their employee ID and five-digit passcode.",
             },
             {
               title: "Choose an attendance action",
@@ -89,7 +85,7 @@ export default function KioskPage() {
             {
               field: "Idle",
               description:
-                "The main entry screen — a USE FINGERPRINT prompt backed by WebAuthn, then the four attendance actions, with a live clock.",
+                "The main entry screen — employee ID, passcode, and the four attendance actions, with a live clock.",
             },
             {
               field: "Success",
@@ -147,9 +143,8 @@ export default function KioskPage() {
           <CheckList
             items={[
               "Employees never need a personal login on the shared device",
-              "Every punch requires a verified WebAuthn sign-in from the employee's own device",
-              "Challenges are single-use, short-lived, and bound to the kiosk session",
-              "Raw fingerprints or biometric data are never sent to or stored by Rona",
+              "Each punch requires the employee ID and a five-digit passcode",
+              "Authentication attempts and punches are rate limited",
               "Device sessions expire and can be revoked by deactivating the kiosk",
               "Only administrators with kiosk permissions can manage devices",
             ]}

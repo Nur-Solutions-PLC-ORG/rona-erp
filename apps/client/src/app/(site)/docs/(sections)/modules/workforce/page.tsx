@@ -218,10 +218,9 @@ export default function WorkforcePage() {
 
       <Section title="Kiosk mode">
         <Callout tone="info" title="Shared-device attendance" icon={Monitor}>
-          Employees can check in and out from a shared kiosk device using their
-          own fingerprint or Face ID (passkey) from their phone — a large,
-          touch-friendly interface that also supports break start and break
-          end. See the{" "}
+          Employees can check in and out from a shared device using their
+          employee ID and a short passcode — a large, touch-friendly interface
+          that also supports break start and break end. See the{" "}
           <Link
             href="/docs/modules/kiosk"
             className="font-semibold text-[#581c87] underline underline-offset-4"

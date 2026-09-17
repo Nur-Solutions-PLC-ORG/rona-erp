@@ -100,6 +100,7 @@ describe('EmployeesService', () => {
             departmentId: DEPARTMENT_ID,
             positionId: POSITION_ID,
             userId: null,
+            hasKioskPasscode: false,
           },
         }),
         mockTx,

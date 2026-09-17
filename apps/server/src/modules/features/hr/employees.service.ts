@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { pooledDb } from '@/db';
 import { AuditService } from '@/modules/audit/audit.service';
 import { TenantContextService } from '@/modules/tenancy/tenant-context.service';
@@ -70,7 +71,14 @@ export class EmployeesService {
     }
 
     const employeeId = await pooledDb.transaction(async (tx) => {
-      const created = await this.employeesRepository.create(input, tx);
+      const { passcode, ...rest } = input;
+      const created = await this.employeesRepository.create(
+        {
+          ...rest,
+          passcodeHash: passcode ? await bcrypt.hash(passcode, 10) : undefined,
+        },
+        tx,
+      );
       await this.auditService.record(
         {
           organizationId: this.tenantContext.organizationId,
@@ -84,6 +92,7 @@ export class EmployeesService {
             departmentId: created.departmentId,
             positionId: created.positionId,
             userId: created.userId,
+            hasKioskPasscode: Boolean(created.passcodeHash),
           },
         },
         tx,
@@ -155,7 +164,17 @@ export class EmployeesService {
     }
 
     await pooledDb.transaction(async (tx) => {
-      await this.employeesRepository.update(employeeId, input, tx);
+      const { passcode, ...rest } = input;
+      const patch =
+        passcode === undefined
+          ? rest
+          : {
+              ...rest,
+              passcodeHash:
+                passcode === null ? null : await bcrypt.hash(passcode, 10),
+            };
+
+      await this.employeesRepository.update(employeeId, patch, tx);
       await this.auditService.record(
         {
           organizationId: this.tenantContext.organizationId,
@@ -182,6 +201,10 @@ export class EmployeesService {
             ),
             positionId: resolveUpdate(input.positionId, employee.positionId),
             userId: resolveUpdate(input.userId, employee.userId),
+            hasKioskPasscode:
+              passcode !== undefined
+                ? Boolean(passcode)
+                : Boolean(employee.hasKioskPasscode),
           },
         },
         tx,

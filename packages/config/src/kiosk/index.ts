@@ -2,9 +2,7 @@
 
 export const KIOSK_STATUS_LIST = ["ACTIVE", "INACTIVE"] as const;
 
-export const KIOSK_EMPLOYEE_GRANT_COOKIE = "kiosk_employee_grant";
-export const KIOSK_EMPLOYEE_GRANT_DURATION = 60 * 1000;
-export const KIOSK_WEBAUTHN_CHALLENGE_DURATION = 5 * 60 * 1000;
+export const KIOSK_PASSCODE_LENGTH = 5;
 
 export const KIOSK_SESSION_DURATION = 12 * 60 * 60 * 1000;
 

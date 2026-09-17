@@ -7,6 +7,7 @@ import {
   EID_LENGTH,
   GENDER_LIST,
 } from "@rona/config/admin";
+import { KIOSK_PASSCODE_LENGTH } from "@rona/config/kiosk";
 import { paginationSearchParamsSchema } from "../global/api.js";
 
 export const isoDateSchema = z
@@ -27,6 +28,14 @@ const booleanQueryParam = z
   .union([z.boolean(), z.literal("true"), z.literal("false")])
   .transform((value) => value === true || value === "true");
 
+const passcodeSchema = z
+  .string()
+  .trim()
+  .regex(
+    new RegExp(`^\\d{${KIOSK_PASSCODE_LENGTH}}$`),
+    `Passcode must be exactly ${KIOSK_PASSCODE_LENGTH} digits`,
+  );
+
 export const employeeCreateSchema = z.object({
   eId: z
     .string()
@@ -44,6 +53,7 @@ export const employeeCreateSchema = z.object({
   positionId: z.string().uuid().optional(),
   userId: z.string().uuid().optional(),
   hireDate: isoDateSchema.optional(),
+  passcode: passcodeSchema.optional(),
 });
 
 const clearable = <T extends z.ZodTypeAny>(schema: T) =>
@@ -58,6 +68,7 @@ export const employeeUpdateSchema = employeeCreateSchema
     positionId: clearable(z.string().uuid()),
     userId: clearable(z.string().uuid()),
     hireDate: clearable(isoDateSchema),
+    passcode: clearable(passcodeSchema),
   });
 
 export const employeeListSearchParamsSchema =

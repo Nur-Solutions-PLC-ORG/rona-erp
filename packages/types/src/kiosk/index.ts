@@ -48,22 +48,3 @@ export interface KioskPunchResult {
   eventType: AttendanceEventType;
   eventAt: string;
 }
-
-export interface WebAuthnCredentialMetadata {
-  id: string;
-  deviceName: string;
-  deviceType: string;
-  createdAt: string;
-  lastUsedAt: string | null;
-  revokedAt: string | null;
-}
-
-export interface KioskWebAuthnOptions<T> {
-  challengeId: string;
-  options: T;
-}
-
-export interface WebAuthnAuthenticationResult {
-  employeeName: string;
-  expiresAt: string;
-}

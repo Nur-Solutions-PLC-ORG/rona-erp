@@ -10,7 +10,6 @@ import {
 import type { Request, Response } from 'express';
 import { ApiResponse } from '@rona/types/api';
 import {
-  KIOSK_EMPLOYEE_GRANT_COOKIE,
   KIOSK_SESSION_COOKIE,
   KIOSK_SESSION_DURATION,
 } from '@rona/config/kiosk';
@@ -33,8 +32,6 @@ interface KioskRequest extends Request {
     kioskId: string;
     deviceId: string;
     organizationId: string;
-    sessionHash: string;
-    tokenVersion: string;
   };
 }
 
@@ -66,7 +63,7 @@ export class KioskTerminalController {
       success: true,
       statusCode: HttpStatus.OK,
       message: 'Kiosk authenticated successfully.',
-      data: { kioskId: session.kioskId, name: session.name, organizationName: session.organizationName, expiresAt: session.expiresAt },
+      data: session,
     };
   }
 
@@ -74,7 +71,6 @@ export class KioskTerminalController {
   @UseGuards(KioskSessionGuard)
   signOut(@Res({ passthrough: true }) res: Response): ApiResponse<never> {
     res.clearCookie(KIOSK_SESSION_COOKIE, { path: '/api/kiosk' });
-    res.clearCookie(KIOSK_EMPLOYEE_GRANT_COOKIE, { path: '/api/kiosk' });
     return {
       success: true,
       statusCode: HttpStatus.OK,
@@ -88,16 +84,13 @@ export class KioskTerminalController {
     @Req() request: KioskRequest,
     @Body(new ZodValidationPipe(kioskPunchSchema))
     body: KioskPunchInput,
-    @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<KioskPunchResult>> {
-    res.clearCookie(KIOSK_EMPLOYEE_GRANT_COOKIE, { path: '/api/kiosk' });
-    res.setHeader('Cache-Control', 'no-store');
     const device = request.kiosk!;
     return {
       success: true,
       statusCode: HttpStatus.CREATED,
       message: 'Attendance event recorded successfully.',
-      data: await this.kioskService.punch(device, body, request.cookies?.[KIOSK_EMPLOYEE_GRANT_COOKIE]),
+      data: await this.kioskService.punch(device, body),
     };
   }
 }
