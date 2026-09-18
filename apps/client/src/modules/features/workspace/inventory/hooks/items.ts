@@ -65,7 +65,11 @@ export const useItemOptions = () => {
     "inventory.item.read",
     ["inventory-items-lookup"],
     TryCatchNullWrap(() =>
-      ApiGetItems({ searchParams: { limit: LOOKUP_PAGE_SIZE } }),
+      // Archived items stay referenced by historical records (production
+      // orders, BOMs, movements) — include them so names still resolve.
+      ApiGetItems({
+        searchParams: { limit: LOOKUP_PAGE_SIZE, includeArchived: "true" },
+      }),
     ),
   );
   const items = useMemo(

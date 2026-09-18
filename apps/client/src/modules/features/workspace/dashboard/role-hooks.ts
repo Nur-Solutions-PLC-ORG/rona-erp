@@ -67,13 +67,14 @@ function useList<T>(
   queryKey: string,
   api: (input?: RequestInput) => Promise<ApiResponse<T[]>>,
   limit: number,
+  extraParams?: Record<string, string>,
 ) {
   const { hasPermission } = usePermissions();
 
   const query = useQuery({
     queryKey: [queryKey],
     queryFn: TryCatchNullWrap<T[]>(() =>
-      api({ searchParams: { limit: String(limit) } }),
+      api({ searchParams: { limit: String(limit), ...extraParams } }),
     ),
     enabled: hasPermission(permission),
   });
@@ -143,6 +144,8 @@ export const useProductionDashboardData = () => {
     "inventory-items",
     ApiGetItems,
     ROLE_LOOKUP_SIZE,
+    // Historical records reference archived items; include them for lookups.
+    { includeArchived: "true" },
   );
   const stockQ = useList(
     "inventory.stock.read",
@@ -220,6 +223,8 @@ export const useQualityDashboardData = () => {
     "inventory-items",
     ApiGetItems,
     ROLE_LOOKUP_SIZE,
+    // Historical records reference archived items; include them for lookups.
+    { includeArchived: "true" },
   );
   const inspectionsQ = useList(
     "quality.inspection.read",
