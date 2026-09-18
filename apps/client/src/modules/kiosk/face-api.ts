@@ -140,7 +140,7 @@ export async function captureFace(signal: AbortSignal): Promise<number[]> {
     const results = await abortable(
       Promise.resolve(faceapi.detectAllFaces(
         video,
-        new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 }),
+        new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.3 }),
       ).withFaceLandmarks().withFaceDescriptors()),
       controller.signal,
     );
