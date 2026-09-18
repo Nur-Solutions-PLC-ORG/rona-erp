@@ -162,12 +162,19 @@ export class FaceService {
 
       const parsed = kioskFacePunchSchema.safeParse(input);
       if (!parsed.success) {
+        this.logger.error(`Face punch validation failed: ${JSON.stringify(parsed.error.errors)}`);
         await this.rejectKioskFace(device, 'invalid_input');
         throw new KioskFaceNotRecognizedException();
       }
       const employee = await this.employeesRepository.findByEid(
         parsed.data.eid,
       );
+      this.logger.log(`Employee lookup for EID ${parsed.data.eid}: ${employee ? 'found' : 'not found'}`);
+      if (!employee) {
+        this.logger.error(`Employee not found for EID: ${parsed.data.eid}`);
+        await this.rejectKioskFace(device, 'employee_not_found');
+        throw new KioskFaceNotRecognizedException();
+      }
       const match =
         employee?.organizationId === device.organizationId &&
         employee.eid === parsed.data.eid
@@ -176,14 +183,22 @@ export class FaceService {
               employee.id,
             )
           : undefined;
+      this.logger.log(`Face enrollment for employee ${employee.id}: ${match ? 'found' : 'not found'}`);
+      if (!match) {
+        this.logger.error(`No active face enrollment for employee ${employee.id}`);
+        await this.rejectKioskFace(device, 'no_face_enrollment');
+        throw new KioskFaceNotRecognizedException();
+      }
       const enrolledDescriptor = match
         ? this.parseDescriptor(match.descriptor)
         : [];
+      this.logger.log(`Enrolled descriptor length: ${enrolledDescriptor.length}`);
       const distanceSquared = enrolledDescriptor.reduce(
         (sum, value, index) =>
           sum + (value - parsed.data.descriptor[index]) ** 2,
         0,
       );
+      this.logger.log(`Face distance squared: ${distanceSquared}, threshold: ${KIOSK_FACE_MATCH_DISTANCE ** 2}`);
 
       if (
         !match ||
@@ -194,6 +209,7 @@ export class FaceService {
         !Number.isFinite(distanceSquared) ||
         distanceSquared >= KIOSK_FACE_MATCH_DISTANCE ** 2
       ) {
+        this.logger.error(`Face match failed - match: ${!!match}, orgMatch: ${match?.organizationId === device.organizationId}, empMatch: ${match?.employeeId === employee?.id}, revoked: ${match?.revokedAt !== null}, descLen: ${enrolledDescriptor.length}, finite: ${Number.isFinite(distanceSquared)}, distance: ${distanceSquared} >= ${KIOSK_FACE_MATCH_DISTANCE ** 2}`);
         await this.rejectKioskFace(device, 'no_active_matching_face');
         throw new KioskFaceNotRecognizedException();
       }
