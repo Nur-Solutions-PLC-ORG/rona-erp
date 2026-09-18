@@ -125,6 +125,9 @@ export const useCreateMembership = () => {
     (data) => {
       toast.success(data.message);
       void queryClient.invalidateQueries({ queryKey: ["organization-memberships"] });
+      // The acting user may have changed their own roles, so refresh the
+      // membership/permission set that drives navigation and query gating.
+      void queryClient.invalidateQueries({ queryKey: ["me-memberships"] });
     },
     (error) => toast.error(error.message),
   );
@@ -138,6 +141,9 @@ export const useCreateMember = () => {
     (data) => {
       toast.success(data.message);
       void queryClient.invalidateQueries({ queryKey: ["organization-memberships"] });
+      // The acting user may have changed their own roles, so refresh the
+      // membership/permission set that drives navigation and query gating.
+      void queryClient.invalidateQueries({ queryKey: ["me-memberships"] });
     },
     (error) => toast.error(error.message),
   );
@@ -156,6 +162,9 @@ export const useUpdateMembership = () => {
     (data) => {
       toast.success(data.message);
       void queryClient.invalidateQueries({ queryKey: ["organization-memberships"] });
+      // The acting user may have changed their own roles, so refresh the
+      // membership/permission set that drives navigation and query gating.
+      void queryClient.invalidateQueries({ queryKey: ["me-memberships"] });
     },
     (error) => toast.error(error.message),
   );
@@ -169,6 +178,9 @@ export const useDeleteMembership = () => {
     (data) => {
       toast.success(data.message);
       void queryClient.invalidateQueries({ queryKey: ["organization-memberships"] });
+      // The acting user may have changed their own roles, so refresh the
+      // membership/permission set that drives navigation and query gating.
+      void queryClient.invalidateQueries({ queryKey: ["me-memberships"] });
     },
     (error) => toast.error(error.message),
   );

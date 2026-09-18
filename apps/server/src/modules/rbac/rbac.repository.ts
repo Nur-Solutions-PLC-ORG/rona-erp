@@ -319,15 +319,30 @@ export class RbacRepository {
 
     if (roleKeys.length === 0) return;
 
-    const roleRows = await executor
-      .select({ id: roles.id })
-      .from(roles)
-      .where(
-        and(
-          eq(roles.organizationId, organizationId),
-          inArray(roles.key, roleKeys),
-        ),
-      );
+    const selectRoleRows = () =>
+      executor
+        .select({ id: roles.id, key: roles.key })
+        .from(roles)
+        .where(
+          and(
+            eq(roles.organizationId, organizationId),
+            inArray(roles.key, roleKeys),
+          ),
+        );
+
+    let roleRows = await selectRoleRows();
+
+    // System roles are seeded per-organization as a side effect of other flows
+    // (organization creation, admin user creation, seeding scripts). An
+    // organization that predates seeding can therefore be missing role rows.
+    // Previously the existing membership roles were deleted above and then this
+    // method returned early, so assigning a role appeared to do nothing and
+    // silently wiped the member's previous roles. Make sure the default roles
+    // exist before giving up.
+    if (roleRows.length < roleKeys.length) {
+      await this.upsertDefaultRoles(organizationId, executor);
+      roleRows = await selectRoleRows();
+    }
 
     if (roleRows.length === 0) return;
 
