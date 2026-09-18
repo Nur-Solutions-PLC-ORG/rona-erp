@@ -111,30 +111,31 @@ export class FaceService {
 
   async revokeFace(): Promise<EmployeeFaceRevokeResult> {
     const employee = await this.requireSelfEmployee();
-    const organizationId = this.tenantContext.organizationId;
 
-    const face = await pooledDb.transaction(async (tx) => {
-      const locked = await this.employeesRepository.findByIdForUpdate(
-        employee.id,
-        tx,
-      );
-      this.assertSelfEmployee(locked);
-      const [row] = await this.faceRepository.revokeExisting(employee.id, tx);
-      if (!row) return null;
-      await this.auditService.record(
-        {
-          organizationId,
-          action: 'hr.face.revoke',
-          entityType: 'employee_face',
-          entityId: row.id,
-          after: { employeeId: employee.id, faceId: row.id },
-        },
-        tx,
-      );
-      return row;
+    return this.withKioskTenant(employee.organizationId, async () => {
+      const face = await pooledDb.transaction(async (tx) => {
+        const locked = await this.employeesRepository.findByIdForUpdate(
+          employee.id,
+          tx,
+        );
+        this.assertSelfEmployee(locked);
+        const [row] = await this.faceRepository.revokeExisting(employee.id, tx);
+        if (!row) return null;
+        await this.auditService.record(
+          {
+            organizationId: employee.organizationId,
+            action: 'hr.face.revoke',
+            entityType: 'employee_face',
+            entityId: row.id,
+            after: { employeeId: employee.id, faceId: row.id },
+          },
+          tx,
+        );
+        return row;
+      });
+
+      return { face: face ? this.toMetadata(face) : null };
     });
-
-    return { face: face ? this.toMetadata(face) : null };
   }
 
   async punchKiosk(
