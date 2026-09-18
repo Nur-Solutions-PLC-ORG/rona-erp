@@ -19,7 +19,6 @@ import {
   HiOutlineClipboardDocumentCheck,
   HiOutlineClipboardDocumentList,
   HiOutlineClock,
-  HiOutlineCog8Tooth,
   HiOutlineCube,
   HiOutlineDocumentMagnifyingGlass,
   HiOutlineDocumentMinus,
@@ -38,6 +37,7 @@ import {
   HiOutlineXMark,
 } from "react-icons/hi2";
 import { TbBuildingWarehouse } from "react-icons/tb";
+import { MdOutlinePrecisionManufacturing } from "react-icons/md";
 import { useCurrentOrganization, usePermissions } from "@/modules/workspace/hooks";
 import type { Permission } from "@rona/types/tenancy";
 import { NAV_GROUPS } from "./nav-config";
@@ -52,7 +52,7 @@ const ITEM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   Movements: HiOutlineArrowsRightLeft,
   Reservations: HiOutlineBookmarkSquare,
   BOMs: HiOutlineClipboardDocumentList,
-  "Production Orders": HiOutlineCog8Tooth,
+  "Production Orders": MdOutlinePrecisionManufacturing,
   Batches: HiOutlineCube,
   Inspections: HiOutlineClipboardDocumentCheck,
   "Lot Tracing": HiOutlineFingerPrint,

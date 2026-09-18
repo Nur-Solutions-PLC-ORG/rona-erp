@@ -14,7 +14,7 @@ import {
   HiOutlineShoppingCart,
   HiOutlineUserGroup,
 } from "react-icons/hi2";
-import { TbBuildingFactory2 } from "react-icons/tb";
+import { MdOutlinePrecisionManufacturing } from "react-icons/md";
 import { useCurrentOrganization, usePermissions } from "@/modules/workspace/hooks";
 import type { Permission } from "@rona/types/tenancy";
 import { LAUNCHER_MODULES, NAV_GROUPS } from "./shell/nav-config";
@@ -23,7 +23,7 @@ const MODULE_ICONS: Record<string, React.ComponentType<{ className?: string }>> 
   Dashboard: HiOutlineChartBar,
   "Rona AI": HiOutlineSparkles,
   Inventory: HiOutlineInboxStack,
-  Manufacturing: TbBuildingFactory2,
+  Manufacturing: MdOutlinePrecisionManufacturing,
   Quality: HiOutlineClipboardDocumentCheck,
   Traceability: HiOutlineFingerPrint,
   Workforce: HiOutlineUserGroup,
