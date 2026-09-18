@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   HiOutlineArrowsRightLeft,
@@ -75,6 +75,8 @@ const ITEM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
 
 const FALLBACK_ICON = HiOutlineInboxStack;
 
+const EXPANDED_STORAGE_KEY = "rona-workspace-sidebar-expanded";
+
 export function Sidebar({
   collapsed,
   onToggleCollapse,
@@ -89,19 +91,82 @@ export function Sidebar({
   const pathname = usePathname();
   const { organization } = useCurrentOrganization();
   const { hasPermission } = usePermissions();
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(() =>
-    NAV_GROUPS.filter((group) =>
+  const [expandedGroups, setExpandedGroups] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const stored = localStorage.getItem(EXPANDED_STORAGE_KEY);
+      if (stored) return JSON.parse(stored) as string[];
+    } catch {
+      // fall through to path-based defaults
+    }
+    return NAV_GROUPS.filter((group) =>
       group.items.some((item) => pathname === item.href),
-    ).map((group) => group.label),
-  );
+    ).map((group) => group.label);
+  });
+  // Groups whose expansion the user overrode while being the active group —
+  // otherwise the derived expansion below would re-open them on every render.
+  const [collapsedActiveGroups, setCollapsedActiveGroups] = useState<string[]>([]);
+  const activeItemRef = useRef<HTMLAnchorElement | null>(null);
+
+  const activeGroup = NAV_GROUPS.find((group) =>
+    group.items.some((item) => item.href === pathname),
+  )?.label;
+
+  const effectiveExpanded = useMemo(() => {
+    if (!activeGroup) return expandedGroups;
+    if (
+      expandedGroups.includes(activeGroup) ||
+      collapsedActiveGroups.includes(activeGroup)
+    ) {
+      return expandedGroups;
+    }
+    return [...expandedGroups, activeGroup];
+  }, [expandedGroups, activeGroup, collapsedActiveGroups]);
 
   const toggleGroup = (label: string) => {
-    setExpandedGroups((previous) =>
-      previous.includes(label)
-        ? previous.filter((item) => item !== label)
-        : [...previous, label],
-    );
+    const isOpen = effectiveExpanded.includes(label);
+    const next = isOpen
+      ? expandedGroups.filter((item) => item !== label)
+      : expandedGroups.includes(label)
+        ? expandedGroups
+        : [...expandedGroups, label];
+    setExpandedGroups(next);
+    try {
+      localStorage.setItem(EXPANDED_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // persistence is best-effort
+    }
+    if (label === activeGroup) {
+      // Let the user close (or re-open) the active group itself.
+      setCollapsedActiveGroups((previous) =>
+        isOpen
+          ? previous.includes(label)
+            ? previous
+            : [...previous, label]
+          : previous.filter((item) => item !== label),
+      );
+    }
   };
+
+  // Scroll the active item into view after navigation.
+  useEffect(() => {
+    activeItemRef.current?.scrollIntoView({ block: "nearest" });
+  }, [pathname]);
+
+  // Mobile drawer: close on Escape and lock background scrolling while open.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onCloseMobile();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileOpen, onCloseMobile]);
 
   const isActive = (href: string) => pathname === href;
 
@@ -113,9 +178,35 @@ export function Sidebar({
         : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
     );
 
-  const renderItem = (label: string, href: string) => {
+  const renderItem = (label: string, href: string, rail: boolean) => {
     const active = isActive(href);
     const Icon = ITEM_ICONS[label] ?? FALLBACK_ICON;
+
+    if (rail) {
+      return (
+        <Link
+          key={href}
+          href={href}
+          onClick={onCloseMobile}
+          title={label}
+          aria-label={label}
+          aria-current={active ? "page" : undefined}
+          className={cn(
+            "flex items-center justify-center rounded-lg py-2 transition-colors",
+            active
+              ? "bg-zinc-100 text-zinc-900"
+              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
+          )}
+        >
+          <Icon
+            className={cn(
+              "h-4 w-4 shrink-0",
+              active ? "text-zinc-900" : "text-zinc-400",
+            )}
+          />
+        </Link>
+      );
+    }
 
     return (
       <Link
@@ -123,6 +214,8 @@ export function Sidebar({
         href={href}
         onClick={onCloseMobile}
         title={label}
+        ref={active ? activeItemRef : undefined}
+        aria-current={active ? "page" : undefined}
         className={navItemClass(active)}
       >
         <Icon
@@ -141,8 +234,22 @@ export function Sidebar({
       ? item.anyOf.some((permission) => hasPermission(permission))
       : hasPermission(item.permission);
 
-  const renderSection = (label: string, items: { label: string; href: string }[]) => {
-    const expanded = expandedGroups.includes(label);
+  const renderSection = (
+    label: string,
+    items: { label: string; href: string }[],
+    rail: boolean,
+  ) => {
+    if (rail) {
+      return (
+        <div key={label} className="mx-3 mt-3 pt-3 border-t border-zinc-200">
+          <div className="space-y-1">
+            {items.map((item) => renderItem(item.label, item.href, true))}
+          </div>
+        </div>
+      );
+    }
+
+    const expanded = effectiveExpanded.includes(label);
 
     return (
       <div key={label}>
@@ -150,6 +257,7 @@ export function Sidebar({
           type="button"
           onClick={() => toggleGroup(label)}
           title={label}
+          aria-expanded={expanded}
           className="group w-full flex items-center justify-between px-4 pt-5 pb-1.5"
         >
           <span
@@ -168,7 +276,11 @@ export function Sidebar({
             )}
           />
         </button>
-        {expanded ? <div className="space-y-1">{items.map((item) => renderItem(item.label, item.href))}</div> : null}
+        {expanded ? (
+          <div className="space-y-1">
+            {items.map((item) => renderItem(item.label, item.href, false))}
+          </div>
+        ) : null}
       </div>
     );
   };
@@ -176,18 +288,21 @@ export function Sidebar({
   const topLevelGroups = NAV_GROUPS.filter((group) => group.label === "Overview");
   const sectionGroups = NAV_GROUPS.filter((group) => group.label !== "Overview");
 
-  const renderNav = () => (
-    <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 pb-4">
+  const renderNav = (rail: boolean) => (
+    <nav
+      aria-label="Workspace"
+      className="flex-1 overflow-y-auto overflow-x-hidden py-2 pb-4"
+    >
       {topLevelGroups.map((group) =>
-        group.items.map((item) => renderItem(item.label, item.href)),
+        group.items.map((item) => renderItem(item.label, item.href, rail)),
       )}
 
-      <div className="mx-3 mt-3 h-px bg-zinc-200" />
+      {!rail ? <div className="mx-3 mt-3 h-px bg-zinc-200" /> : null}
 
       {sectionGroups.map((group) => {
         const visibleItems = group.items.filter((item) => itemVisible(item));
         if (visibleItems.length === 0) return null;
-        return renderSection(group.label, visibleItems);
+        return renderSection(group.label, visibleItems, rail);
       })}
     </nav>
   );
@@ -203,15 +318,19 @@ export function Sidebar({
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-zinc-600">
             <HiOutlineBuildingOffice2 className="h-4 w-4" />
           </span>
-          <span className="min-w-0 flex-1 text-left">
-            <span className="block truncate text-sm font-semibold text-zinc-900">
-              {organization?.name ?? "No organization"}
+          {!collapsed ? (
+            <span className="min-w-0 flex-1 text-left">
+              <span className="block truncate text-sm font-semibold text-zinc-900">
+                {organization?.name ?? "No organization"}
+              </span>
+              <span className="block truncate text-xs text-zinc-500 font-mono">
+                {organization?.slug ?? "—"}
+              </span>
             </span>
-            <span className="block truncate text-xs text-zinc-500 font-mono">
-              {organization?.slug ?? "—"}
-            </span>
-          </span>
-          <HiOutlineChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-400 transition-colors group-hover:text-zinc-600" />
+          ) : null}
+          {!collapsed ? (
+            <HiOutlineChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-400 transition-colors group-hover:text-zinc-600" />
+          ) : null}
         </button>
         {extra}
       </div>
@@ -226,21 +345,25 @@ export function Sidebar({
       )}
     >
       {collapsed ? (
-        <div className="flex flex-col justify-end p-2.5">
-          <button
-            type="button"
-            onClick={onToggleCollapse}
-            title="Expand sidebar"
-            aria-label="Expand sidebar"
-            className="flex h-9 w-full items-center justify-center rounded-md border border-zinc-200 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
-          >
-            <HiOutlineChevronDoubleRight className="h-4 w-4" />
-          </button>
-        </div>
+        <>
+          <div className="flex flex-col justify-end p-2.5">
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              title="Expand sidebar"
+              aria-label="Expand sidebar"
+              className="flex h-9 w-full items-center justify-center rounded-md border border-zinc-200 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+            >
+              <HiOutlineChevronDoubleRight className="h-4 w-4" />
+            </button>
+          </div>
+          {renderTenantHeader()}
+          {renderNav(true)}
+        </>
       ) : (
         <>
           {renderTenantHeader()}
-          {renderNav()}
+          {renderNav(false)}
           <div className="p-3 border-t border-zinc-200 shrink-0">
             <button
               type="button"
@@ -283,7 +406,7 @@ export function Sidebar({
             <HiOutlineXMark className="h-5 w-5" />
           </button>,
         )}
-        {renderNav()}
+        {renderNav(false)}
       </aside>
     </>
   );
