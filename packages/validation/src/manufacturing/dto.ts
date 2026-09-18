@@ -54,6 +54,13 @@ export const productionOrderDto = z.object({
   producedQuantity: z.string(),
   expectedYieldPercent: z.string(),
   actualYieldPercent: z.string().nullable(),
+  // Denormalized display names from the list join — they resolve even when
+  // the referenced item, warehouse or BOM is archived or deleted.
+  bomCode: z.string().nullable().optional(),
+  itemCode: z.string().nullable().optional(),
+  itemName: z.string().nullable().optional(),
+  warehouseCode: z.string().nullable().optional(),
+  warehouseName: z.string().nullable().optional(),
   materialVariance: z
     .array(
       z.object({
@@ -86,6 +93,9 @@ export const productionOrderMaterialDto = z.object({
   reservationId: z.string().nullable(),
   consumedQuantity: z.string(),
   returnedQuantity: z.string(),
+  // Denormalized display names from the materials join.
+  componentItemCode: z.string().nullable().optional(),
+  componentItemName: z.string().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });

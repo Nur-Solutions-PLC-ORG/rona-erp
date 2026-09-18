@@ -358,7 +358,11 @@ export function ProductionOrdersTable({
             <td className={TD_MONO}>{order.orderNumber}</td>
             <td className={TD_MONO}>
               <TruncatedText
-                value={itemLookup.get(order.itemId)?.name}
+                value={
+                  order.itemName ??
+                  itemLookup.get(order.itemId)?.name ??
+                  "Unknown item"
+                }
                 maxWidthClass="max-w-36"
               />
             </td>

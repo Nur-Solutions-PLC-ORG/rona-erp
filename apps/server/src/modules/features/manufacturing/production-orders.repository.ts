@@ -132,6 +132,7 @@ export class ProductionOrdersRepository extends TenantScopedRepository {
         itemName: items.name,
         warehouseId: productionOrders.warehouseId,
         warehouseCode: warehouses.code,
+        warehouseName: warehouses.name,
         status: productionOrders.status,
         plannedQuantity: productionOrders.plannedQuantity,
         expectedYieldPercent: productionOrders.expectedYieldPercent,

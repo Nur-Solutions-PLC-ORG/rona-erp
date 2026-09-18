@@ -36,7 +36,9 @@ export function OrderMaterialsModal({
       header: "Component",
       render: (material) => (
         <span className="text-zinc-700">
-          {itemNameFor.get(material.componentItemId) ?? material.componentItemId}
+          {material.componentItemName ??
+            itemNameFor.get(material.componentItemId) ??
+            "Unknown item"}
         </span>
       ),
     },

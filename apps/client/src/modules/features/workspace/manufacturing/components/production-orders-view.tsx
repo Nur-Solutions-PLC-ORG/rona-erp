@@ -95,7 +95,11 @@ export default function ProductionOrdersView() {
       header: "Item",
       render: (order) => (
         <span className="text-zinc-700">
-          {itemNameFor.get(order.itemId) ?? order.itemId}
+          {order.itemName
+            ? order.itemCode
+              ? `${order.itemCode} — ${order.itemName}`
+              : order.itemName
+            : (itemNameFor.get(order.itemId) ?? "Unknown item")}
         </span>
       ),
     },
@@ -104,7 +108,9 @@ export default function ProductionOrdersView() {
       header: "Warehouse",
       render: (order) => (
         <span className="text-zinc-500">
-          {warehouseLabelFor.get(order.warehouseId) ?? order.warehouseId}
+          {order.warehouseName ??
+            warehouseLabelFor.get(order.warehouseId) ??
+            "Unknown warehouse"}
         </span>
       ),
     },
