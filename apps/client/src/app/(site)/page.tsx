@@ -705,11 +705,8 @@ function ArchitectureSection() {
       <div className={container}>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_2fr] lg:items-end">
           <div>
-            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7c6f96]">
-              01 / Platform
-            </span>
             <h2
-              className={`mt-3 text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
+              className={`text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
             >
               Enterprise-grade
               <br />
@@ -793,11 +790,8 @@ function WorkflowSection() {
     >
       <div className={container}>
         <div className="max-w-2xl">
-          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7c6f96]">
-            02 / Workflow
-          </span>
           <h2
-            className={`mt-3 text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
+            className={`text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
           >
             Dock to finished goods,
             <br />
@@ -961,11 +955,8 @@ function RonaAiIntro() {
         <div
           className={`border-b ${hairline} p-6 lg:col-span-2 lg:border-b-0 lg:border-r`}
         >
-          <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-[#7c6f96]">
-            00 / Rona AI
-          </span>
           <h3
-            className={`mt-3 text-2xl font-semibold leading-tight text-[#581c87] ${serif}`}
+            className={`text-2xl font-semibold leading-tight text-[#581c87] ${serif}`}
           >
             An operations analyst
             <br />
@@ -1048,11 +1039,8 @@ function ModulesSection() {
       <div className={container}>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_2fr] lg:items-end">
           <div>
-            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7c6f96]">
-              03 / Modules
-            </span>
             <h2
-              className={`mt-3 text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
+              className={`text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
             >
               One platform,
               <br />
@@ -1120,11 +1108,8 @@ function CtaSlab() {
   return (
     <section className="bg-[#581c87] py-20 sm:py-24">
       <div className={`${container} text-center`}>
-        <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a893c9]">
-          04 / Access
-        </span>
         <h2
-          className={`mt-4 text-3xl font-semibold text-white sm:text-5xl ${serif}`}
+          className={`text-3xl font-semibold text-white sm:text-5xl ${serif}`}
         >
           {user ? "Welcome back." : "Ready to streamline your operations?"}
         </h2>
