@@ -73,7 +73,37 @@ export async function captureFace(signal: AbortSignal): Promise<number[]> {
     event.preventDefault();
     cancel();
   };
-  dialog.append(heading, video, status, capture, cancelButton);
+  const frame = document.createElement("div");
+  frame.className = "relative aspect-video w-full overflow-hidden rounded-lg";
+  frame.setAttribute("aria-hidden", "true");
+  const corners = document.createElement("div");
+  corners.className = "pointer-events-none absolute inset-0 z-10";
+  corners.innerHTML = [
+    '<span class="rona-corner rona-corner-tl"></span>',
+    '<span class="rona-corner rona-corner-tr"></span>',
+    '<span class="rona-corner rona-corner-bl"></span>',
+    '<span class="rona-corner rona-corner-br"></span>',
+  ].join("");
+  const sweep = document.createElement("div");
+  sweep.className = "pointer-events-none absolute inset-x-0 top-0 z-10 rona-sweep";
+  const flash = document.createElement("div");
+  flash.className = "pointer-events-none absolute inset-0 z-20 rona-flash";
+  frame.append(video, corners, sweep, flash);
+  const kioskScanStyles = document.createElement("style");
+  kioskScanStyles.textContent = [
+    ".rona-corner{position:absolute;width:26px;height:26px;border:2px solid #22d3ee;}",
+    ".rona-corner-tl{top:10px;left:10px;border-right-width:0;border-bottom-width:0;border-top-left-radius:12px;}",
+    ".rona-corner-tr{top:10px;right:10px;border-left-width:0;border-bottom-width:0;border-top-right-radius:12px;}",
+    ".rona-corner-bl{bottom:10px;left:10px;border-right-width:0;border-top-width:0;border-bottom-left-radius:12px;}",
+    ".rona-corner-br{bottom:10px;right:10px;border-left-width:0;border-top-width:0;border-bottom-right-radius:12px;}",
+    ".rona-sweep{height:3px;background:linear-gradient(90deg,transparent,#22d3ee,transparent);opacity:.85;animation:rona-sweep 1.6s linear infinite;}",
+    "@keyframes rona-sweep{0%{top:-4px;}100%{top:calc(100% - 3px);}}",
+    ".rona-flash{background:radial-gradient(circle,rgba(255,255,255,.95),rgba(209,250,229,.85));opacity:0;}",
+    ".rona-flash.is-flashing{animation:rona-flash .45s ease-out;}",
+    "@keyframes rona-flash{0%{opacity:0;}30%{opacity:1;}100%{opacity:0;}}",
+  ].join("");
+  document.head.appendChild(kioskScanStyles);
+  dialog.append(heading, frame, status, capture, cancelButton);
   document.body.appendChild(dialog);
   let stream: MediaStream | undefined;
   try {

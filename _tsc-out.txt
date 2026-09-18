@@ -1,0 +1,1 @@
+﻿src/modules/kiosk/face-api.ts(105,45): error TS1005: ',' expected.

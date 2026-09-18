@@ -14,7 +14,6 @@ import {
 } from "react-icons/hi2";
 import Spinner from "@/components/custom/spinner";
 import {
-  postKioskAttendance,
   postKioskAuthenticate,
   postKioskFaceAttendance,
   postKioskSignOut,
@@ -106,7 +105,6 @@ export default function KioskTerminal() {
   const [kioskName, setKioskName] = useState("");
   const [deviceToken, setDeviceToken] = useState("");
   const [eid, setEid] = useState("");
-  const [passcode, setPasscode] = useState("");
   const [faceScan, setFaceScan] = useState<{
     eid: string;
     descriptor: number[];
@@ -164,7 +162,6 @@ export default function KioskTerminal() {
       resetTimer.current = null;
       setResetIn(null);
       setEid("");
-      setPasscode("");
       clearFaceScan();
       setScreen("idle");
     }, 1000 * IDLE_RESET_SECONDS);
@@ -211,23 +208,17 @@ export default function KioskTerminal() {
       setMessage("Face scan expired or employee ID changed. Capture a new scan.");
       return;
     }
-    if (!scan && !passcode.trim()) return;
+    if (!scan) return;
     punchPending.current = true;
     clearFaceScan();
     setBusy(true);
     setMessage("");
     try {
-      const response = scan
-        ? await postKioskFaceAttendance({
-            eventType,
-            eid: scan.eid,
-            descriptor: scan.descriptor,
-          })
-        : await postKioskAttendance({
-            eid: eid.trim(),
-            passcode: passcode.trim(),
-            eventType,
-          });
+      const response = await postKioskFaceAttendance({
+        eventType,
+        eid: scan.eid,
+        descriptor: scan.descriptor,
+      });
       if (response.success && response.data) {
         setSuccess({
           employeeName: response.data.employeeName,
@@ -238,7 +229,7 @@ export default function KioskTerminal() {
         scheduleIdleReset();
       } else {
         setMessage(response.message);
-        setPasscode("");
+
       }
     } catch (error) {
       const status = (error as { response?: { status?: number } }).response
@@ -259,7 +250,7 @@ export default function KioskTerminal() {
         setMessage(apiMessage ?? "Something went wrong. Please try again.");
       }
     } finally {
-      setPasscode("");
+
       punchPending.current = false;
       setBusy(false);
     }
@@ -272,7 +263,6 @@ export default function KioskTerminal() {
     const capturedEid = eid.trim();
     captureController.current = controller;
     setFaceScanning(true);
-    setPasscode("");
     setMessage("");
     try {
       const descriptor = await captureFace(controller.signal);
@@ -283,7 +273,7 @@ export default function KioskTerminal() {
       setMessage("Face captured, not verified. Choose an action within 30 seconds for server matching.");
       scanTimer.current = setTimeout(() => {
         clearFaceScan();
-        setMessage("Face scan expired. Capture a new scan or use your passcode.");
+        setMessage("Face scan expired. Capture a new face scan and try again.");
       }, 30000);
     } catch (error) {
       if (!controller.signal.aborted) {
@@ -311,7 +301,6 @@ export default function KioskTerminal() {
     setKioskName("");
     setDeviceToken("");
     setEid("");
-    setPasscode("");
     setSuccess(null);
     setMessage("");
     setScreen("setup");
@@ -319,11 +308,18 @@ export default function KioskTerminal() {
   };
 
   const canPunch =
-    eid.trim().length > 0 && (passcode.trim().length > 0 || faceScan !== null) &&
-    !busy && !faceScanning;
+    eid.trim().length > 0 && faceScan !== null && !busy && !faceScanning;
 
   return (
     <div className="min-h-screen flex flex-col select-none bg-slate-100 text-slate-900">
+      <style>{`
+        @keyframes rona-pop { 0% { transform: scale(0.4); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
+        @keyframes rona-shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+        @keyframes rona-ring { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.5); } 100% { box-shadow: 0 0 0 14px rgba(16,185,129,0); } }
+        .rona-pop { animation: rona-pop .5s cubic-bezier(.16,1,.3,1) both; }
+        .rona-shake { animation: rona-shake .5s ease-in-out; }
+        .rona-ring { animation: rona-ring 1.1s ease-out 2; }
+      `}</style>
       <div className="h-1 shrink-0 bg-gradient-to-r from-purple-600 via-violet-500 to-indigo-600" />
 
       <header className="flex items-center justify-between gap-4 bg-white border-b border-slate-200 px-6 sm:px-10 py-4 shrink-0">
@@ -450,7 +446,7 @@ export default function KioskTerminal() {
                     onChange={(event) => {
                       clearFaceScan();
                       setEid(event.target.value);
-                      setPasscode("");
+
                       setMessage("");
                     }}
                     placeholder="00000"
@@ -458,40 +454,17 @@ export default function KioskTerminal() {
                     className={KIOSK_INPUT_CLASS}
                   />
                 </div>
-                <div>
-                  <label
-                    htmlFor="kiosk-passcode"
-                    className="mb-2 block text-left text-xs font-semibold uppercase tracking-wider text-slate-400"
-                  >
-                    Passcode
-                  </label>
-                  <input
-                    id="kiosk-passcode"
-                    type="password"
-                    inputMode="numeric"
-                    value={passcode}
-                    disabled={busy || faceScanning}
-                    onChange={(event) => {
-                      clearFaceScan();
-                      setPasscode(event.target.value);
-                      setMessage("");
-                    }}
-                    placeholder="•••••"
-                    autoComplete="off"
-                    className={KIOSK_INPUT_CLASS}
-                  />
-                </div>
               </div>
 
               {message ? (
-                <p className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-center text-base font-medium text-rose-600">
+                <p className="rona-shake rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-center text-base font-medium text-rose-600">
                   {message}
                 </p>
               ) : (
                 <p className="text-center text-sm text-slate-400">
                   {faceScan
                     ? "Face captured — not verified. Choose an action to record attendance."
-                    : "Enter your employee ID, then use a passcode or capture your face and choose an action."}
+                    : "Enter your employee ID, capture your face, and choose an action."}
                 </p>
               )}
 
@@ -569,7 +542,7 @@ export default function KioskTerminal() {
 
         {screen === "success" && success ? (
           <div className="space-y-5 text-center">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+            <div className="rona-pop rona-ring mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
               <HiOutlineCheckCircle className="h-11 w-11" />
             </div>
             <p className="font-heading text-5xl font-bold tracking-tight text-slate-900">
