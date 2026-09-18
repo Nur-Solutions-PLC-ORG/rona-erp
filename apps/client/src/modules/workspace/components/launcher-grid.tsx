@@ -4,36 +4,35 @@ import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  HiOutlineArchiveBox,
   HiOutlineBanknotes,
-  HiOutlineBriefcase,
   HiOutlineBuildingOffice2,
-  HiOutlineChartPie,
-  HiOutlineClipboard,
-  HiOutlineCpuChip,
+  HiOutlineChartBar,
+  HiOutlineClipboardDocumentCheck,
   HiOutlineFingerPrint,
-  HiOutlineHome,
+  HiOutlineInboxStack,
   HiOutlineSparkles,
+  HiOutlineShoppingCart,
   HiOutlineUserGroup,
 } from "react-icons/hi2";
+import { TbBuildingFactory2 } from "react-icons/tb";
 import { useCurrentOrganization, usePermissions } from "@/modules/workspace/hooks";
 import type { Permission } from "@rona/types/tenancy";
-import { LAUNCHER_MODULES, NAV_GROUPS, type LauncherModule } from "./shell/nav-config";
+import { LAUNCHER_MODULES, NAV_GROUPS } from "./shell/nav-config";
 
 const MODULE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  Dashboard: HiOutlineHome,
+  Dashboard: HiOutlineChartBar,
   "Rona AI": HiOutlineSparkles,
-  Inventory: HiOutlineArchiveBox,
-  Manufacturing: HiOutlineCpuChip,
-  Quality: HiOutlineClipboard,
+  Inventory: HiOutlineInboxStack,
+  Manufacturing: TbBuildingFactory2,
+  Quality: HiOutlineClipboardDocumentCheck,
   Traceability: HiOutlineFingerPrint,
   Workforce: HiOutlineUserGroup,
-  Sales: HiOutlineBriefcase,
+  Sales: HiOutlineShoppingCart,
   Finance: HiOutlineBanknotes,
   Organization: HiOutlineBuildingOffice2,
 };
 
-const FALLBACK_ICON = HiOutlineChartPie;
+const FALLBACK_ICON = HiOutlineInboxStack;
 
 interface ModuleStyle {
   tile: string;
