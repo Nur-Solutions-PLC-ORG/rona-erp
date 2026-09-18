@@ -18,7 +18,7 @@ import {
   postKioskFaceAttendance,
   postKioskSignOut,
 } from "../api";
-import { captureFace, friendlyFaceError } from "../face-api";
+import { captureFace, friendlyFaceError, preloadFaceModels } from "../face-api";
 
 type Screen = "setup" | "idle" | "success";
 
@@ -129,6 +129,10 @@ export default function KioskTerminal() {
   useEffect(() => {
     const interval = setInterval(() => setClock(new Date()), 1000 * 30);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    preloadFaceModels();
   }, []);
 
   const clearResetTimer = useCallback(() => {
@@ -270,7 +274,7 @@ export default function KioskTerminal() {
       const scan = { eid: capturedEid, descriptor, expiresAt: Date.now() + 30000 };
       scanRef.current = scan;
       setFaceScan(scan);
-      setMessage("Face captured, not verified. Choose an action within 30 seconds for server matching.");
+      setMessage("Face captured. Verification happens when you press an action button below — choose one within 30 seconds.");
       scanTimer.current = setTimeout(() => {
         clearFaceScan();
         setMessage("Face scan expired. Capture a new face scan and try again.");
@@ -463,8 +467,8 @@ export default function KioskTerminal() {
               ) : (
                 <p className="text-center text-sm text-slate-400">
                   {faceScan
-                    ? "Face captured — not verified. Choose an action to record attendance."
-                    : "Enter your employee ID, capture your face, and choose an action."}
+                    ? "Face captured — not verified yet. Press an action button below to verify and record attendance."
+                    : "Enter your employee ID, capture your face, and press an action button."}
                 </p>
               )}
 
@@ -492,7 +496,7 @@ export default function KioskTerminal() {
                     ) : faceScan ? (
                       <>
                         <HiOutlineFaceSmile className="h-6 w-6 text-emerald-600" />
-                        Face captured — not verified
+                        Face ready — press an action below
                       </>
                     ) : (
                       <>

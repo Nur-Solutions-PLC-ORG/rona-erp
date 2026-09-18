@@ -5,9 +5,11 @@ let faceApiReady: Promise<typeof import("face-api.js")> | null = null;
 function loadFaceApi() {
   if (!faceApiReady) {
     faceApiReady = import("face-api.js").then(async (faceapi) => {
-      await faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_URI);
-      await faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URI);
-      await faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_URI);
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_URI),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URI),
+        faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_URI),
+      ]);
       return faceapi;
     }).catch((error) => {
       faceApiReady = null;
@@ -15,6 +17,12 @@ function loadFaceApi() {
     });
   }
   return faceApiReady;
+}
+
+// Starts model download in the background so capture does not wait for it.
+// A failure here is harmless: loadFaceApi resets and capture retries.
+export function preloadFaceModels(): void {
+  loadFaceApi().catch(() => {});
 }
 
 function abortable<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
