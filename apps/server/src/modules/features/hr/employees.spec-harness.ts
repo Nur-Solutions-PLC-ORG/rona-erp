@@ -64,7 +64,7 @@ export const repoFindById = jest.fn();
 export const repoFindByEid = jest.fn();
 export const repoFindDepartment = jest.fn();
 export const repoFindPosition = jest.fn();
-export const repoUserExists = jest.fn();
+export const repoIsActiveOrganizationMember = jest.fn();
 export const repoFindEmployeeByUser = jest.fn();
 export const repoUpdate = jest.fn();
 export const repoArchive = jest.fn();
@@ -82,7 +82,7 @@ export const employeesRepository = {
   findByEid: repoFindByEid,
   findDepartment: repoFindDepartment,
   findPosition: repoFindPosition,
-  userExists: repoUserExists,
+  isActiveOrganizationMember: repoIsActiveOrganizationMember,
   findEmployeeByUser: repoFindEmployeeByUser,
   update: repoUpdate,
   archive: repoArchive,
@@ -123,7 +123,7 @@ export function defaultMocks(): void {
   repoFindByEid.mockResolvedValue(undefined);
   repoFindDepartment.mockResolvedValue(DEPARTMENT);
   repoFindPosition.mockResolvedValue(POSITION);
-  repoUserExists.mockResolvedValue(true);
+  repoIsActiveOrganizationMember.mockResolvedValue(true);
   repoFindEmployeeByUser.mockResolvedValue(undefined);
   repoCreate.mockResolvedValue(EMPLOYEE);
   repoUpdate.mockResolvedValue(EMPLOYEE);

@@ -1,19 +1,9 @@
-import {
-  and,
-  asc,
-  count,
-  eq,
-  ilike,
-  isNull,
-  or,
-  sql,
-  type SQL,
-} from 'drizzle-orm';
+import { and, asc, count, eq, ilike, isNull, or, type SQL } from 'drizzle-orm';
 import { Injectable } from '@nestjs/common';
 import { db, pooledDb } from '@/db';
 import type { Executor } from '@/db/executor';
 import { departments, employees, positions } from '@/db/schemas/admin';
-import { users } from '@/db/schemas/auth';
+import { organizationMemberships } from '@/db/schemas/tenancy';
 import { employeeEmergencyContacts } from '@/db/schemas/hr/contacts';
 import { TenantScopedRepository } from '@/modules/tenancy/tenant-scoped.repository';
 import type {
@@ -43,15 +33,11 @@ const employeeSelection = {
   archivedAt: employees.archivedAt,
   createdAt: employees.createdAt,
   updatedAt: employees.updatedAt,
-  hasKioskPasscode: sql<boolean>`${employees.passcodeHash} is not null`,
 };
 
 @Injectable()
 export class EmployeesRepository extends TenantScopedRepository {
-  async create(
-    data: Omit<EmployeeCreateInput, 'passcode'> & { passcodeHash?: string },
-    tx?: Executor,
-  ) {
+  async create(data: EmployeeCreateInput, tx?: Executor) {
     const executor = tx ?? pooledDb;
     const { eId, ...rest } = data;
     const [row] = await executor
@@ -106,13 +92,7 @@ export class EmployeesRepository extends TenantScopedRepository {
     return row;
   }
 
-  async update(
-    employeeId: string,
-    data: Omit<EmployeeUpdateInput, 'passcode'> & {
-      passcodeHash?: string | null;
-    },
-    tx?: Executor,
-  ) {
+  async update(employeeId: string, data: EmployeeUpdateInput, tx?: Executor) {
     const executor = tx ?? pooledDb;
     const [row] = await executor
       .update(employees)
@@ -301,11 +281,17 @@ export class EmployeesRepository extends TenantScopedRepository {
     return Number(total);
   }
 
-  async userExists(userId: string) {
+  async isActiveOrganizationMember(userId: string) {
     const [row] = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.id, userId))
+      .select({ id: organizationMemberships.id })
+      .from(organizationMemberships)
+      .where(
+        this.tenantScope(
+          organizationMemberships,
+          eq(organizationMemberships.userId, userId),
+          eq(organizationMemberships.status, 'active'),
+        ),
+      )
       .limit(1);
     return Boolean(row);
   }

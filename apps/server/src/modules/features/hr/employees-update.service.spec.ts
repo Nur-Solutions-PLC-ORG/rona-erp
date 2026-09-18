@@ -2,6 +2,8 @@ import {
   DepartmentNotFoundException,
   EmployeeArchivedException,
   EmployeeNotFoundException,
+  EmployeeUserConflictException,
+  LinkedUserNotFoundException,
 } from './hr.exception';
 import {
   ARCHIVED_AT,
@@ -15,7 +17,7 @@ import {
   repoFindById,
   repoFindDepartment,
   repoUpdate,
-  repoUserExists,
+  repoIsActiveOrganizationMember,
   repoFindEmployeeByUser,
   runInOrganizationA,
   setupTransactionMock,
@@ -105,7 +107,7 @@ describe('EmployeesService.updateEmployee', () => {
       employeesService.updateEmployee(EMPLOYEE_ID, { userId: null }),
     );
 
-    expect(repoUserExists).not.toHaveBeenCalled();
+    expect(repoIsActiveOrganizationMember).not.toHaveBeenCalled();
     expect(repoFindEmployeeByUser).not.toHaveBeenCalled();
     expect(repoUpdate).toHaveBeenCalledWith(
       EMPLOYEE_ID,
@@ -121,6 +123,100 @@ describe('EmployeesService.updateEmployee', () => {
       mockTx,
     );
     expect(result.userId).toBeNull();
+  });
+
+  it('links an active organization member and audits the account change', async () => {
+    await runInOrganizationA(() =>
+      employeesService.updateEmployee(EMPLOYEE_ID, { userId: USER_A }),
+    );
+
+    expect(repoIsActiveOrganizationMember).toHaveBeenCalledWith(USER_A);
+    expect(repoUpdate).toHaveBeenCalledWith(
+      EMPLOYEE_ID,
+      { userId: USER_A },
+      mockTx,
+    );
+    expect(auditRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        before: expect.objectContaining({ userId: null }),
+        after: expect.objectContaining({ userId: USER_A }),
+      }),
+      mockTx,
+    );
+  });
+
+  it.each(['missing', 'other organization', 'invited', 'suspended'])(
+    'rejects a proposed link with %s membership',
+    async () => {
+      repoIsActiveOrganizationMember.mockResolvedValue(false);
+
+      await expect(
+        runInOrganizationA(() =>
+          employeesService.updateEmployee(EMPLOYEE_ID, { userId: USER_A }),
+        ),
+      ).rejects.toBeInstanceOf(LinkedUserNotFoundException);
+      expect(repoIsActiveOrganizationMember).toHaveBeenCalledWith(USER_A);
+      expect(repoUpdate).not.toHaveBeenCalled();
+      expect(auditRecord).not.toHaveBeenCalled();
+    },
+  );
+
+  it('revalidates an explicitly submitted unchanged link', async () => {
+    repoFindById.mockResolvedValue({ ...EMPLOYEE, userId: USER_A });
+    repoIsActiveOrganizationMember.mockResolvedValue(false);
+
+    await expect(
+      runInOrganizationA(() =>
+        employeesService.updateEmployee(EMPLOYEE_ID, { userId: USER_A }),
+      ),
+    ).rejects.toBeInstanceOf(LinkedUserNotFoundException);
+    expect(repoUpdate).not.toHaveBeenCalled();
+  });
+
+  it('allows the current employee to retain its active member link', async () => {
+    repoFindById.mockResolvedValue({ ...EMPLOYEE, userId: USER_A });
+    repoFindEmployeeByUser.mockResolvedValue({ ...EMPLOYEE, userId: USER_A });
+
+    await runInOrganizationA(() =>
+      employeesService.updateEmployee(EMPLOYEE_ID, { userId: USER_A }),
+    );
+
+    expect(repoIsActiveOrganizationMember).toHaveBeenCalledWith(USER_A);
+    expect(repoUpdate).toHaveBeenCalled();
+  });
+
+  it('preserves an omitted link without membership validation', async () => {
+    repoFindById.mockResolvedValue({ ...EMPLOYEE, userId: USER_A });
+
+    await runInOrganizationA(() =>
+      employeesService.updateEmployee(EMPLOYEE_ID, {
+        fullName: 'Updated name',
+      }),
+    );
+
+    expect(repoIsActiveOrganizationMember).not.toHaveBeenCalled();
+    expect(repoUpdate).toHaveBeenCalledWith(
+      EMPLOYEE_ID,
+      { fullName: 'Updated name' },
+      mockTx,
+    );
+    expect(auditRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        after: expect.objectContaining({ userId: USER_A }),
+      }),
+      mockTx,
+    );
+  });
+
+  it('preserves the conflict error for an account linked to another employee', async () => {
+    repoFindEmployeeByUser.mockResolvedValue({ ...EMPLOYEE, id: 'other' });
+
+    await expect(
+      runInOrganizationA(() =>
+        employeesService.updateEmployee(EMPLOYEE_ID, { userId: USER_A }),
+      ),
+    ).rejects.toBeInstanceOf(EmployeeUserConflictException);
+    expect(repoUpdate).not.toHaveBeenCalled();
   });
 
   it('clears the department when departmentId is explicitly null', async () => {

@@ -1,3 +1,12 @@
+import { PgDialect } from 'drizzle-orm/pg-core';
+import type { SQL } from 'drizzle-orm';
+import { db } from '@/db';
+import { organizationMemberships } from '@/db/schemas/tenancy';
+import { EmployeesRepository } from './employees.repository';
+import {
+  employeeCreateSchema,
+  employeeUpdateSchema,
+} from '@rona/validation/hr';
 import {
   DepartmentNotFoundException,
   EmployeeEidConflictException,
@@ -26,7 +35,7 @@ import {
   repoFindEmployeeByUser,
   repoFindPosition,
   repoList,
-  repoUserExists,
+  repoIsActiveOrganizationMember,
   runInOrganizationA,
   setupTransactionMock,
 } from './employees.spec-harness';
@@ -38,7 +47,7 @@ jest.mock('@/logger', () => ({
 }));
 
 jest.mock('@/db', () => ({
-  db: {},
+  db: { select: jest.fn() },
   pooledDb: { transaction: jest.fn() },
 }));
 
@@ -100,13 +109,35 @@ describe('EmployeesService', () => {
             departmentId: DEPARTMENT_ID,
             positionId: POSITION_ID,
             userId: null,
-            hasKioskPasscode: false,
           },
         }),
         mockTx,
       );
       expect(repoFindById).toHaveBeenCalledWith(EMPLOYEE_ID);
       expect(result).toEqual(EMPLOYEE);
+    });
+
+    it('creates an explicitly linked employee for an active organization member', async () => {
+      const input = {
+        eId: '10002',
+        fullName: 'Dawit Haile',
+        phone: '+251911000003',
+        gender: 'M' as const,
+        birthDate: '1992-07-20',
+        userId: USER_A,
+      };
+      repoCreate.mockResolvedValue({ ...EMPLOYEE, userId: USER_A });
+
+      await runInOrganizationA(() => employeesService.createEmployee(input));
+
+      expect(repoIsActiveOrganizationMember).toHaveBeenCalledWith(USER_A);
+      expect(repoCreate).toHaveBeenCalledWith(input, mockTx);
+      expect(auditRecord).toHaveBeenCalledWith(
+        expect.objectContaining({
+          after: expect.objectContaining({ userId: USER_A }),
+        }),
+        mockTx,
+      );
     });
 
     it('rejects a duplicate EID within the tenant', async () => {
@@ -183,23 +214,26 @@ describe('EmployeesService', () => {
       expect(repoCreate).not.toHaveBeenCalled();
     });
 
-    it('rejects a userId that does not exist', async () => {
-      repoUserExists.mockResolvedValue(false);
+    it.each(['missing', 'other organization', 'invited', 'suspended'])(
+      'rejects a userId with %s membership',
+      async () => {
+        repoIsActiveOrganizationMember.mockResolvedValue(false);
 
-      await expect(
-        runInOrganizationA(() =>
-          employeesService.createEmployee({
-            eId: '10002',
-            fullName: 'Dawit Haile',
-            phone: '+251911000003',
-            gender: 'M',
-            birthDate: '1992-07-20',
-            userId: 'forged-user',
-          }),
-        ),
-      ).rejects.toBeInstanceOf(LinkedUserNotFoundException);
-      expect(repoCreate).not.toHaveBeenCalled();
-    });
+        await expect(
+          runInOrganizationA(() =>
+            employeesService.createEmployee({
+              eId: '10002',
+              fullName: 'Dawit Haile',
+              phone: '+251911000003',
+              gender: 'M',
+              birthDate: '1992-07-20',
+              userId: 'forged-user',
+            }),
+          ),
+        ).rejects.toBeInstanceOf(LinkedUserNotFoundException);
+        expect(repoCreate).not.toHaveBeenCalled();
+      },
+    );
 
     it('rejects a userId already linked to another employee in the tenant', async () => {
       repoFindEmployeeByUser.mockResolvedValue({
@@ -220,6 +254,65 @@ describe('EmployeesService', () => {
         ),
       ).rejects.toBeInstanceOf(EmployeeUserConflictException);
       expect(repoCreate).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('membership repository validation', () => {
+    it.each([true, false])(
+      'scopes the membership query and returns %s',
+      async (exists) => {
+        const limit = jest
+          .fn()
+          .mockResolvedValue(exists ? [{ id: 'membership' }] : []);
+        const where = jest
+          .fn<{ limit: typeof limit }, [SQL]>()
+          .mockReturnValue({ limit });
+        const from = jest.fn(() => ({ where }));
+        jest
+          .mocked(db.select)
+          .mockReturnValue({ from } as unknown as ReturnType<typeof db.select>);
+
+        const result = await runInOrganizationA(() =>
+          new EmployeesRepository().isActiveOrganizationMember(USER_A),
+        );
+
+        expect(from).toHaveBeenCalledWith(organizationMemberships);
+        const query = new PgDialect().sqlToQuery(where.mock.calls[0][0]);
+        expect(query.sql).toContain(
+          '"organization_memberships"."organization_id" =',
+        );
+        expect(query.sql).toContain('"organization_memberships"."user_id" =');
+        expect(query.sql).toContain('"organization_memberships"."status" =');
+        expect(query.params).toEqual([
+          'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+          USER_A,
+          'active',
+        ]);
+        expect(limit).toHaveBeenCalledWith(1);
+        expect(result).toBe(exists);
+      },
+    );
+  });
+
+  describe('employee input schemas', () => {
+    it('strips retired passcode fields from create and update', () => {
+      const created = employeeCreateSchema.parse({
+        eId: '10002',
+        fullName: 'Dawit Haile',
+        phone: '+251911000003',
+        gender: 'M',
+        birthDate: '1992-07-20',
+        userId: USER_A,
+        passcode: '12345',
+      });
+      const updated = employeeUpdateSchema.parse({
+        userId: null,
+        passcode: '12345',
+      });
+
+      expect(created.userId).toBe(USER_A);
+      expect(created).not.toHaveProperty('passcode');
+      expect(updated).toEqual({ userId: null });
     });
   });
 

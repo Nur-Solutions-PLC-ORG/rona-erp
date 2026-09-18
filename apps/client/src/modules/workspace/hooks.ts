@@ -9,8 +9,6 @@ import type {
   Permission,
   RoleKey,
 } from "@rona/types/tenancy";
-import type { Module } from "@rona/types/auth";
-import { useSession } from "@/modules/auth/hooks";
 
 export const ApiGetMyMemberships = Request<MembershipWithUserDto[]>(
   "get",
@@ -58,30 +56,15 @@ export const useCurrentOrganization = () => {
   };
 };
 
-const PERMISSION_MODULE: Record<string, Module> = {
-  hr: "workforce",
-  inventory: "inventory",
-  manufacturing: "manufacturing",
-  quality: "quality",
-  traceability: "traceability",
-  sales: "sales",
-  finance: "finance",
-  organization: "organization",
-  membership: "organization",
-  role: "organization",
-  audit: "organization",
-  kiosk: "kiosk",
-};
-
-function permissionModule(permission: Permission): Module | null {
-  const prefix = permission.split(".")[0];
-  return PERMISSION_MODULE[prefix] ?? null;
-}
-
 export const usePermissions = () => {
   const { membership } = useCurrentOrganization();
-  const { role } = useSession();
 
+  // Authorize strictly from the active organization membership, mirroring the
+  // server-side PermissionGuard. The user's global `session.role.modules` list
+  // is a separate, platform-level setting that must not veto permissions granted
+  // by an organization role (e.g. assigning "Manufacturing" previously had no
+  // effect because `manufacturing.*` was stripped for users whose global module
+  // list did not include "manufacturing").
   const permissions = useMemo(() => {
     const set = new Set<Permission>();
 
@@ -101,22 +84,8 @@ export const usePermissions = () => {
       }
     }
 
-    const allowedModules =
-      role?.modules && role.modules.length > 0
-        ? new Set<Module>(role.modules)
-        : null;
-
-    if (allowedModules) {
-      for (const permission of [...set]) {
-        const mod = permissionModule(permission);
-        if (mod && !allowedModules.has(mod)) {
-          set.delete(permission);
-        }
-      }
-    }
-
     return set;
-  }, [membership, role]);
+  }, [membership]);
 
   return {
     permissions,

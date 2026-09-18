@@ -20,6 +20,7 @@ import type {
   EmployeeUpdateInput,
 } from "@rona/types/hr";
 import { usePermissions } from "@/modules/workspace/hooks";
+import { useMemberships } from "@/modules/features/workspace/organization/hooks";
 import {
   BTN_PRIMARY,
   Card,
@@ -60,7 +61,7 @@ const EMPTY_FORM = {
   departmentId: "",
   positionId: "",
   hireDate: "",
-  passcode: "",
+  userId: "",
 };
 
 export default function EmployeesView() {
@@ -87,6 +88,28 @@ export default function EmployeesView() {
   });
   const { departments } = useDepartments();
   const { positions } = usePositions(1);
+  const { memberships, isLoading: isLoadingMemberships } = useMemberships();
+  const canReadMemberships = hasPermission("membership.read");
+  const accountOptions = memberships
+    .filter((membership) => membership.status === "active")
+    .map((membership) => ({
+      value: membership.userId,
+      label: `${membership.user.fullName} (${membership.user.email ?? membership.userId})`,
+    }));
+  if (
+    editing?.userId &&
+    !accountOptions.some((option) => option.value === editing.userId)
+  ) {
+    const membership = memberships.find(
+      (member) => member.userId === editing.userId,
+    );
+    accountOptions.push({
+      value: editing.userId,
+      label: membership
+        ? `${membership.user.fullName} (${membership.user.email ?? membership.userId}) — ${membership.status}`
+        : `Current linked account: ${editing.userId}`,
+    });
+  }
   const createEmployee = useCreateEmployee();
   const updateEmployee = useUpdateEmployee();
   const archiveEmployee = useArchiveEmployee();
@@ -124,7 +147,7 @@ export default function EmployeesView() {
       departmentId: employee.departmentId ?? "",
       positionId: employee.positionId ?? "",
       hireDate: employee.hireDate ?? "",
-      passcode: "",
+      userId: employee.userId ?? "",
     });
     setIsFormOpen(true);
   };
@@ -147,7 +170,9 @@ export default function EmployeesView() {
         departmentId: form.departmentId === "" ? null : form.departmentId,
         positionId: form.positionId === "" ? null : form.positionId,
         hireDate: form.hireDate === "" ? null : form.hireDate,
-        passcode: form.passcode === "" ? undefined : form.passcode,
+        userId: form.userId === (editing.userId ?? "")
+          ? undefined
+          : form.userId || null,
       });
 
       if (!parsed.success) {
@@ -169,7 +194,7 @@ export default function EmployeesView() {
       departmentId: form.departmentId || undefined,
       positionId: form.positionId || undefined,
       hireDate: form.hireDate || undefined,
-      passcode: form.passcode || undefined,
+      userId: form.userId || undefined,
     });
 
     if (!parsed.success) {
@@ -479,15 +504,30 @@ export default function EmployeesView() {
             ]}
             placeholder="Unassigned"
           />
-          <LabeledInput
-            label="Kiosk passcode (5 digits, optional)"
-            id="employee-passcode"
-            inputMode="numeric"
-            maxLength={5}
-            value={form.passcode}
-            onChange={(event) => updateForm("passcode", event.target.value)}
-            placeholder={editing ? "Leave blank to keep current" : "e.g. 12345"}
-          />
+          <div className="sm:col-span-2 space-y-2">
+            <Dropdown
+              label="Login account (optional)"
+              name="employee-user"
+              id="employee-user"
+              value={form.userId}
+              onChange={(value) => updateForm("userId", value)}
+              options={[
+                { value: "", label: "No linked account" },
+                ...accountOptions,
+              ]}
+              placeholder="No linked account"
+              search
+              disabled={!canReadMemberships || isLoadingMemberships}
+              desc={canReadMemberships
+                ? "Select an active account in this organization to enable employee self-service and face enrollment."
+                : "Membership read permission is required to select an organization account. Existing links are preserved."}
+            />
+            {editing?.userId && form.userId !== editing.userId ? (
+              <p role="alert" className="text-xs text-amber-700">
+                {form.userId ? "Changing" : "Removing"} this link will remove the previous account&apos;s self-service and face enrollment access for this employee when you save.
+              </p>
+            ) : null}
+          </div>
         </div>
         <ModalActions
           onCancel={closeForm}
