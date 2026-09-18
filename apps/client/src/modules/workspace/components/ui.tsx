@@ -352,17 +352,30 @@ export function RowActionsMenu({
   label?: string;
   className?: string;
 }) {
+  // No actions available for this row: render a muted dash instead of a
+  // button that would open an empty menu.
+  if (items.length === 0) {
+    return (
+      <span
+        aria-hidden="true"
+        className={cn("block px-2 text-sm text-zinc-300", className)}
+      >
+        {"\u2014"}
+      </span>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-<button
-              type="button"
-              aria-label={label}
-              className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-md p-1 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 focus:outline-none focus-visible:ring-1 focus-visible:ring-zinc-500",
-                className,
-              )}
-            >
+        <button
+          type="button"
+          aria-label={label}
+          className={cn(
+            "flex h-7 w-7 items-center justify-center rounded-md p-1 text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 focus:outline-none focus-visible:ring-1 focus-visible:ring-zinc-500",
+            className,
+          )}
+        >
           <HiOutlineEllipsisVertical className="h-4 w-4" />
         </button>
       </DropdownMenuTrigger>

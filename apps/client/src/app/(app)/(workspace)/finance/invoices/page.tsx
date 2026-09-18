@@ -64,21 +64,21 @@ export default function FinanceInvoicesPage() {
       header: "Invoice #",
       render: (row) => (
         <span className="font-mono text-xs font-medium text-zinc-900">
-          {row.invoiceNumber ?? "â€”"}
+          {row.invoiceNumber ?? "—"}
         </span>
       ),
     },
     {
       key: "customerName",
       header: "Customer",
-      render: (row) => <span className="text-zinc-700">{row.customerName ?? "â€”"}</span>,
+      render: (row) => <span className="text-zinc-700">{row.customerName ?? "—"}</span>,
     },
     {
       key: "dueDate",
       header: "Due Date",
       render: (row) => (
         <span className="font-mono text-xs text-zinc-600">
-          {row.dueDate ? new Date(row.dueDate).toLocaleDateString() : "â€”"}
+          {row.dueDate ? new Date(row.dueDate).toLocaleDateString() : "—"}
         </span>
       ),
     },

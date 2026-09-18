@@ -174,7 +174,7 @@ export default function SalesCommissionsPage() {
       key: "salespersonName",
       header: "Salesperson",
       render: (row) => (
-        <span className="text-zinc-700">{row.salespersonName ?? "â€”"}</span>
+        <span className="text-zinc-700">{row.salespersonName ?? "—"}</span>
       ),
     },
     {
@@ -242,7 +242,7 @@ export default function SalesCommissionsPage() {
       header: "Salesperson",
       render: (row) => (
         <span className="font-medium text-zinc-900">
-          {row.salespersonName ?? "â€”"}
+          {row.salespersonName ?? "—"}
         </span>
       ),
     },
@@ -250,7 +250,7 @@ export default function SalesCommissionsPage() {
       key: "ruleName",
       header: "Rule",
       render: (row) => (
-        <span className="text-zinc-600">{row.ruleName ?? "â€”"}</span>
+        <span className="text-zinc-600">{row.ruleName ?? "—"}</span>
       ),
     },
     {
@@ -282,7 +282,7 @@ export default function SalesCommissionsPage() {
       header: "Approved",
       render: (row) => (
         <span className="font-mono text-xs text-zinc-600">
-          {row.approvedAt ? new Date(row.approvedAt).toLocaleDateString() : "â€”"}
+          {row.approvedAt ? new Date(row.approvedAt).toLocaleDateString() : "—"}
         </span>
       ),
     },
@@ -291,7 +291,7 @@ export default function SalesCommissionsPage() {
       header: "Paid",
       render: (row) => (
         <span className="font-mono text-xs text-zinc-600">
-          {row.paidAt ? new Date(row.paidAt).toLocaleDateString() : "â€”"}
+          {row.paidAt ? new Date(row.paidAt).toLocaleDateString() : "—"}
         </span>
       ),
     },
@@ -384,7 +384,7 @@ export default function SalesCommissionsPage() {
         id="rule-name"
         value={form.name}
         onChange={(e) => setForm({ ...form, name: e.target.value })}
-        placeholder="e.g. Finished goods â€” 5%"
+        placeholder="e.g. Finished goods — 5%"
         maxLength={200}
         required
       />
@@ -430,7 +430,7 @@ export default function SalesCommissionsPage() {
           onChange={(e) =>
             setForm({ ...form, minimumMarginPercent: e.target.value })
           }
-          placeholder="â€”"
+          placeholder="—"
           className="tabular"
         />
       </div>

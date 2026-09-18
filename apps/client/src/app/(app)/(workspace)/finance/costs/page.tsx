@@ -55,7 +55,7 @@ export default function FinanceCostsPage() {
       key: "costCenterName",
       header: "Cost Center",
       render: (row) => (
-        <span className="text-zinc-600">{row.costCenterName ?? "â€”"}</span>
+        <span className="text-zinc-600">{row.costCenterName ?? "—"}</span>
       ),
     },
     {
