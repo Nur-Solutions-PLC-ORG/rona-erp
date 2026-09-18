@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { formatCount } from "@/lib/format";
 import { useCurrentOrganization } from "@/modules/workspace/hooks";
 import { Card } from "@/modules/workspace/components/ui";
+import { Sparkline } from "@/modules/workspace/components/charts";
 import Spinner from "@/components/custom/spinner";
 import {
   HiOutlineArrowRight,
@@ -100,6 +101,8 @@ export function KpiCard({
   unit,
   accent = "neutral",
   isLoading,
+  spark,
+  sparkColor,
 }: {
   icon: ReactNode;
   label: string;
@@ -108,6 +111,8 @@ export function KpiCard({
   unit?: string;
   accent?: KpiAccent;
   isLoading?: boolean;
+  spark?: number[];
+  sparkColor?: string;
 }) {
   const tone = KPI_ACCENTS[accent];
   return (
@@ -120,14 +125,23 @@ export function KpiCard({
         {isLoading ? (
           <Skeleton className="h-8 w-24 rounded" />
         ) : (
-          <p className={cn("text-3xl font-bold tabular-nums leading-none", tone.value)}>
-            {formatCount(value)}
-            {unit ? (
-              <span className="ml-1.5 text-sm font-semibold text-slate-400">
-                {unit}
-              </span>
+          <div className="flex items-end justify-between gap-2">
+            <p className={cn("text-3xl font-bold tabular-nums leading-none", tone.value)}>
+              {formatCount(value)}
+              {unit ? (
+                <span className="ml-1.5 text-sm font-semibold text-slate-400">
+                  {unit}
+                </span>
+              ) : null}
+            </p>
+            {spark ? (
+              <Sparkline
+                values={spark}
+                color={sparkColor}
+                className="mb-0.5 shrink-0"
+              />
             ) : null}
-          </p>
+          </div>
         )}
         {hint && !isLoading ? (
           <p className="mt-1.5 text-[11px] text-slate-500">{hint}</p>

@@ -14,6 +14,7 @@ import {
   BarList,
   ChartCard,
   DonutChart,
+  Sparkline,
   toCategoryPoints,
   toMonthlySeries,
 } from "@/modules/workspace/components/charts";
@@ -141,24 +142,32 @@ export default function FinanceDashboardView() {
             label: "Total Invoiced",
             value: formatMoney(totals.invoiced),
             hint: "Non-void invoices",
+            spark: invoicedSeries.points.map((point) => point.value),
+            sparkColor: "#4f46e5",
           },
           {
             icon: <HiOutlineBanknotes className="h-5 w-5" />,
             label: "Collected",
             value: formatMoney(totals.collected),
             hint: "Payments received",
+            spark: collectedSeries.points.map((point) => point.value),
+            sparkColor: "#14b8a6",
           },
           {
             icon: <HiOutlineExclamationTriangle className="h-5 w-5" />,
             label: "Outstanding",
             value: formatMoney(totals.outstanding),
             hint: `${totals.overdueCount} overdue`,
+            spark: null,
+            sparkColor: undefined,
           },
           {
             icon: <HiOutlineChartPie className="h-5 w-5" />,
             label: "Costs",
             value: formatMoney(totals.costs),
             hint: `${data.costs.length} entries`,
+            spark: costSeries.points.map((point) => point.value),
+            sparkColor: "#e11d48",
           },
         ].map((kpi) => (
           <div
@@ -169,9 +178,18 @@ export default function FinanceDashboardView() {
               <p className="text-xs font-medium text-zinc-500">{kpi.label}</p>
               <span className="text-zinc-400">{kpi.icon}</span>
             </div>
-            <p className="mt-1.5 font-mono text-lg font-bold tabular-nums text-zinc-900">
-              {kpi.value}
-            </p>
+            <div className="mt-1.5 flex items-end justify-between gap-2">
+              <p className="font-mono text-lg font-bold tabular-nums text-zinc-900">
+                {kpi.value}
+              </p>
+              {kpi.spark ? (
+                <Sparkline
+                  values={kpi.spark}
+                  color={kpi.sparkColor}
+                  className="mb-0.5 shrink-0"
+                />
+              ) : null}
+            </div>
             <p className="mt-0.5 text-[11px] text-zinc-500">{kpi.hint}</p>
           </div>
         ))}
@@ -180,21 +198,94 @@ export default function FinanceDashboardView() {
       <div className="grid items-start gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <ChartCard
-            title="Invoiced vs collected, last 6 months"
-            description="Monthly invoiced value against payments received."
-            isEmpty={data.invoices.length === 0 && data.payments.length === 0}
-            emptyMessage="No invoices or payments yet"
+            title="Cash flow, last 6 months"
+            description="Monthly invoiced vs collected vs costs."
+            isEmpty={
+              data.invoices.length === 0 &&
+              data.payments.length === 0 &&
+              data.costs.length === 0
+            }
+            emptyMessage="No finance records yet"
           >
             <BarChart
               series={[
-                { ...invoicedSeries, label: "Invoiced", color: "#4f46e5" },
+                invoicedSeries,
                 collectedSeries,
+                costSeries,
               ]}
               valueFormat={(value) => formatMoney(value)}
             />
           </ChartCard>
         </div>
 
+        <ChartCard
+          title="Collection rate"
+          description="Share of invoiced value collected so far."
+          isEmpty={totals.invoiced === 0}
+          emptyMessage="No invoices yet"
+        >
+          <DonutChart
+            points={[
+              { label: "Collected", value: totals.collected },
+              { label: "Outstanding", value: totals.outstanding },
+            ]}
+            centerLabel="Collected"
+            centerValue={`${
+              totals.collected + totals.outstanding > 0
+                ? Math.round(
+                    (totals.collected / (totals.collected + totals.outstanding)) *
+                      100,
+                  )
+                : 0
+            }%`}
+            valueFormat={(value) => formatMoney(value)}
+          />
+        </ChartCard>
+      </div>
+
+      <div className="grid items-start gap-5 lg:grid-cols-3">
+        <ChartCard
+          title="Collections by method"
+          description="Share of BANK / CASH / CREDIT_NOTE collections."
+          isEmpty={data.payments.length === 0}
+          emptyMessage="No payments yet"
+        >
+          <DonutChart
+            points={methodPoints}
+            centerLabel="Collected"
+            centerValue={formatMoney(totalCollected)}
+            valueFormat={(value) => formatMoney(value)}
+          />
+        </ChartCard>
+
+        <ChartCard
+          title="Costs by type"
+          description="Share of spend per category."
+          isEmpty={data.costs.length === 0}
+          emptyMessage="No costs recorded yet"
+        >
+          <DonutChart
+            points={costTypePoints}
+            centerLabel="Total"
+            centerValue={formatMoney(totals.costs)}
+            valueFormat={(value) => formatMoney(value)}
+          />
+        </ChartCard>
+
+        <ChartCard
+          title="Invoices by status"
+          description="Distribution across the invoice lifecycle."
+          isEmpty={data.invoices.length === 0}
+          emptyMessage="No invoices yet"
+        >
+          <BarList
+            points={invoiceStatusPoints}
+            valueFormat={(value) => String(value)}
+          />
+        </ChartCard>
+      </div>
+
+      <div className="grid items-start gap-5 lg:grid-cols-2">
         <ChartCard
           title="Invoiced by month"
           description="Total value of non-void invoices, last 6 months."
@@ -206,64 +297,18 @@ export default function FinanceDashboardView() {
             valueFormat={(value) => formatMoney(value)}
           />
         </ChartCard>
-      </div>
 
-      <div className="grid items-start gap-5 lg:grid-cols-3">
-        <div className="space-y-5 lg:col-span-2">
-          <ChartCard
-            title="Costs by month"
-            description="Recorded operational costs, last 6 months."
-            isEmpty={data.costs.length === 0}
-            emptyMessage="No costs recorded yet"
-          >
-            <BarList
-              points={costSeries.points}
-              valueFormat={(value) => formatMoney(value)}
-            />
-          </ChartCard>
-        </div>
-
-        <div className="space-y-5">
-          <ChartCard
-            title="Collection by method"
-            description="Share of BANK / CASH / CREDIT_NOTE collections."
-            isEmpty={data.payments.length === 0}
-            emptyMessage="No payments yet"
-          >
-            <DonutChart
-              points={methodPoints}
-              centerLabel="Collected"
-              centerValue={formatMoney(totalCollected)}
-              valueFormat={(value) => formatMoney(value)}
-            />
-          </ChartCard>
-
-          <ChartCard
-            title="Costs by type"
-            description="Share of spend per category."
-            isEmpty={data.costs.length === 0}
-            emptyMessage="No costs recorded yet"
-          >
-            <DonutChart
-              points={costTypePoints}
-              centerLabel="Total"
-              centerValue={formatMoney(totals.costs)}
-              valueFormat={(value) => formatMoney(value)}
-            />
-          </ChartCard>
-
-          <ChartCard
-            title="Invoices by status"
-            description="Distribution across the invoice lifecycle."
-            isEmpty={data.invoices.length === 0}
-            emptyMessage="No invoices yet"
-          >
-            <BarList
-              points={invoiceStatusPoints}
-              valueFormat={(value) => String(value)}
-            />
-          </ChartCard>
-        </div>
+        <ChartCard
+          title="Costs by month"
+          description="Recorded operational costs, last 6 months."
+          isEmpty={data.costs.length === 0}
+          emptyMessage="No costs recorded yet"
+        >
+          <BarList
+            points={costSeries.points}
+            valueFormat={(value) => formatMoney(value)}
+          />
+        </ChartCard>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

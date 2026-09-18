@@ -18,12 +18,15 @@ import {
 } from "@rona/routes/workspace";
 import {
   AreaChart,
+  BarChart,
   BarList,
   ChartCard,
   DonutChart,
+  FunnelChart,
   humanize,
   toCategoryPoints,
   toMonthlySeries,
+  toDailySeries,
 } from "@/modules/workspace/components/charts";
 import { useSalesDashboardData } from "../role-hooks";
 import {
@@ -74,6 +77,68 @@ export default function SalesDashboardView() {
     [data.orders],
   );
 
+  const dailyOrders = useMemo(
+    () =>
+      toDailySeries(
+        data.orders,
+        30,
+        (order) => order.orderDate,
+        () => 1,
+        { key: "orders", label: "Orders", color: "#4f46e5" },
+      ),
+    [data.orders],
+  );
+
+  const monthlyFulfilled = useMemo(
+    () =>
+      toMonthlySeries(
+        data.fulfilledOrders,
+        6,
+        (order) => order.fulfilledAt ?? order.orderDate,
+        () => 1,
+        { key: "fulfilled", label: "Fulfilled", color: "#10b981" },
+      ),
+    [data.fulfilledOrders],
+  );
+
+  const monthlyOpenValue = useMemo(
+    () =>
+      toMonthlySeries(
+        data.openOrders,
+        6,
+        (order) => order.orderDate,
+        (order) => Number(order.total) || 0,
+        { key: "open-value", label: "Open value", color: "#7c3aed" },
+      ),
+    [data.openOrders],
+  );
+
+  const pipeline = useMemo(
+    () => [
+      {
+        label: "Draft",
+        value: data.orders.filter((order) => order.status === "DRAFT").length,
+        color: "bg-slate-400",
+      },
+      {
+        label: "Confirmed",
+        value: data.orders.filter((order) => order.status === "CONFIRMED").length,
+        color: "bg-indigo-500",
+      },
+      {
+        label: "Fulfilling",
+        value: data.orders.filter((order) => order.status === "FULFILLING").length,
+        color: "bg-violet-500",
+      },
+      {
+        label: "Fulfilled",
+        value: data.fulfilledOrders.length,
+        color: "bg-emerald-500",
+      },
+    ],
+    [data.orders, data.fulfilledOrders],
+  );
+
   if (data.isLoading) {
     return <LoadingCard />;
   }
@@ -105,6 +170,8 @@ export default function SalesDashboardView() {
           label="Fulfilled Orders"
           value={data.fulfilledOrders.length}
           hint="Completed deliveries"
+          spark={monthlyFulfilled.points.map((point) => point.value)}
+          sparkColor="#10b981"
           isLoading={data.isLoading}
         />
         <KpiCard
@@ -113,6 +180,8 @@ export default function SalesDashboardView() {
           value={data.totalOrderValue}
           hint="Sum of open order totals"
           unit="ETB"
+          spark={monthlyOpenValue.points.map((point) => point.value)}
+          sparkColor="#7c3aed"
           isLoading={data.isLoading}
         />
       </div>
@@ -133,6 +202,31 @@ export default function SalesDashboardView() {
         </div>
 
         <ChartCard
+          title="Order pipeline"
+          description="Orders sitting at each stage, with step conversion."
+          isEmpty={data.orders.length === 0}
+          emptyMessage="No sales orders yet"
+        >
+          <FunnelChart
+            stages={pipeline}
+            valueFormat={(value) => formatCount(value)}
+          />
+        </ChartCard>
+      </div>
+
+      <div className="grid items-start gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ChartCard
+            title="Orders per day, last 30 days"
+            description="Daily order count."
+            isEmpty={data.orders.length === 0}
+            emptyMessage="No sales orders yet"
+          >
+            <BarChart series={[dailyOrders]} />
+          </ChartCard>
+        </div>
+
+        <ChartCard
           title="Orders by status"
           description="Distribution across the order lifecycle."
           isEmpty={data.orders.length === 0}
@@ -145,7 +239,9 @@ export default function SalesDashboardView() {
             valueFormat={(value) => String(value)}
           />
         </ChartCard>
+      </div>
 
+      <div className="grid items-start gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <DataCard
             title="Recent Sales Orders"

@@ -41,6 +41,128 @@ function formatFull(value: number): string {
   });
 }
 
+// Tiny trend line for KPI cards. No axes, no interaction — just shape.
+export function Sparkline({
+  values,
+  color = "#4f46e5",
+  className,
+}: {
+  values: number[];
+  color?: string;
+  className?: string;
+}) {
+  const gradientId = useId();
+  const width = 100;
+  const height = 32;
+  const points = values.length > 0 ? values : [0];
+  const max = Math.max(...points);
+  const min = Math.min(...points);
+  const range = max - min || 1;
+  const stepX = points.length > 1 ? width / (points.length - 1) : 0;
+
+  const line = points
+    .map((value, index) => {
+      const x = points.length > 1 ? index * stepX : width / 2;
+      const y = height - ((value - min) / range) * (height - 6) - 3;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+
+  return (
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
+      className={cn("h-8 w-24", className)}
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon
+        points={`0,${height} ${line} ${width},${height}`}
+        fill={`url(#${gradientId})`}
+      />
+      <polyline
+        points={line}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+}
+
+const FUNNEL_BAR_CLASSES = [
+  "bg-indigo-500",
+  "bg-violet-500",
+  "bg-purple-500",
+  "bg-fuchsia-500",
+  "bg-sky-500",
+];
+
+// Pipeline funnel: horizontal stage bars with per-stage counts and
+// step conversion percentages between consecutive stages.
+export function FunnelChart({
+  stages,
+  valueFormat = formatCompact,
+}: {
+  stages: { label: string; value: number; color?: string }[];
+  valueFormat?: (value: number) => string;
+}) {
+  const mounted = useMounted();
+  const max = Math.max(...stages.map((stage) => stage.value), 1);
+
+  if (stages.length === 0) return null;
+
+  return (
+    <div className="space-y-3">
+      {stages.map((stage, index) => {
+        const previous = index > 0 ? stages[index - 1].value : null;
+        const conversion =
+          previous !== null && previous > 0
+            ? Math.round((stage.value / previous) * 100)
+            : null;
+        const share = (stage.value / max) * 100;
+        return (
+          <div key={stage.label}>
+            <div className="mb-1 flex items-center justify-between gap-3 text-xs">
+              <span className="truncate font-medium text-zinc-700">
+                {stage.label}
+              </span>
+              <span className="shrink-0 font-mono tabular-nums text-zinc-500">
+                {valueFormat(stage.value)}
+                {conversion !== null ? (
+                  <span className="ml-1.5 font-sans text-[10px] text-zinc-400">
+                    {conversion}% step
+                  </span>
+                ) : null}
+              </span>
+            </div>
+            <div className="h-5 overflow-hidden rounded-lg bg-zinc-100">
+              <div
+                className={cn(
+                  "h-full rounded-lg transition-[width] duration-700 ease-out",
+                  stage.color ??
+                    FUNNEL_BAR_CLASSES[index % FUNNEL_BAR_CLASSES.length],
+                )}
+                style={{
+                  width: mounted ? `${Math.max(share, 1.5)}%` : "0%",
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ChartCard({
   title,
   description,
