@@ -520,23 +520,29 @@ export default function KioskTerminal() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {EVENT_ORDER.map((eventType) => {
-                  const { label, button, Icon } = EVENT_META[eventType];
-                  return (
-                    <button
-                      key={eventType}
-                      type="button"
-                      disabled={!canPunch}
-                      onClick={() => handlePunch(eventType)}
-                      className={`flex flex-col items-center justify-center gap-3 rounded-2xl px-6 py-10 text-2xl font-bold tracking-wide text-white transition-colors disabled:pointer-events-none disabled:opacity-40 sm:py-12 ${button}`}
-                    >
-                      <Icon className="h-9 w-9" />
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
+              {faceScan ? (
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  {EVENT_ORDER.map((eventType) => {
+                    const { label, button, Icon } = EVENT_META[eventType];
+                    return (
+                      <button
+                        key={eventType}
+                        type="button"
+                        disabled={!canPunch}
+                        onClick={() => handlePunch(eventType)}
+                        className={`flex flex-col items-center justify-center gap-3 rounded-2xl px-6 py-10 text-2xl font-bold tracking-wide text-white transition-colors disabled:pointer-events-none disabled:opacity-40 sm:py-12 ${button}`}
+                      >
+                        <Icon className="h-9 w-9" />
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-center text-sm text-slate-400">
+                  Capture your face to see attendance actions.
+                </p>
+              )}
             </div>
             <p className="text-center text-xs text-slate-400">
               Rona Workforce — secure attendance terminal
