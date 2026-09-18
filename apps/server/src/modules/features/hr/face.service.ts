@@ -13,6 +13,7 @@ import {
 import { generateRequestId } from '@/logger';
 import { rateLimit } from '@/redis';
 import {
+  KIOSK_FACE_MATCH_DISTANCE,
   KIOSK_PUNCH_ATTEMPT_LIMIT,
   KIOSK_PUNCH_WINDOW_SECONDS,
 } from '@rona/config/kiosk';
@@ -191,7 +192,7 @@ export class FaceService {
         match.revokedAt !== null ||
         enrolledDescriptor.length !== 128 ||
         !Number.isFinite(distanceSquared) ||
-        distanceSquared >= 0.55 ** 2
+        distanceSquared >= KIOSK_FACE_MATCH_DISTANCE ** 2
       ) {
         await this.rejectKioskFace(device, 'no_active_matching_face');
         throw new KioskFaceNotRecognizedException();

@@ -40,6 +40,7 @@ import {
 import { getRequestContext } from '@/context/request-context';
 import type { FaceEnrollInput, KioskFacePunchInput } from '@rona/types/kiosk';
 import {
+  KIOSK_FACE_MATCH_DISTANCE,
   KIOSK_PUNCH_ATTEMPT_LIMIT,
   KIOSK_PUNCH_WINDOW_SECONDS,
 } from '@rona/config/kiosk';
@@ -340,7 +341,7 @@ describe('FaceService', () => {
       });
     });
 
-    it.each([0, 0.549999])(
+    it.each([0, KIOSK_FACE_MATCH_DISTANCE - 0.000001])(
       'accepts distance %s strictly below the threshold',
       async (distance) => {
         await runInOrganizationA(() =>
@@ -353,7 +354,7 @@ describe('FaceService', () => {
       },
     );
 
-    it.each([0.55, 0.550001, 1])(
+    it.each([KIOSK_FACE_MATCH_DISTANCE, KIOSK_FACE_MATCH_DISTANCE + 0.000001, 1])(
       'rejects distance %s at or above threshold',
       async (distance) => {
         await expectUnrecognized({
