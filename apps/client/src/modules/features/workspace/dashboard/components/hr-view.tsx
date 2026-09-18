@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   HiOutlineBuildingStorefront,
   HiOutlineCalendarDays,
@@ -13,6 +14,14 @@ import {
 } from "@rona/routes/workspace";
 import { useHrDashboardData } from "../role-hooks";
 import {
+  BarChart,
+  BarList,
+  ChartCard,
+  toCategoryPoints,
+  toDailySeries,
+} from "@/modules/workspace/components/charts";
+import { humanize } from "@/modules/workspace/components/ui";
+import {
   DashboardHeader,
   DataCard,
   KpiCard,
@@ -23,6 +32,24 @@ import { AttendanceEventsTable, EmployeesTable } from "./tables";
 
 export default function HrDashboardView() {
   const data = useHrDashboardData();
+
+  const clockInSeries = useMemo(
+    () =>
+      toDailySeries(
+        data.attendanceHistory,
+        14,
+        (event) => event.eventAt,
+        (event) => (event.eventType === "CLOCK_IN" ? 1 : 0),
+        { key: "clock-ins", label: "Clock-ins", color: "#4f46e5" },
+      ),
+    [data.attendanceHistory],
+  );
+
+  const staffByStatus = useMemo(
+    () =>
+      toCategoryPoints(data.employees, (employee) => humanize(employee.status), () => 1),
+    [data.employees],
+  );
 
   if (data.isLoading) {
     return <LoadingCard />;
@@ -65,6 +92,28 @@ export default function HrDashboardView() {
           hint="Former staff records"
           isLoading={data.isLoading}
         />
+      </div>
+
+      <div className="grid items-start gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ChartCard
+            title="Clock-ins, last 14 days"
+            description="Daily CLOCK_IN events from kiosks and HR."
+            isEmpty={data.attendanceHistory.length === 0}
+            emptyMessage="No attendance recorded yet"
+          >
+            <BarChart series={[clockInSeries]} />
+          </ChartCard>
+        </div>
+
+        <ChartCard
+          title="Staff by status"
+          description="Headcount across employment statuses."
+          isEmpty={data.employees.length === 0}
+          emptyMessage="No employees yet"
+        >
+          <BarList points={staffByStatus} valueFormat={(value) => String(value)} />
+        </ChartCard>
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-2">

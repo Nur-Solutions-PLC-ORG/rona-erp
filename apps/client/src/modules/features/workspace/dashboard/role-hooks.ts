@@ -103,11 +103,12 @@ function searchResult(
 
 export const useWarehouseDashboardData = () => {
   const inventory = useInventoryDashboardData();
+  // Enough history to cover the 14-day in/out histogram.
   const movements = useList(
     "inventory.movement.read",
     "inventory-movements",
     ApiGetMovements,
-    ROLE_RECENT_SIZE,
+    200,
   );
   const reservations = useList(
     "inventory.reservation.read",
@@ -123,7 +124,8 @@ export const useWarehouseDashboardData = () => {
 
   return {
     ...inventory,
-    movements: movements.rows as MovementDto[],
+    movements: (movements.rows as MovementDto[]).slice(0, ROLE_RECENT_SIZE),
+    movementHistory: movements.rows as MovementDto[],
     movementsLoading: movements.isLoading,
     reservations: reservations.rows as ReservationDto[],
     activeReservations,
@@ -293,14 +295,16 @@ export const useHrDashboardData = () => {
     ApiGetEmployees,
     ROLE_LOOKUP_SIZE,
   );
+  // Enough history to cover the 14-day attendance histogram.
   const attendanceQ = useList(
     "hr.attendance.read",
     "hr-attendance",
     ApiGetAttendanceEvents,
-    ROLE_PAGE_SIZE,
+    200,
   );
 
   const employees = employeesQ.rows as Employee[];
+  const attendanceRows = attendanceQ.rows as AttendanceEvent[];
   const activeStaff = employees.filter(
     (employee) => employee.status === "active" && !employee.archivedAt,
   ).length;
@@ -315,7 +319,7 @@ export const useHrDashboardData = () => {
   startOfToday.setHours(0, 0, 0, 0);
   const clockedInToday = useMemo(() => {
     const set = new Set<string>();
-    for (const event of attendanceQ.rows as AttendanceEvent[]) {
+    for (const event of attendanceRows) {
       if (
         event.eventType === "CLOCK_IN" &&
         new Date(event.eventAt) >= startOfToday
@@ -325,7 +329,7 @@ export const useHrDashboardData = () => {
     }
     return set.size;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attendanceQ.rows]);
+  }, [attendanceRows]);
 
   const nameLookup = useMemo(() => {
     const map = new Map<string, string>();
@@ -350,7 +354,8 @@ export const useHrDashboardData = () => {
     onLeave,
     resignedStaff,
     clockedInToday,
-    attendance: attendanceQ.rows as AttendanceEvent[],
+    attendance: attendanceRows.slice(0, ROLE_RECENT_SIZE),
+    attendanceHistory: attendanceRows,
     searchIndex,
     isLoading: employeesQ.isLoading || attendanceQ.isLoading,
   };
@@ -484,7 +489,7 @@ export const useOpsDashboardData = () => {
     "inventory.movement.read",
     "inventory-movements",
     ApiGetMovements,
-    ROLE_RECENT_SIZE,
+    200,
   );
 
   const itemLookup = useMemoItemLookup(inventory.items);
@@ -526,7 +531,8 @@ export const useOpsDashboardData = () => {
     inspections,
     openInspections,
     stockPositions,
-    movements: movementsQ.rows as MovementDto[],
+    movements: (movementsQ.rows as MovementDto[]).slice(0, ROLE_RECENT_SIZE),
+    movementHistory: movementsQ.rows as MovementDto[],
     searchIndex,
     isLoading:
       inventory.isLoading ||

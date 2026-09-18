@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { formatCount, formatMoney } from "@/lib/format";
@@ -15,6 +16,15 @@ import {
   CLIENT_CUSTOMERS_PAGE,
   CLIENT_SALES_ORDERS_PAGE,
 } from "@rona/routes/workspace";
+import {
+  AreaChart,
+  BarList,
+  ChartCard,
+  DonutChart,
+  humanize,
+  toCategoryPoints,
+  toMonthlySeries,
+} from "@/modules/workspace/components/charts";
 import { useSalesDashboardData } from "../role-hooks";
 import {
   DashboardHeader,
@@ -35,6 +45,34 @@ const TD_RIGHT =
 
 export default function SalesDashboardView() {
   const data = useSalesDashboardData();
+
+  const monthlySales = useMemo(
+    () =>
+      toMonthlySeries(
+        data.orders,
+        6,
+        (order) => order.orderDate,
+        (order) => Number(order.total) || 0,
+        { key: "sales", label: "Order value", color: "#4f46e5" },
+      ),
+    [data.orders],
+  );
+
+  const ordersByStatus = useMemo(
+    () =>
+      toCategoryPoints(data.orders, (order) => humanize(order.status), () => 1),
+    [data.orders],
+  );
+
+  const topCustomers = useMemo(
+    () =>
+      toCategoryPoints(
+        data.orders,
+        (order) => order.customerName ?? "Unknown customer",
+        (order) => Number(order.total) || 0,
+      ),
+    [data.orders],
+  );
 
   if (data.isLoading) {
     return <LoadingCard />;
@@ -80,6 +118,34 @@ export default function SalesDashboardView() {
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ChartCard
+            title="Order value, last 6 months"
+            description="Monthly sum of sales order totals."
+            isEmpty={data.orders.length === 0}
+            emptyMessage="No sales orders yet"
+          >
+            <AreaChart
+              series={monthlySales}
+              valueFormat={(value) => formatMoney(value, "ETB")}
+            />
+          </ChartCard>
+        </div>
+
+        <ChartCard
+          title="Orders by status"
+          description="Distribution across the order lifecycle."
+          isEmpty={data.orders.length === 0}
+          emptyMessage="No sales orders yet"
+        >
+          <DonutChart
+            points={ordersByStatus}
+            centerLabel="Orders"
+            centerValue={formatCount(data.orders.length)}
+            valueFormat={(value) => String(value)}
+          />
+        </ChartCard>
+
         <div className="space-y-5 lg:col-span-2">
           <DataCard
             title="Recent Sales Orders"
@@ -102,6 +168,18 @@ export default function SalesDashboardView() {
         </div>
 
         <div className="space-y-5">
+          <ChartCard
+            title="Top customers"
+            description="Customers ranked by total order value."
+            isEmpty={data.orders.length === 0}
+            emptyMessage="No sales orders yet"
+          >
+            <BarList
+              points={topCustomers}
+              valueFormat={(value) => formatMoney(value, "ETB")}
+            />
+          </ChartCard>
+
           <DataCard
             title="Customers"
             action={<ViewAllLink href={CLIENT_CUSTOMERS_PAGE} />}

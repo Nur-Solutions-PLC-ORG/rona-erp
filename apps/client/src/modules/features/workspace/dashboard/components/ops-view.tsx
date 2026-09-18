@@ -18,10 +18,12 @@ import { safeNumber } from "@/lib/format";
 import { humanize } from "@/modules/workspace/components/ui";
 import { usePermissions } from "@/modules/workspace/hooks";
 import {
+  BarChart,
   BarList,
   ChartCard,
   DonutChart,
   toCategoryPoints,
+  toDailySeries,
 } from "@/modules/workspace/components/charts";
 import { useOpsDashboardData, useFinanceDashboardData } from "../role-hooks";
 import {
@@ -39,6 +41,9 @@ import {
   MovementsTable,
   ProductionOrdersTable,
 } from "./tables";
+
+const movementIn = (type: string) => type === "RECEIPT" || type === "RETURN";
+const movementOut = (type: string) => type === "ISSUE";
 
 function formatMoney(value: number): string {
   return value.toLocaleString(undefined, {
@@ -195,6 +200,32 @@ export default function OpsDashboardView() {
     hasPermission("finance.payment.read") ||
     hasPermission("finance.cost.read");
 
+  const stockInSeries = useMemo(
+    () =>
+      toDailySeries(
+        data.movementHistory,
+        14,
+        (movement) => movement.createdAt,
+        (movement) =>
+          movementIn(movement.type) ? Number(movement.quantity) || 0 : 0,
+        { key: "in", label: "Stock in", color: "#14b8a6" },
+      ),
+    [data.movementHistory],
+  );
+
+  const stockOutSeries = useMemo(
+    () =>
+      toDailySeries(
+        data.movementHistory,
+        14,
+        (movement) => movement.createdAt,
+        (movement) =>
+          movementOut(movement.type) ? Number(movement.quantity) || 0 : 0,
+        { key: "out", label: "Stock out", color: "#f43f5e" },
+      ),
+    [data.movementHistory],
+  );
+
   if (data.isLoading) {
     return <LoadingCard />;
   }
@@ -302,6 +333,14 @@ export default function OpsDashboardView() {
         </div>
 
         <div className="space-y-5">
+          <ChartCard
+            title="Stock in vs out, last 14 days"
+            description="Daily quantity received/returned versus issued."
+            isEmpty={data.movementHistory.length === 0}
+            emptyMessage="No stock movements yet"
+          >
+            <BarChart series={[stockInSeries, stockOutSeries]} />
+          </ChartCard>
           <DistributionCard data={data.warehouseStock} isLoading={data.isLoading} />
           <RequiresAttention items={attentionItems} />
         </div>

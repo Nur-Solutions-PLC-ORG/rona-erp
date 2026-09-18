@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   HiOutlineClipboardDocumentList,
   HiOutlineClock,
@@ -10,6 +11,15 @@ import {
   CLIENT_MOVEMENTS_PAGE,
   CLIENT_PRODUCTION_ORDERS_PAGE,
 } from "@rona/routes/workspace";
+import {
+  AreaChart,
+  ChartCard,
+  DonutChart,
+  humanize,
+  toCategoryPoints,
+  toMonthlySeries,
+} from "@/modules/workspace/components/charts";
+import { formatCount } from "@/lib/format";
 import { useProductionDashboardData } from "../role-hooks";
 import {
   DashboardHeader,
@@ -24,6 +34,24 @@ import { MovementsTable, ProductionOrdersTable } from "./tables";
 
 export default function ProductionDashboardView() {
   const data = useProductionDashboardData();
+
+  const monthlyOrders = useMemo(
+    () =>
+      toMonthlySeries(
+        data.orders,
+        6,
+        (order) => order.createdAt,
+        () => 1,
+        { key: "orders", label: "Orders created", color: "#4f46e5" },
+      ),
+    [data.orders],
+  );
+
+  const ordersByStatus = useMemo(
+    () =>
+      toCategoryPoints(data.orders, (order) => humanize(order.status), () => 1),
+    [data.orders],
+  );
 
   if (data.isLoading) {
     return <LoadingCard />;
@@ -87,6 +115,36 @@ export default function ProductionDashboardView() {
           hint="Items with on-hand stock"
           isLoading={data.isLoading}
         />
+      </div>
+
+      <div className="grid items-start gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ChartCard
+            title="Production orders, last 6 months"
+            description="New production orders per month."
+            isEmpty={data.orders.length === 0}
+            emptyMessage="No production orders yet"
+          >
+            <AreaChart
+              series={monthlyOrders}
+              valueFormat={(value) => formatCount(value)}
+            />
+          </ChartCard>
+        </div>
+
+        <ChartCard
+          title="Orders by status"
+          description="Distribution across the production lifecycle."
+          isEmpty={data.orders.length === 0}
+          emptyMessage="No production orders yet"
+        >
+          <DonutChart
+            points={ordersByStatus}
+            centerLabel="Orders"
+            centerValue={formatCount(data.orders.length)}
+            valueFormat={(value) => String(value)}
+          />
+        </ChartCard>
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-3">

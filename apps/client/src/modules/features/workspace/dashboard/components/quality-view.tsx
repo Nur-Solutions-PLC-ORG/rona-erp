@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   HiOutlineBeaker,
   HiOutlineCheckCircle,
@@ -11,6 +12,15 @@ import {
   CLIENT_INSPECTIONS_PAGE,
   CLIENT_LOTS_PAGE,
 } from "@rona/routes/workspace";
+import {
+  AreaChart,
+  ChartCard,
+  DonutChart,
+  humanize,
+  toCategoryPoints,
+  toMonthlySeries,
+} from "@/modules/workspace/components/charts";
+import { formatCount } from "@/lib/format";
 import { useQualityDashboardData } from "../role-hooks";
 import {
   DashboardHeader,
@@ -25,6 +35,28 @@ import { InspectionsTable, LotsTable } from "./tables";
 
 export default function QualityDashboardView() {
   const data = useQualityDashboardData();
+
+  const monthlyInspections = useMemo(
+    () =>
+      toMonthlySeries(
+        data.inspections,
+        6,
+        (inspection) => inspection.createdAt,
+        () => 1,
+        { key: "inspections", label: "Inspections", color: "#0ea5e9" },
+      ),
+    [data.inspections],
+  );
+
+  const inspectionsByStatus = useMemo(
+    () =>
+      toCategoryPoints(
+        data.inspections,
+        (inspection) => humanize(inspection.status),
+        () => 1,
+      ),
+    [data.inspections],
+  );
 
   if (data.isLoading) {
     return <LoadingCard />;
@@ -98,6 +130,36 @@ export default function QualityDashboardView() {
           hint="Not fit for use"
           isLoading={data.isLoading}
         />
+      </div>
+
+      <div className="grid items-start gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ChartCard
+            title="Inspections, last 6 months"
+            description="Quality inspections recorded per month."
+            isEmpty={data.inspections.length === 0}
+            emptyMessage="No inspections yet"
+          >
+            <AreaChart
+              series={monthlyInspections}
+              valueFormat={(value) => formatCount(value)}
+            />
+          </ChartCard>
+        </div>
+
+        <ChartCard
+          title="Inspections by status"
+          description="Where inspections sit in the review flow."
+          isEmpty={data.inspections.length === 0}
+          emptyMessage="No inspections yet"
+        >
+          <DonutChart
+            points={inspectionsByStatus}
+            centerLabel="Inspections"
+            centerValue={formatCount(data.inspections.length)}
+            valueFormat={(value) => String(value)}
+          />
+        </ChartCard>
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-3">

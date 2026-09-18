@@ -6,6 +6,7 @@ import type { AttendanceEventType } from "@rona/types/hr";
 import {
   HiOutlineArrowLeftOnRectangle,
   HiOutlineArrowRightOnRectangle,
+  HiOutlineCheck,
   HiOutlineCheckCircle,
   HiOutlineDevicePhoneMobile,
   HiOutlineFaceSmile,
@@ -13,6 +14,7 @@ import {
   HiOutlinePlay,
 } from "react-icons/hi2";
 import Spinner from "@/components/custom/spinner";
+import { cn } from "@/lib/utils";
 import {
   postKioskAuthenticate,
   postKioskFaceAttendance,
@@ -97,6 +99,45 @@ function formatDate(date: Date): string {
     day: "numeric",
     year: "numeric",
   }).format(date);
+}
+
+function StepPill({
+  step,
+  label,
+  done,
+  active,
+}: {
+  step: number;
+  label: string;
+  done: boolean;
+  active: boolean;
+}) {
+  return (
+    <span
+      className={cn(
+        "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors sm:text-sm",
+        done
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : active
+            ? "border-purple-200 bg-purple-50 text-purple-700"
+            : "border-slate-200 bg-white text-slate-400",
+      )}
+    >
+      <span
+        className={cn(
+          "flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-bold",
+          done
+            ? "border-emerald-500 bg-emerald-500 text-white"
+            : active
+              ? "border-purple-400 text-purple-600"
+              : "border-slate-300 text-slate-400",
+        )}
+      >
+        {done ? <HiOutlineCheck className="h-3 w-3" /> : step}
+      </span>
+      {label}
+    </span>
+  );
 }
 
 export default function KioskTerminal() {
@@ -432,6 +473,29 @@ export default function KioskTerminal() {
         {screen === "idle" ? (
           <div className="w-full max-w-3xl space-y-6">
             <div className="space-y-8 rounded-2xl border border-slate-200 bg-white p-8 shadow-lg shadow-slate-900/5">
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                <StepPill
+                  step={1}
+                  label="Enter ID"
+                  done={eid.trim().length > 0}
+                  active={eid.trim().length === 0}
+                />
+                <span className="h-px w-5 bg-slate-200" />
+                <StepPill
+                  step={2}
+                  label="Capture face"
+                  done={faceScan !== null}
+                  active={eid.trim().length > 0 && faceScan === null}
+                />
+                <span className="h-px w-5 bg-slate-200" />
+                <StepPill
+                  step={3}
+                  label="Choose action"
+                  done={false}
+                  active={faceScan !== null}
+                />
+              </div>
+
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
                   <label

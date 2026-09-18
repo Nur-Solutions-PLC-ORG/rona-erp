@@ -234,7 +234,183 @@ export function AreaChart({
   );
 }
 
-const BAR_COLORS = [
+const BAR_CHART_HEIGHT = 160;
+const BAR_CHART_MAX_CATEGORIES = 31;
+const BAR_CHART_MAX_LABELS = 7;
+
+// Vertical bar histogram ("histograph"). Accepts one series for a plain
+// histogram, or two for side-by-side grouped bars (e.g. stock in vs out).
+export function BarChart({
+  series,
+  valueFormat = formatCompact,
+}: {
+  series: ChartSeries[];
+  valueFormat?: (value: number) => string;
+}) {
+  const mounted = useMounted();
+  const [hovered, setHovered] = useState<number | null>(null);
+
+  const trimmed = useMemo(
+    () =>
+      series.map((s) => ({
+        ...s,
+        points: s.points.slice(-BAR_CHART_MAX_CATEGORIES),
+      })),
+    [series],
+  );
+
+  const count = trimmed[0]?.points.length ?? 0;
+  const max = Math.max(
+    1,
+    ...trimmed.flatMap((s) => s.points.map((point) => point.value)),
+  );
+
+  if (count === 0 || trimmed.length === 0) return null;
+
+  const activeIndex = Math.min(hovered ?? count - 1, count - 1);
+  const groupWidth = 100 / count;
+  const barWidth = (groupWidth * 0.68) / trimmed.length;
+  const yFor = (value: number) =>
+    BAR_CHART_HEIGHT - (value / max) * (BAR_CHART_HEIGHT - 10) - 4;
+  const labelStep = Math.max(1, Math.ceil(count / BAR_CHART_MAX_LABELS));
+  const grouped = trimmed.length > 1;
+
+  return (
+    <div>
+      {grouped ? (
+        <div className="mb-2 flex items-center gap-4 text-[11px] text-zinc-600">
+          {trimmed.map((s) => (
+            <span key={s.key} className="flex items-center gap-1.5">
+              <span
+                className="h-2.5 w-2.5 rounded-sm"
+                style={{ backgroundColor: s.color }}
+              />
+              {s.label}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="relative">
+        <svg
+          viewBox={`0 0 100 ${BAR_CHART_HEIGHT}`}
+          preserveAspectRatio="none"
+          className="h-40 w-full"
+          role="img"
+          aria-label={trimmed.map((s) => s.label).join(" vs ")}
+        >
+          {[0.25, 0.5, 0.75].map((ratio) => (
+            <line
+              key={ratio}
+              x1="0"
+              x2="100"
+              y1={BAR_CHART_HEIGHT * ratio}
+              y2={BAR_CHART_HEIGHT * ratio}
+              stroke="#f4f4f5"
+              strokeWidth="1"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+
+          {trimmed.map((s, seriesIndex) =>
+            s.points.map((point, index) => {
+              const value = point.value;
+              const top = yFor(value);
+              const height = Math.max(BAR_CHART_HEIGHT - top - 2, 0);
+              return (
+                <rect
+                  key={`${s.key}:${index}`}
+                  x={index * groupWidth + groupWidth * 0.16 + seriesIndex * barWidth}
+                  y={top}
+                  width={barWidth * 0.86}
+                  height={height}
+                  fill={s.color}
+                  opacity={hovered === null || hovered === index ? 1 : 0.45}
+                  rx="0.8"
+                  style={{
+                    transformBox: "fill-box",
+                    transformOrigin: "bottom",
+                    transform: mounted
+                      ? "scaleY(1)"
+                      : "scaleY(0)",
+                    transition: `transform .7s cubic-bezier(.16,1,.3,1) ${
+                      index * 18
+                    }ms, opacity .2s ease`,
+                  }}
+                />
+              );
+            }),
+          )}
+
+          {hovered !== null ? (
+            <line
+              x1={hovered * groupWidth + groupWidth / 2}
+              x2={hovered * groupWidth + groupWidth / 2}
+              y1="0"
+              y2={BAR_CHART_HEIGHT}
+              stroke="#e4e4e7"
+              strokeWidth="1"
+              strokeDasharray="3 3"
+              vectorEffect="non-scaling-stroke"
+            />
+          ) : null}
+        </svg>
+
+        <div className="absolute inset-0 flex">
+          {trimmed[0].points.map((point, index) => (
+            <button
+              key={index}
+              type="button"
+              aria-label={`${point.label}: ${trimmed
+                .map((s) => `${s.label} ${valueFormat(s.points[index]?.value ?? 0)}`)
+                .join(", ")}`}
+              className="h-full flex-1 cursor-default"
+              onMouseEnter={() => setHovered(index)}
+              onMouseLeave={() => setHovered(null)}
+              onFocus={() => setHovered(index)}
+              onBlur={() => setHovered(null)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-2 min-h-[2rem] space-y-0.5 text-[11px]">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-zinc-500">
+            {trimmed[0].points[activeIndex]?.label}
+          </span>
+          <span className="flex items-center gap-3 font-mono font-semibold tabular-nums text-zinc-900">
+            {trimmed.map((s) => (
+              <span key={s.key}>
+                {grouped ? (
+                  <span className="mr-1 font-sans font-normal text-zinc-500">
+                    {s.label}
+                  </span>
+                ) : null}
+                {valueFormat(s.points[activeIndex]?.value ?? 0)}
+              </span>
+            ))}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-1 flex text-[10px] text-zinc-400">
+        {trimmed[0].points.map((point, index) => (
+          <span
+            key={index}
+            className="flex-1 truncate text-center"
+          >
+            {index % labelStep === 0 || index === count - 1
+              ? point.label
+              : ""}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const BAR_LIST_COLORS = [
   "bg-purple-600",
   "bg-violet-500",
   "bg-sky-500",
@@ -280,7 +456,7 @@ export function BarList({
             <div
               className={cn(
                 "h-full rounded-full transition-[width] duration-700 ease-out",
-                BAR_COLORS[index % BAR_COLORS.length],
+                BAR_LIST_COLORS[index % BAR_LIST_COLORS.length],
               )}
               style={{
                 width: mounted

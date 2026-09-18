@@ -10,6 +10,7 @@ import {
 import { formatMoney, safeNumber } from "@/lib/format";
 import { humanize } from "@/modules/workspace/components/ui";
 import {
+  BarChart,
   BarList,
   ChartCard,
   DonutChart,
@@ -76,6 +77,18 @@ export default function FinanceDashboardView() {
         { key: "costs", label: "Costs", color: "#e11d48" },
       ),
     [data.costs],
+  );
+
+  const collectedSeries = useMemo(
+    () =>
+      toMonthlySeries(
+        data.payments,
+        6,
+        (payment) => payment.paidAt,
+        (payment) => safeNumber(payment.amount),
+        { key: "collected", label: "Collected", color: "#14b8a6" },
+      ),
+    [data.payments],
   );
 
   const invoiceStatusPoints = useMemo(
@@ -165,19 +178,38 @@ export default function FinanceDashboardView() {
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-3">
-        <div className="space-y-5 lg:col-span-2">
+        <div className="lg:col-span-2">
           <ChartCard
-            title="Invoiced by month"
-            description="Total value of non-void invoices, last 6 months."
-            isEmpty={data.invoices.length === 0}
-            emptyMessage="No invoices yet"
+            title="Invoiced vs collected, last 6 months"
+            description="Monthly invoiced value against payments received."
+            isEmpty={data.invoices.length === 0 && data.payments.length === 0}
+            emptyMessage="No invoices or payments yet"
           >
-            <BarList
-              points={invoicedSeries.points}
+            <BarChart
+              series={[
+                { ...invoicedSeries, label: "Invoiced", color: "#4f46e5" },
+                collectedSeries,
+              ]}
               valueFormat={(value) => formatMoney(value)}
             />
           </ChartCard>
+        </div>
 
+        <ChartCard
+          title="Invoiced by month"
+          description="Total value of non-void invoices, last 6 months."
+          isEmpty={data.invoices.length === 0}
+          emptyMessage="No invoices yet"
+        >
+          <BarList
+            points={invoicedSeries.points}
+            valueFormat={(value) => formatMoney(value)}
+          />
+        </ChartCard>
+      </div>
+
+      <div className="grid items-start gap-5 lg:grid-cols-3">
+        <div className="space-y-5 lg:col-span-2">
           <ChartCard
             title="Costs by month"
             description="Recorded operational costs, last 6 months."

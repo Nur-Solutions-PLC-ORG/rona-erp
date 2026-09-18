@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { EmptyState } from "@/modules/workspace/components/ui";
 import {
   HiOutlineBuildingStorefront,
@@ -13,6 +14,14 @@ import {
   CLIENT_MOVEMENTS_PAGE,
   CLIENT_RESERVATIONS_PAGE,
 } from "@rona/routes/workspace";
+import {
+  BarChart,
+  ChartCard,
+  DonutChart,
+  humanize,
+  toDailySeries,
+  toCategoryPoints,
+} from "@/modules/workspace/components/charts";
 import { useWarehouseDashboardData } from "../role-hooks";
 import {
   DashboardHeader,
@@ -25,8 +34,47 @@ import {
 } from "./shell";
 import { DistributionCard, LowStockTable, MovementsTable } from "./tables";
 
+const movementIn = (type: string) => type === "RECEIPT" || type === "RETURN";
+const movementOut = (type: string) => type === "ISSUE";
+
 export default function WarehouseDashboardView() {
   const data = useWarehouseDashboardData();
+
+  const stockInSeries = useMemo(
+    () =>
+      toDailySeries(
+        data.movementHistory,
+        14,
+        (movement) => movement.createdAt,
+        (movement) =>
+          movementIn(movement.type) ? Number(movement.quantity) || 0 : 0,
+        { key: "in", label: "Stock in", color: "#14b8a6" },
+      ),
+    [data.movementHistory],
+  );
+
+  const stockOutSeries = useMemo(
+    () =>
+      toDailySeries(
+        data.movementHistory,
+        14,
+        (movement) => movement.createdAt,
+        (movement) =>
+          movementOut(movement.type) ? Number(movement.quantity) || 0 : 0,
+        { key: "out", label: "Stock out", color: "#f43f5e" },
+      ),
+    [data.movementHistory],
+  );
+
+  const reservationsByStatus = useMemo(
+    () =>
+      toCategoryPoints(
+        data.reservations,
+        (reservation) => humanize(reservation.status),
+        () => 1,
+      ),
+    [data.reservations],
+  );
 
   if (data.isLoading) {
     return <LoadingCard />;
@@ -104,6 +152,33 @@ export default function WarehouseDashboardView() {
           }
           isLoading={data.reservationsLoading}
         />
+      </div>
+
+      <div className="grid items-start gap-5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ChartCard
+            title="Stock in vs out, last 14 days"
+            description="Daily quantity received/returned versus issued."
+            isEmpty={data.movementHistory.length === 0}
+            emptyMessage="No stock movements yet"
+          >
+            <BarChart series={[stockInSeries, stockOutSeries]} />
+          </ChartCard>
+        </div>
+
+        <ChartCard
+          title="Reservations by status"
+          description="Current reservation pipeline."
+          isEmpty={data.reservations.length === 0}
+          emptyMessage="No reservations yet"
+        >
+          <DonutChart
+            points={reservationsByStatus}
+            centerLabel="Reservations"
+            centerValue={String(data.reservations.length)}
+            valueFormat={(value) => String(value)}
+          />
+        </ChartCard>
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-3">
