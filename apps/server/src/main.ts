@@ -40,7 +40,13 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   await app.listen(env.PORT ?? DEFAULT_PORT);
-  logger.info({ port: env.PORT ?? DEFAULT_PORT }, 'Rona API started');
+  logger.info(
+    {
+      port: env.PORT ?? DEFAULT_PORT,
+      build: process.env.RENDER_GIT_COMMIT ?? process.env.GIT_COMMIT ?? 'local',
+    },
+    'Rona API started',
+  );
 }
 
 bootstrap().catch((error) => {

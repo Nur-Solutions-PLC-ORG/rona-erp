@@ -43,6 +43,9 @@ function formatDate(date: Date) {
   }).format(date);
 }
 
+const BUILD_COMMIT = process.env.NEXT_PUBLIC_BUILD_COMMIT ?? "";
+const IS_GIT_COMMIT = /^[0-9a-f]{7,40}$/i.test(BUILD_COMMIT);
+
 function CommandPalette() {
   const router = useRouter();
   const { hasPermission } = usePermissions();
@@ -477,6 +480,28 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
                   <HiOutlineArrowRightOnRectangle className="w-4 h-4" />
                   {signingOut ? "Signing out..." : "Sign out"}
                 </button>
+                {BUILD_COMMIT ? (
+                  <div className="border-t border-zinc-100 px-3 py-1.5">
+                    {IS_GIT_COMMIT ? (
+                      <a
+                        href={`https://github.com/Nur-Solutions-PLC-ORG/rona-erp/commit/${BUILD_COMMIT}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        title="View the exact deployed build on GitHub"
+                        className="block font-mono text-[10px] text-zinc-400 hover:text-zinc-600 transition-colors"
+                      >
+                        Build {BUILD_COMMIT.slice(0, 7)}
+                      </a>
+                    ) : (
+                      <p
+                        className="font-mono text-[10px] text-zinc-400"
+                        title="Deployed build"
+                      >
+                        Build {BUILD_COMMIT.slice(0, 12)}
+                      </p>
+                    )}
+                  </div>
+                ) : null}
               </div>
             </>
           ) : null}
