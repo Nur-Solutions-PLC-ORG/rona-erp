@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { pooledDb } from '@/db';
+import type { Executor } from '@/db/executor';
 import { SalesOrderRepository } from './orders.repository';
 import {
   SalesOrderNotFoundException,
@@ -114,8 +115,8 @@ export class SalesOrderService {
             itemId: line.itemId,
             warehouseId: order.warehouseId,
             quantity: line.quantity,
-            reference: `SO-${id}`,
-            notes: `Reserved for order ${id}`,
+            reference: order.orderNumber,
+            notes: `Reserved for order ${order.orderNumber}`,
           },
           tx,
         );
@@ -169,8 +170,10 @@ export class SalesOrderService {
         );
       }
 
-      const orderReservations =
-        await this.reservationsRepository.findActiveByReference(`SO-${id}`, tx);
+      const orderReservations = await this.findActiveReservationsForOrder(
+        order,
+        tx,
+      );
       for (const reservation of orderReservations) {
         await this.reservationsRepository.update(
           reservation.id,
@@ -227,8 +230,10 @@ export class SalesOrderService {
         );
       }
 
-      const orderReservations =
-        await this.reservationsRepository.findActiveByReference(`SO-${id}`, tx);
+      const orderReservations = await this.findActiveReservationsForOrder(
+        order,
+        tx,
+      );
       for (const reservation of orderReservations) {
         for (const allocation of reservation.allocatedLots ?? []) {
           await this.stockRepo.adjustReserved(
@@ -306,5 +311,23 @@ export class SalesOrderService {
       lots,
       totalAvailable: totalAvailable.toFixed(4),
     };
+  }
+
+  private async findActiveReservationsForOrder(
+    order: { id: string; orderNumber: string },
+    tx: Executor,
+  ) {
+    const byOrderNumber =
+      await this.reservationsRepository.findActiveByReference(
+        order.orderNumber,
+        tx,
+      );
+    if (byOrderNumber.length > 0) return byOrderNumber;
+    // Reservations created before the orderNumber reference convention
+    // carried the raw order id instead.
+    return this.reservationsRepository.findActiveByReference(
+      `SO-${order.id}`,
+      tx,
+    );
   }
 }
