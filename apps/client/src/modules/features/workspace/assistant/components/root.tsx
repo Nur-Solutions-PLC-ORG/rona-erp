@@ -45,9 +45,9 @@ function SectionHeader({
 }
 
 export default function AssistantRoot() {
-  const { summary, isLoading } = useAiSummary();
   const { messages, send, markAnimated, clear, language, setLanguage, isSending } =
     useAiChat();
+  const { summary, isLoading } = useAiSummary(language);
   const hasAnyDomain = useHasAnyAiDomain();
 
   const scrollRef = useRef<HTMLDivElement>(null);

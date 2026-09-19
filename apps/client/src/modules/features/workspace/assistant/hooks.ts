@@ -21,10 +21,16 @@ import type {
   AiReportResult,
 } from "@rona/types/ai";
 
-export const useAiSummary = () => {
+export const useAiSummary = (language?: AiLanguage) => {
   const query = useQuery({
-    queryKey: ["ai-summary"],
-    queryFn: TryCatchNullWrap(ApiAiSummary),
+    queryKey: ["ai-summary", language ?? "en"],
+    queryFn: TryCatchNullWrap(() =>
+      ApiAiSummary(
+        language && language !== "en"
+          ? { searchParams: { language } }
+          : undefined,
+      ),
+    ),
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000,
   });

@@ -1,5 +1,7 @@
 import { AI_MAX_PROMPT_ROWS } from '@rona/config/ai';
 import { aiDomainLabel } from '@rona/types/ai';
+import { toIsoDate } from '../../ai-periods.utils.js';
+import { ethiopianDayLabel } from '../../ethiopian-date.js';
 import type { RonaContextBundle } from '../../types/ai-contexts.types.js';
 
 const LANGUAGE_NAMES: Record<string, string> = {
@@ -21,6 +23,17 @@ export function headerLines(bundle: RonaContextBundle): string[] {
     `Reporting period: ${bundle.period.label} (${bundle.period.start} to ${bundle.period.end})`,
   );
   lines.push(`Data fetched at: ${bundle.generatedAt.toISOString()}`);
+  const today = new Date(bundle.generatedAt);
+  lines.push(`Today (Gregorian): ${toIsoDate(today)}`);
+  if (bundle.language === 'am') {
+    lines.push(`Today (Ethiopian): ${ethiopianDayLabel(today)}`);
+    lines.push(
+      'DATE/TIME CONVENTION: Write every date in the Ethiopian calendar ' +
+        `(today is ${ethiopianDayLabel(today)}) and every time using the ` +
+        'Ethiopian 12-hour clock, which starts the day at 6:00 AM, so 7:00 AM ' +
+        "is 1 o'clock, 1:00 PM is 7 o'clock and 6:00 AM is 12 o'clock.",
+    );
+  }
   lines.push(...availabilityLines(bundle));
   return lines;
 }

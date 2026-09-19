@@ -1,4 +1,9 @@
-import type { AiDataDomain, AiReportPeriod } from '@rona/types/ai';
+import type { AiDataDomain, AiLanguage, AiReportPeriod } from '@rona/types/ai';
+import {
+  ethiopianDayLabel,
+  ethiopianMonthYearLabel,
+  ethiopianShortDayLabel,
+} from './ethiopian-date.js';
 import type { PeriodSpec } from './types/ai-contexts.types.js';
 
 const MONTHS = [
@@ -46,45 +51,55 @@ export function diffDays(from: Date, to: Date): number {
   return Math.round((to.getTime() - from.getTime()) / 86_400_000);
 }
 
-function ordinalLabel(date: Date): string {
+function monthFullLabel(date: Date, language?: AiLanguage): string {
+  if (language === 'am') return ethiopianMonthYearLabel(date);
+  return `${MONTHS_FULL[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
+}
+
+function ordinalLabel(date: Date, language?: AiLanguage): string {
+  if (language === 'am') return ethiopianDayLabel(date);
   const d = date.getUTCDate();
   const m = MONTHS[date.getUTCMonth()];
   return `${String(d).padStart(2, '0')} ${m} ${date.getUTCFullYear()}`;
 }
 
-function shortLabel(date: Date): string {
+function shortLabel(date: Date, language?: AiLanguage): string {
+  if (language === 'am') return ethiopianShortDayLabel(date);
   const d = date.getUTCDate();
   const m = MONTHS[date.getUTCMonth()];
   return `${String(d).padStart(2, '0')} ${m}`;
 }
 
-export function periodForDay(day: Date): PeriodSpec {
+export function periodForDay(day: Date, language?: AiLanguage): PeriodSpec {
   const previous = addDays(day, -1);
   return {
     start: toIsoDate(day),
     end: toIsoDate(day),
-    label: ordinalLabel(day),
+    label: ordinalLabel(day, language),
     previousStart: toIsoDate(previous),
     previousEnd: toIsoDate(previous),
     previousLabel: 'yesterday',
   };
 }
 
-export function periodForWeekEnding(day: Date): PeriodSpec {
+export function periodForWeekEnding(
+  day: Date,
+  language?: AiLanguage,
+): PeriodSpec {
   const start = addDays(day, -6);
   const prevEnd = addDays(start, -1);
   const prevStart = addDays(start, -7);
   return {
     start: toIsoDate(start),
     end: toIsoDate(day),
-    label: `${shortLabel(start)} – ${ordinalLabel(day)}`,
+    label: `${shortLabel(start, language)} – ${ordinalLabel(day, language)}`,
     previousStart: toIsoDate(prevStart),
     previousEnd: toIsoDate(prevEnd),
     previousLabel: 'previous week',
   };
 }
 
-export function periodForMonth(day: Date): PeriodSpec {
+export function periodForMonth(day: Date, language?: AiLanguage): PeriodSpec {
   const start = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), 1));
   const nextMonth =
     start.getUTCMonth() === 11
@@ -98,16 +113,17 @@ export function periodForMonth(day: Date): PeriodSpec {
   return {
     start: toIsoDate(start),
     end: toIsoDate(end),
-    label: `${MONTHS_FULL[start.getUTCMonth()]} ${start.getUTCFullYear()}`,
+    label: monthFullLabel(start, language),
     previousStart: toIsoDate(prevStart),
     previousEnd: toIsoDate(prevEnd),
-    previousLabel: `${MONTHS_FULL[prevEnd.getUTCMonth()]} ${prevEnd.getUTCFullYear()}`,
+    previousLabel: monthFullLabel(prevEnd, language),
   };
 }
 
 export function customPeriod(
   periodStart: string,
   periodEnd: string,
+  language?: AiLanguage,
 ): PeriodSpec {
   const start = fromIsoDate(periodStart);
   const end = fromIsoDate(periodEnd);
@@ -119,8 +135,8 @@ export function customPeriod(
     end: periodEnd,
     label:
       periodStart === periodEnd
-        ? ordinalLabel(start)
-        : `${ordinalLabel(start)} – ${ordinalLabel(end)}`,
+        ? ordinalLabel(start, language)
+        : `${ordinalLabel(start, language)} – ${ordinalLabel(end, language)}`,
     previousStart: null,
     previousEnd: null,
     previousLabel: null,
@@ -142,6 +158,7 @@ const COMPARISON_PHRASES = [
 export function periodFromQuestion(
   question: string,
   today: Date,
+  language?: AiLanguage,
 ): PeriodSpec | null {
   const normalized = question
     .toLowerCase()
@@ -153,26 +170,26 @@ export function periodFromQuestion(
   );
 
   if (words.has('today') && words.has('yesterday') && asksComparison) {
-    return periodForDay(today);
+    return periodForDay(today, language);
   }
   if (words.has('yesterday')) {
-    return periodForDay(addDays(today, -1));
+    return periodForDay(addDays(today, -1), language);
   }
   if (words.has('today')) {
-    return periodForDay(today);
+    return periodForDay(today, language);
   }
   if (
     normalized.includes('last week') ||
     normalized.includes('previous week')
   ) {
-    return periodForWeekEnding(addDays(today, -7));
+    return periodForWeekEnding(addDays(today, -7), language);
   }
   if (
     normalized.includes('this week') ||
     normalized.includes('weekly report') ||
     words.has('weekly')
   ) {
-    return periodForWeekEnding(today);
+    return periodForWeekEnding(today, language);
   }
   return null;
 }
@@ -182,58 +199,65 @@ export interface ResolvePeriodArgs {
   periodEnd?: string;
   defaultMonth: boolean;
   question?: string;
+  language?: AiLanguage;
 }
 
 export function resolvePeriod(args: ResolvePeriodArgs): PeriodSpec {
-  const { periodStart, periodEnd, defaultMonth, question } = args;
+  const { periodStart, periodEnd, defaultMonth, question, language } = args;
 
   if (periodStart != null && periodEnd != null) {
-    return customPeriod(periodStart, periodEnd);
+    return customPeriod(periodStart, periodEnd, language);
   }
 
   const today = new Date();
   if (question && !defaultMonth) {
-    const inferred = periodFromQuestion(question, today);
+    const inferred = periodFromQuestion(question, today, language);
     if (inferred) return inferred;
   }
-  return defaultMonth ? periodForMonth(today) : periodForDay(today);
+  return defaultMonth
+    ? periodForMonth(today, language)
+    : periodForDay(today, language);
 }
 
 export function periodFromPreset(
   preset: AiReportPeriod,
   today: Date = new Date(),
+  language?: AiLanguage,
 ): PeriodSpec {
   switch (preset) {
     case 'today':
-      return periodForDay(today);
+      return periodForDay(today, language);
     case 'yesterday':
-      return periodForDay(addDays(today, -1));
+      return periodForDay(addDays(today, -1), language);
     case 'this_week':
-      return periodForWeekEnding(today);
+      return periodForWeekEnding(today, language);
     case 'last_week': {
       const lastWeekEnd = addDays(today, -7);
       const lastWeekStart = addDays(lastWeekEnd, -6);
       return {
         start: toIsoDate(lastWeekStart),
         end: toIsoDate(lastWeekEnd),
-        label: `${shortLabel(lastWeekStart)} – ${ordinalLabel(lastWeekEnd)}`,
+        label: `${shortLabel(lastWeekStart, language)} – ${ordinalLabel(
+          lastWeekEnd,
+          language,
+        )}`,
         previousStart: toIsoDate(addDays(lastWeekStart, -7)),
         previousEnd: toIsoDate(addDays(lastWeekStart, -1)),
         previousLabel: 'week before',
       };
     }
     case 'this_month':
-      return periodForMonth(today);
+      return periodForMonth(today, language);
     case 'last_month': {
       const thisMonthStart = new Date(
         Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1),
       );
       const lastMonthEnd = addDays(thisMonthStart, -1);
-      return periodForMonth(lastMonthEnd);
+      return periodForMonth(lastMonthEnd, language);
     }
     case 'custom':
     default: {
-      return periodForMonth(today);
+      return periodForMonth(today, language);
     }
   }
 }

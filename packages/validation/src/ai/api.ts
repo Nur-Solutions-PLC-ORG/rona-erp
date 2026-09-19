@@ -77,6 +77,12 @@ export const aiReportRequestSchema = z
 
 export type AiReportRequestSchema = z.infer<typeof aiReportRequestSchema>;
 
+export const aiSummaryQuerySchema = z.object({
+  language: z.enum(AI_LANGUAGE_LIST).optional(),
+});
+
+export type AiSummaryQuerySchema = z.infer<typeof aiSummaryQuerySchema>;
+
 export interface AiSupportingMetric {
   label: string;
   value: string;

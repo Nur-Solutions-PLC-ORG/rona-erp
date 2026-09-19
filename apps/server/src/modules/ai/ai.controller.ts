@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -17,9 +18,11 @@ import type {
   AiReportResult,
   AiSummaryResult,
 } from '@rona/types/ai';
+import type { AiSummaryQuerySchema } from '@rona/validation/ai';
 import {
   aiChatRequestSchema,
   aiReportRequestSchema,
+  aiSummaryQuerySchema,
 } from '@rona/validation/ai';
 import { AuthGuard } from '@/modules/auth/guards/auth.guard';
 import { TenantGuard } from '@/modules/tenancy/tenant.guard';
@@ -49,12 +52,15 @@ export class AiController {
   }
 
   @Get('summary')
-  async summary(): Promise<ApiResponse<AiSummaryResult>> {
+  async summary(
+    @Query(new ZodValidationPipe(aiSummaryQuerySchema))
+    query: AiSummaryQuerySchema,
+  ): Promise<ApiResponse<AiSummaryResult>> {
     return {
       success: true,
       statusCode: HttpStatus.OK,
       message: 'AI summary generated.',
-      data: await this.service.summary(),
+      data: await this.service.summary(query.language),
     };
   }
 

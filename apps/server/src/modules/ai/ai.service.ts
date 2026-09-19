@@ -6,6 +6,7 @@ import type {
   AiAlertOut,
   AiMetricGroup,
   AiPendingTaskOut,
+  AiLanguage,
 } from '@rona/types/ai';
 import { aiDomainLabel } from '@rona/types/ai';
 import { AI_REPORT_JOB_MAX_ATTEMPTS } from '@rona/config/ai';
@@ -28,6 +29,7 @@ import { AiReportJobsRepository } from './reports/ai-report-jobs.repository.js';
 import { AiReportStorageService } from './reports/ai-report-storage.service.js';
 import { bundleIsEmpty, truncatedDomains } from './ai-bundle.utils.js';
 import { periodFromPreset, resolvePeriod } from './ai-periods.utils.js';
+import { ethiopianDayLabel } from './ethiopian-date.js';
 import type { RonaContextBundle } from './types/ai-contexts.types.js';
 
 @Injectable()
@@ -69,6 +71,7 @@ export class AiService {
       periodEnd: request.periodEnd,
       defaultMonth: false,
       question: request.question,
+      language: request.language,
     });
 
     await this.limit.consume(auth.tenantId);
@@ -138,9 +141,9 @@ export class AiService {
     }
   }
 
-  async summary() {
-    const auth = this.authContext();
-    const period = resolvePeriod({ defaultMonth: false });
+  async summary(language?: AiLanguage) {
+    const auth = this.authContext(language);
+    const period = resolvePeriod({ defaultMonth: false, language });
 
     const bundle = await this.bundleService.buildBundle({
       auth,
@@ -150,7 +153,7 @@ export class AiService {
     });
 
     return {
-      greeting: greeting(new Date()),
+      greeting: greeting(new Date(), language),
       tenantId: auth.tenantId,
       tenantName: bundle.tenantName,
       periodLabel: period.label,
@@ -158,7 +161,9 @@ export class AiService {
       periodEnd: period.end,
       metrics: buildMetricGroups(bundle),
       alerts: bundle.alerts.map(toAlertOut),
-      pendingTasks: bundle.pendingTasks.map(toTaskOut),
+      pendingTasks: bundle.pendingTasks.map((task) =>
+        toTaskOut(task, language),
+      ),
       grantedDomains: bundle.grantedDomains,
       deniedDomains: bundle.deniedDomains,
       unavailableDomains: bundle.failedDomains,
@@ -284,7 +289,8 @@ export class AiService {
   }
 }
 
-function greeting(now: Date): string {
+function greeting(now: Date, language?: AiLanguage): string {
+  if (language === 'am') return 'እንደምን አደሩ';
   const hour = now.getUTCHours();
   if (hour < 12) return 'Good morning';
   if (hour < 18) return 'Good afternoon';
@@ -308,15 +314,26 @@ function toAlertOut(alert: RonaContextBundle['alerts'][number]): AiAlertOut {
 
 function toTaskOut(
   task: RonaContextBundle['pendingTasks'][number],
+  language?: AiLanguage,
 ): AiPendingTaskOut {
   return {
     taskId: task.taskId,
     domain: task.domain,
     title: task.title,
-    dueDate: task.dueDate,
+    dueDate: formatDateLabel(task.dueDate, language),
     isOverdue: task.isOverdue,
     assignedTo: task.assignedTo,
   };
+}
+
+function formatDateLabel(
+  value: string | null,
+  language?: AiLanguage,
+): string | null {
+  if (!value || language !== 'am' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+  return ethiopianDayLabel(new Date(`${value}T00:00:00.000Z`));
 }
 
 function buildMetricGroups(bundle: RonaContextBundle): AiMetricGroup[] {
