@@ -445,19 +445,7 @@ export function ChatComposer({
           title="Send"
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white transition hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500/40 disabled:opacity-50 disabled:pointer-events-none"
         >
-          {isSending ? (
-            <span className="flex gap-1" aria-label="Thinking">
-              {[0, 1, 2].map((i) => (
-                <span
-                  key={i}
-                  className="ai-dot h-1.5 w-1.5 rounded-full bg-white"
-                  style={{ animationDelay: `${i * 160}ms` }}
-                />
-              ))}
-            </span>
-          ) : (
-            <HiOutlinePaperAirplane className="h-5 w-5 -rotate-45" />
-          )}
+          <HiOutlinePaperAirplane className="h-5 w-5 -rotate-45" />
         </button>
       </form>
     </div>
