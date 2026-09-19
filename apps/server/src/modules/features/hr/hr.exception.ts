@@ -168,9 +168,6 @@ export class EmployeeShiftConflictException extends ApiException {
 
 export class EmployeeFaceNotFoundException extends ApiException {
   constructor() {
-    super(
-      HttpStatus.NOT_FOUND,
-      'This face is not enrolled for the employee.',
-    );
+    super(HttpStatus.NOT_FOUND, 'This face is not enrolled for the employee.');
   }
 }

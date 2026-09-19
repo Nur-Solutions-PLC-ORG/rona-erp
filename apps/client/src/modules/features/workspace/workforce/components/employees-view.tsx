@@ -5,10 +5,12 @@ import { toast } from "sonner";
 import {
   HiOutlineArchiveBox,
   HiOutlineArrowPath,
+  HiOutlineFingerPrint,
   HiOutlinePencilSquare,
   HiOutlineUserPlus,
   HiOutlineUsers,
 } from "react-icons/hi2";
+import EmployeeWebAuthnEnrollModal from "./employee-webauthn-enroll-modal";
 import { EMPLOYEE_STATUS_LIST, GENDER_LIST } from "@rona/config/admin";
 import {
   employeeCreateSchema,
@@ -70,6 +72,7 @@ export default function EmployeesView() {
   const canCreate = hasPermission("hr.employee.create");
   const canUpdate = hasPermission("hr.employee.update");
   const canArchive = hasPermission("hr.employee.archive");
+  const canEnrollWebAuthn = hasPermission("hr.webauthn.enroll");
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -78,6 +81,7 @@ export default function EmployeesView() {
   const [includeArchived, setIncludeArchived] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
+  const [enrollingFingerprint, setEnrollingFingerprint] = useState<Employee | null>(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
 
   const { employees, meta, isLoading } = useEmployees(page, {
@@ -266,6 +270,15 @@ export default function EmployeesView() {
                     label: "Edit",
                     icon: <HiOutlinePencilSquare className="h-3.5 w-3.5" />,
                     onClick: () => openEdit(row),
+                  },
+                ]
+              : []),
+            ...(!row.archivedAt && canEnrollWebAuthn
+              ? [
+                  {
+                    label: "Enroll fingerprint",
+                    icon: <HiOutlineFingerPrint className="h-3.5 w-3.5" />,
+                    onClick: () => setEnrollingFingerprint(row),
                   },
                 ]
               : []),
@@ -540,6 +553,17 @@ export default function EmployeesView() {
           }
         />
       </FormModal>
+
+      {enrollingFingerprint ? (
+        <EmployeeWebAuthnEnrollModal
+          employee={{
+            id: enrollingFingerprint.id,
+            fullName: enrollingFingerprint.fullName,
+            eid: enrollingFingerprint.eId,
+          }}
+          onClose={() => setEnrollingFingerprint(null)}
+        />
+      ) : null}
     </div>
     </>
   );

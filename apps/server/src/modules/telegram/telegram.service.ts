@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { db } from '@/db';
 import { authCodes, users } from '@/db/schemas/auth';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import {
   sendTelegramMessageToChat,
   telegramCodeMessage,
@@ -109,10 +109,7 @@ export class TelegramService implements OnModuleInit {
       };
       if (data.ok && data.result?.length) {
         for (const update of data.result) {
-          this.pollOffset = Math.max(
-            this.pollOffset,
-            update.update_id + 1,
-          );
+          this.pollOffset = Math.max(this.pollOffset, update.update_id + 1);
           await this.handleUpdate(update);
         }
       }
@@ -180,9 +177,7 @@ export class TelegramService implements OnModuleInit {
     }
 
     if (row.expiresAt.getTime() < Date.now()) {
-      await db
-        .delete(authCodes)
-        .where(eq(authCodes.telegramToken, token));
+      await db.delete(authCodes).where(eq(authCodes.telegramToken, token));
       await sendTelegramMessageToChat(
         chatId,
         'This code has expired. Please request a new one from the app.',
@@ -241,7 +236,14 @@ export class TelegramService implements OnModuleInit {
     return `https://t.me/${this.botUsername}?start=${payload}`;
   }
 
-  async sendCodeToChat(chatId: string | number, code: string, purpose: 'login' | 'reset') {
-    return sendTelegramMessageToChat(chatId, telegramCodeMessage(code, purpose));
+  async sendCodeToChat(
+    chatId: string | number,
+    code: string,
+    purpose: 'login' | 'reset',
+  ) {
+    return sendTelegramMessageToChat(
+      chatId,
+      telegramCodeMessage(code, purpose),
+    );
   }
 }

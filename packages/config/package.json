@@ -50,6 +50,10 @@
       "types": "./dist/kiosk/index.d.ts",
       "default": "./dist/kiosk/index.js"
     },
+    "./webauthn": {
+      "types": "./dist/webauthn/index.d.ts",
+      "default": "./dist/webauthn/index.js"
+    },
     "./sales": {
       "types": "./dist/sales/index.d.ts",
       "default": "./dist/sales/index.js"

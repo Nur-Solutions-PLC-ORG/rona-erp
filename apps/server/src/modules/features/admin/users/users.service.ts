@@ -161,7 +161,8 @@ export class UsersService {
         : undefined,
     );
 
-    if (data.role) await redisClient.del(`auth:role:${id}`).catch(() => undefined);
+    if (data.role)
+      await redisClient.del(`auth:role:${id}`).catch(() => undefined);
 
     const organizationId =
       data.organizationId !== undefined
@@ -188,11 +189,7 @@ export class UsersService {
         organizationChanged ||
         positionChanged ||
         !membership ||
-        !(await this.matchesMappedRole(
-          membership,
-          organizationId,
-          position,
-        ));
+        !(await this.matchesMappedRole(membership, organizationId, position));
 
       if (needsSync) {
         await this.ensureMembership(id, organizationId, position);

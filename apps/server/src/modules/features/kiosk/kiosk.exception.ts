@@ -66,3 +66,36 @@ export class KioskFaceNotRecognizedException extends ApiException {
     super(HttpStatus.BAD_REQUEST, 'Face does not match EID.');
   }
 }
+
+export class WebAuthnChallengeInvalidException extends ApiException {
+  constructor() {
+    super(
+      HttpStatus.UNAUTHORIZED,
+      'The WebAuthn challenge is expired or invalid. Please try again.',
+    );
+  }
+}
+
+export class WebAuthnCredentialNotFoundException extends ApiException {
+  constructor() {
+    super(HttpStatus.NOT_FOUND, 'No WebAuthn credential matches this request.');
+  }
+}
+
+export class WebAuthnVerificationFailedException extends ApiException {
+  constructor() {
+    super(
+      HttpStatus.BAD_REQUEST,
+      'The WebAuthn response could not be verified.',
+    );
+  }
+}
+
+export class WebAuthnCredentialAlreadyExistsException extends ApiException {
+  constructor() {
+    super(
+      HttpStatus.CONFLICT,
+      'This WebAuthn credential is already registered.',
+    );
+  }
+}

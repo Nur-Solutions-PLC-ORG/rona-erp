@@ -39,6 +39,12 @@ const Client = () => {
   const [phase, setPhase] = useState<Phase>("request");
   const [telegramUrl, setTelegramUrl] = useState<string | undefined>();
 
+  const resetPasswordForm = useForm<ResetPasswordSchema>({
+    resolver: zodResolver(resetPasswordSchema),
+    reValidateMode: "onSubmit",
+    defaultValues: resetPasswordDefaultValues,
+  });
+
   const forgotPasswordForm = useForm<ForgotPasswordSchema>({
     resolver: zodResolver(forgotPasswordSchema),
     reValidateMode: "onSubmit",
@@ -57,12 +63,6 @@ const Client = () => {
       toast.error(data.message);
     },
   );
-
-  const resetPasswordForm = useForm<ResetPasswordSchema>({
-    resolver: zodResolver(resetPasswordSchema),
-    reValidateMode: "onSubmit",
-    defaultValues: resetPasswordDefaultValues,
-  });
 
   const resetPasswordMutation = useCreateMutation(
     ApiPostResetPassword,

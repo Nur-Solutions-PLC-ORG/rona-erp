@@ -54,6 +54,24 @@ export const kioskFacePunchSchema = z.object({
   descriptor: faceDescriptorSchema,
 });
 
+export const kioskWebAuthnAuthVerifySchema = z.object({
+  challenge: z.string().trim().min(1, "Challenge is required").max(512),
+  eventType: z.enum(ATTENDANCE_EVENT_TYPE_LIST),
+  response: z.object({
+    id: z.string().trim().min(1),
+    rawId: z.string().trim().min(1),
+    type: z.literal("public-key"),
+    response: z.object({
+      clientDataJSON: z.string().trim().min(1),
+      authenticatorData: z.string().trim().min(1),
+      signature: z.string().trim().min(1),
+      userHandle: z.string().trim().min(1).optional(),
+    }),
+    authenticatorAttachment: z.enum(["cross-platform", "platform"]).optional(),
+    clientExtensionResults: z.record(z.string(), z.unknown()).optional(),
+  }),
+});
+
 export const faceEnrollSchema = z.object({
   descriptor: faceDescriptorSchema,
 });

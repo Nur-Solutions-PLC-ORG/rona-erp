@@ -26,6 +26,7 @@ import type {
   shiftDto,
   shiftListSearchParamsSchema,
   shiftUpdateSchema,
+  webauthnRegistrationVerifySchema,
 } from "@rona/validation/hr";
 
 export type AttendanceEventType = z.infer<
@@ -69,6 +70,10 @@ export type EmployeeShiftAssignInput = z.infer<
   typeof employeeShiftAssignSchema
 >;
 export type EmployeeShiftEndInput = z.infer<typeof employeeShiftEndSchema>;
+
+export type WebAuthnRegistrationVerifyInput = z.infer<
+  typeof webauthnRegistrationVerifySchema
+>;
 
 export type EmployeeListSearchParams = z.infer<
   typeof employeeListSearchParamsSchema

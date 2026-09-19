@@ -6,6 +6,7 @@ import type {
   kioskAuthenticateSchema,
   kioskPunchSchema,
   kioskFacePunchSchema,
+  kioskWebAuthnAuthVerifySchema,
   faceEnrollSchema,
   kioskDto,
 } from "@rona/validation/kiosk";
@@ -21,6 +22,9 @@ export type KioskListSearchParams = z.infer<typeof kioskListSearchParamsSchema>;
 export type KioskAuthenticateInput = z.infer<typeof kioskAuthenticateSchema>;
 export type KioskPunchInput = z.infer<typeof kioskPunchSchema>;
 export type KioskFacePunchInput = z.infer<typeof kioskFacePunchSchema>;
+export type KioskWebAuthnVerifyInput = z.infer<
+  typeof kioskWebAuthnAuthVerifySchema
+>;
 export type FaceEnrollInput = z.infer<typeof faceEnrollSchema>;
 
 export interface Paginated {
@@ -51,6 +55,11 @@ export interface KioskPunchResult {
   employeeName: string;
   eventType: AttendanceEventType;
   eventAt: string;
+}
+
+export interface KioskWebAuthnVerifyResult extends KioskPunchResult {
+  employeeId: string;
+  credentialId: string;
 }
 
 export interface EmployeeFaceMetadata {

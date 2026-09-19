@@ -37,6 +37,7 @@
     "@rona/routes": "workspace:*",
     "@rona/types": "workspace:*",
     "@rona/validation": "workspace:*",
+    "@simplewebauthn/server": "^14.0.2",
     "@upstash/redis": "^1.38.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",

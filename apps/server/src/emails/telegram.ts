@@ -33,10 +33,7 @@ export async function sendTelegramMessageToChat(
   }
 }
 
-export function telegramCodeMessage(
-  code: string,
-  purpose: 'login' | 'reset',
-) {
+export function telegramCodeMessage(code: string, purpose: 'login' | 'reset') {
   const subject =
     purpose === 'reset' ? 'Password Reset Code' : 'Login Verification Code';
   return `${subject}\n\nYour Rona ERP code is: <b>${code}</b>\n\nIt expires in 10 minutes.`;

@@ -187,8 +187,8 @@ export class OrganizationRepository extends TenantScopedRepository {
         .insert(users)
         .values(data)
         .returning({ id: users.id });
-      await tx.insert(userRoles).values({ ...role, userId: created!.id });
-      return created!.id;
+      await tx.insert(userRoles).values({ ...role, userId: created.id });
+      return created.id;
     });
   }
 

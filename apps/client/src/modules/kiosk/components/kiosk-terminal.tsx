@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { AttendanceEventType } from "@rona/types/hr";
+import { KIOSK_PASSCODE_LENGTH } from "@rona/config/kiosk";
 import {
   HiOutlineArrowLeftOnRectangle,
   HiOutlineArrowRightOnRectangle,
@@ -10,21 +11,33 @@ import {
   HiOutlineCheckCircle,
   HiOutlineDevicePhoneMobile,
   HiOutlineFaceSmile,
+  HiOutlineFingerPrint,
   HiOutlinePause,
   HiOutlinePlay,
 } from "react-icons/hi2";
+import {
+  browserSupportsWebAuthn,
+  startAuthentication,
+  WebAuthnError,
+  type AuthenticationResponseJSON,
+} from "@simplewebauthn/browser";
 import Spinner from "@/components/custom/spinner";
 import { cn } from "@/lib/utils";
 import {
+  postKioskAttendance,
   postKioskAuthenticate,
   postKioskFaceAttendance,
   postKioskSignOut,
+  postKioskWebAuthnAuthOptions,
+  postKioskWebAuthnAuthVerify,
 } from "../api";
 import { captureFace, friendlyFaceError, preloadFaceModels } from "../face-api";
 
 type Screen = "setup" | "idle" | "success";
 
 const IDLE_RESET_SECONDS = 10;
+
+const FINGERPRINT_SCAN_SECONDS = 30;
 
 const EVENT_META: Record<
   AttendanceEventType,
@@ -82,6 +95,50 @@ const KIOSK_INPUT_CLASS =
 
 function scanExpired(expiresAt: number): boolean {
   return expiresAt <= Date.now();
+}
+
+const WEBAUTHN_FALLBACK_MESSAGE =
+  "Fingerprint sign-in failed. Please try again or use EID + Passcode.";
+
+function fingerprintError(error: unknown): string {
+  if (error instanceof WebAuthnError) {
+    if (error.code === "ERROR_CEREMONY_ABORTED") {
+      return "Fingerprint not recognized or cancelled. Try again or use EID + Passcode.";
+    }
+    if (
+      error.code === "ERROR_INVALID_DOMAIN" ||
+      error.code === "ERROR_INVALID_RP_ID"
+    ) {
+      return "Fingerprint authentication is not allowed on this device or website. Use EID + Passcode.";
+    }
+    if (
+      error.code === "ERROR_AUTHENTICATOR_MISSING_USER_VERIFICATION_SUPPORT" ||
+      error.code === "ERROR_AUTHENTICATOR_GENERAL_ERROR"
+    ) {
+      return "Fingerprint authentication is not available on this device. Use EID + Passcode.";
+    }
+    if (
+      error.code === "ERROR_PASSTHROUGH_SEE_CAUSE_PROPERTY" &&
+      error.cause instanceof DOMException
+    ) {
+      if (error.cause.name === "NotAllowedError") {
+        return "Fingerprint not recognized or cancelled. Try again or use EID + Passcode.";
+      }
+      if (error.cause.name === "NotSupportedError") {
+        return "Fingerprint authentication is not supported on this device. Use EID + Passcode.";
+      }
+    }
+    return WEBAUTHN_FALLBACK_MESSAGE;
+  }
+  if (error instanceof DOMException) {
+    if (error.name === "NotAllowedError") {
+      return "Fingerprint not recognized or cancelled. Try again or use EID + Passcode.";
+    }
+    if (error.name === "NotSupportedError") {
+      return "Fingerprint authentication is not supported on this device. Use EID + Passcode.";
+    }
+  }
+  return WEBAUTHN_FALLBACK_MESSAGE;
 }
 
 function formatTime(iso: string): string {
@@ -146,6 +203,7 @@ export default function KioskTerminal() {
   const [kioskName, setKioskName] = useState("");
   const [deviceToken, setDeviceToken] = useState("");
   const [eid, setEid] = useState("");
+  const [passcode, setPasscode] = useState("");
   const [faceScan, setFaceScan] = useState<{
     eid: string;
     descriptor: number[];
@@ -156,6 +214,19 @@ export default function KioskTerminal() {
   const punchPending = useRef(false);
   const scanTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [faceScanning, setFaceScanning] = useState(false);
+  const [fingerprintScan, setFingerprintScan] = useState<{
+    challenge: string;
+    response: AuthenticationResponseJSON;
+    expiresAt: number;
+  } | null>(null);
+  const fingerprintRef = useRef<typeof fingerprintScan>(null);
+  const fingerprintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [fingerprintScanning, setFingerprintScanning] = useState(false);
+  const webauthnSupported = useSyncExternalStore(
+    () => () => {},
+    () => browserSupportsWebAuthn(),
+    () => true,
+  );
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState<{
     employeeName: string;
@@ -194,10 +265,20 @@ export default function KioskTerminal() {
     setFaceScanning(false);
   }, []);
 
+  const clearFingerprintScan = useCallback(() => {
+    if (fingerprintTimer.current) clearTimeout(fingerprintTimer.current);
+    fingerprintTimer.current = null;
+    fingerprintRef.current = null;
+    setFingerprintScan(null);
+    setFingerprintScanning(false);
+  }, []);
+
   useEffect(() => () => {
     captureController.current?.abort();
     if (scanTimer.current) clearTimeout(scanTimer.current);
     scanRef.current = null;
+    if (fingerprintTimer.current) clearTimeout(fingerprintTimer.current);
+    fingerprintRef.current = null;
   }, []);
 
   const scheduleIdleReset = useCallback(() => {
@@ -207,10 +288,12 @@ export default function KioskTerminal() {
       resetTimer.current = null;
       setResetIn(null);
       setEid("");
+      setPasscode("");
       clearFaceScan();
+      clearFingerprintScan();
       setScreen("idle");
     }, 1000 * IDLE_RESET_SECONDS);
-  }, [clearFaceScan]);
+  }, [clearFaceScan, clearFingerprintScan]);
 
   useEffect(() => {
     if (resetIn === null || resetIn <= 0) return;
@@ -246,24 +329,64 @@ export default function KioskTerminal() {
   };
 
   const handlePunch = async (eventType: AttendanceEventType) => {
-    if (busy || screen !== "idle" || faceScanning || captureController.current || punchPending.current || !eid.trim()) return;
+    if (
+      busy ||
+      screen !== "idle" ||
+      faceScanning ||
+      fingerprintScanning ||
+      captureController.current ||
+      punchPending.current
+    ) {
+      return;
+    }
     const scan = scanRef.current;
-    if (scan && (scan.eid !== eid.trim() || scanExpired(scan.expiresAt))) {
+    const fingerprint = fingerprintRef.current;
+    const trimEid = eid.trim();
+    if (scan && (scan.eid !== trimEid || scanExpired(scan.expiresAt))) {
       clearFaceScan();
       setMessage("Face scan expired or employee ID changed. Capture a new scan.");
       return;
     }
-    if (!scan) return;
+    if (fingerprint && scanExpired(fingerprint.expiresAt)) {
+      clearFingerprintScan();
+      setMessage(
+        "Fingerprint session expired. Touch the fingerprint sensor again.",
+      );
+      return;
+    }
+
+    const viaFingerprint = fingerprint !== null;
+    const viaFace = !viaFingerprint && scan !== null;
+    const viaPasscode =
+      !viaFingerprint &&
+      trimEid.length > 0 &&
+      passcode.trim().length > 0 &&
+      scan === null;
+    if (!viaFingerprint && !viaFace && !viaPasscode) return;
+
     punchPending.current = true;
-    clearFaceScan();
+    if (viaFace) clearFaceScan();
+    else if (viaFingerprint) clearFingerprintScan();
     setBusy(true);
     setMessage("");
     try {
-      const response = await postKioskFaceAttendance({
-        eventType,
-        eid: scan.eid,
-        descriptor: scan.descriptor,
-      });
+      const response = viaFingerprint
+        ? await postKioskWebAuthnAuthVerify({
+            challenge: fingerprint!.challenge,
+            eventType,
+            response: fingerprint!.response,
+          })
+        : viaFace
+          ? await postKioskFaceAttendance({
+              eventType,
+              eid: scan!.eid,
+              descriptor: scan!.descriptor,
+            })
+          : await postKioskAttendance({
+              eventType,
+              eid: trimEid,
+              passcode: passcode.trim(),
+            });
       if (response.success && response.data) {
         setSuccess({
           employeeName: response.data.employeeName,
@@ -274,7 +397,6 @@ export default function KioskTerminal() {
         scheduleIdleReset();
       } else {
         setMessage(response.message);
-
       }
     } catch (error) {
       const status = (error as { response?: { status?: number } }).response
@@ -282,12 +404,17 @@ export default function KioskTerminal() {
       const apiMessage = (
         error as { response?: { data?: { message?: string } } }
       ).response?.data?.message;
-      const faceMismatch = Boolean(scan && typeof apiMessage === "string" && /face|match|recogniz/i.test(apiMessage));
+      const faceMismatch = Boolean(
+        scan &&
+          typeof apiMessage === "string" &&
+          /face|match|recogniz/i.test(apiMessage),
+      );
       if (status === 401 && !faceMismatch) {
         clearResetTimer();
         setScreen("setup");
         setDeviceToken("");
         setEid("");
+        setPasscode("");
         setMessage("Kiosk session ended. Please re-enter the device credential.");
       } else if (status === 429) {
         setMessage("Too many attempts. Please try again in a few minutes.");
@@ -295,9 +422,56 @@ export default function KioskTerminal() {
         setMessage(apiMessage ?? "Something went wrong. Please try again.");
       }
     } finally {
-
       punchPending.current = false;
       setBusy(false);
+    }
+  };
+
+  const handleFingerprintStart = async () => {
+    if (
+      busy ||
+      punchPending.current ||
+      fingerprintScanning ||
+      captureController.current ||
+      !webauthnSupported
+    ) {
+      return;
+    }
+    clearFingerprintScan();
+    setFingerprintScanning(true);
+    setMessage("");
+    try {
+      const optionsResponse = await postKioskWebAuthnAuthOptions();
+      if (!optionsResponse.success || !optionsResponse.data) {
+        setMessage(
+          optionsResponse.message ||
+            "Fingerprint sign-in could not be started. Try again or use EID + Passcode.",
+        );
+        return;
+      }
+      const credential = await startAuthentication({
+        optionsJSON: optionsResponse.data.options,
+      });
+      const scan = {
+        challenge: optionsResponse.data.challengeId,
+        response: credential,
+        expiresAt: Date.now() + 1000 * FINGERPRINT_SCAN_SECONDS,
+      };
+      fingerprintRef.current = scan;
+      setFingerprintScan(scan);
+      setMessage(
+        `Fingerprint accepted. Choose an attendance action below within ${FINGERPRINT_SCAN_SECONDS} seconds.`,
+      );
+      fingerprintTimer.current = setTimeout(() => {
+        clearFingerprintScan();
+        setMessage("Fingerprint session expired. Touch the fingerprint sensor again.");
+      }, 1000 * FINGERPRINT_SCAN_SECONDS);
+    } catch (error) {
+      const isAuthFailure = error instanceof WebAuthnError;
+      clearFingerprintScan();
+      setMessage(isAuthFailure ? fingerprintError(error) : WEBAUTHN_FALLBACK_MESSAGE);
+    } finally {
+      setFingerprintScanning(false);
     }
   };
 
@@ -337,6 +511,7 @@ export default function KioskTerminal() {
     if (busy || punchPending.current) return;
     setBusy(true);
     clearFaceScan();
+    clearFingerprintScan();
     clearResetTimer();
     try {
       await postKioskSignOut();
@@ -346,6 +521,7 @@ export default function KioskTerminal() {
     setKioskName("");
     setDeviceToken("");
     setEid("");
+    setPasscode("");
     setSuccess(null);
     setMessage("");
     setScreen("setup");
@@ -353,7 +529,14 @@ export default function KioskTerminal() {
   };
 
   const canPunch =
-    eid.trim().length > 0 && faceScan !== null && !busy && !faceScanning;
+    !busy &&
+    !faceScanning &&
+    !fingerprintScanning &&
+    (fingerprintScan !== null ||
+      (eid.trim().length > 0 && faceScan !== null) ||
+      (eid.trim().length > 0 &&
+        passcode.trim().length > 0 &&
+        faceScan === null));
 
   return (
     <div className="min-h-screen flex flex-col select-none bg-slate-100 text-slate-900">
@@ -476,51 +659,160 @@ export default function KioskTerminal() {
               <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                 <StepPill
                   step={1}
-                  label="Enter ID"
-                  done={eid.trim().length > 0}
-                  active={eid.trim().length === 0}
+                  label="Identify"
+                  done={fingerprintScan !== null || eid.trim().length > 0}
+                  active={fingerprintScan === null && eid.trim().length === 0}
                 />
                 <span className="h-px w-5 bg-slate-200" />
                 <StepPill
                   step={2}
-                  label="Capture face"
-                  done={faceScan !== null}
-                  active={eid.trim().length > 0 && faceScan === null}
+                  label="Verify yourself"
+                  done={
+                    fingerprintScan !== null ||
+                    faceScan !== null ||
+                    (eid.trim().length > 0 && passcode.trim().length > 0)
+                  }
+                  active={
+                    fingerprintScan === null &&
+                    faceScan === null &&
+                    !(eid.trim().length > 0 && passcode.trim().length > 0)
+                  }
                 />
                 <span className="h-px w-5 bg-slate-200" />
                 <StepPill
                   step={3}
                   label="Choose action"
                   done={false}
-                  active={faceScan !== null}
+                  active={canPunch}
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                <div>
-                  <label
-                    htmlFor="kiosk-eid"
-                    className="mb-2 block text-left text-xs font-semibold uppercase tracking-wider text-slate-400"
+              {webauthnSupported ? (
+                fingerprintScan ? (
+                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-5 text-center">
+                    <HiOutlineFingerPrint className="mx-auto h-11 w-11 text-emerald-600" />
+                    <p className="mt-2 text-xl font-bold text-emerald-700">
+                      Fingerprint accepted
+                    </p>
+                    <p className="mt-1 text-sm text-emerald-600">
+                      Press an action button below within{" "}
+                      {FINGERPRINT_SCAN_SECONDS} seconds.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearFingerprintScan();
+                        setMessage("");
+                      }}
+                      className="mt-2 text-sm font-medium text-emerald-600 transition-colors hover:text-emerald-800"
+                    >
+                      Cancel fingerprint
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleFingerprintStart}
+                    disabled={
+                      busy || fingerprintScanning || faceScanning
+                    }
+                    className="flex w-full items-center justify-center gap-4 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-6 text-left text-white shadow-xl shadow-purple-600/20 transition-colors hover:from-purple-700 hover:to-indigo-700 active:from-purple-800 active:to-indigo-800 disabled:pointer-events-none disabled:opacity-50"
                   >
-                    Employee ID
-                  </label>
-                  <input
-                    id="kiosk-eid"
-                    type="text"
-                    inputMode="numeric"
-                    value={eid}
-                    disabled={busy}
-                    maxLength={50}
-                    onChange={(event) => {
-                      clearFaceScan();
-                      setEid(event.target.value);
+                    {fingerprintScanning ? (
+                      <>
+                        <Spinner className="h-9 w-9" />
+                        <span>
+                          <span className="block text-2xl font-bold tracking-wide">
+                            Waiting for fingerprint…
+                          </span>
+                          <span className="block text-sm text-purple-100">
+                            Touch and hold the fingerprint sensor on this
+                            device
+                          </span>
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <HiOutlineFingerPrint className="h-10 w-10 shrink-0" />
+                        <span>
+                          <span className="block text-2xl font-bold tracking-wide">
+                            USE FINGERPRINT
+                          </span>
+                          <span className="block text-sm text-purple-100">
+                            No ID needed — touch the sensor to identify
+                            yourself
+                          </span>
+                        </span>
+                      </>
+                    )}
+                  </button>
+                )
+              ) : (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm font-medium text-amber-700">
+                  Fingerprint authentication is not available on this device.
+                  Use EID + Passcode below.
+                </p>
+              )}
 
-                      setMessage("");
-                    }}
-                    placeholder="00000"
-                    autoComplete="off"
-                    className={KIOSK_INPUT_CLASS}
-                  />
+              <div>
+                <div className="relative flex items-center gap-3">
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Or use EID + Passcode
+                  </span>
+                  <div className="h-px flex-1 bg-slate-200" />
+                </div>
+
+                <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div>
+                    <label
+                      htmlFor="kiosk-eid"
+                      className="mb-2 block text-left text-xs font-semibold uppercase tracking-wider text-slate-400"
+                    >
+                      Employee ID
+                    </label>
+                    <input
+                      id="kiosk-eid"
+                      type="text"
+                      inputMode="numeric"
+                      value={eid}
+                      disabled={busy}
+                      maxLength={50}
+                      onChange={(event) => {
+                        clearFaceScan();
+                        clearFingerprintScan();
+                        setEid(event.target.value);
+                        setMessage("");
+                      }}
+                      placeholder="00000"
+                      autoComplete="off"
+                      className={KIOSK_INPUT_CLASS}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="kiosk-passcode"
+                      className="mb-2 block text-left text-xs font-semibold uppercase tracking-wider text-slate-400"
+                    >
+                      Passcode
+                    </label>
+                    <input
+                      id="kiosk-passcode"
+                      type="password"
+                      inputMode="numeric"
+                      value={passcode}
+                      disabled={busy}
+                      maxLength={KIOSK_PASSCODE_LENGTH}
+                      onChange={(event) => {
+                        clearFingerprintScan();
+                        setPasscode(event.target.value);
+                        setMessage("");
+                      }}
+                      placeholder="••••••"
+                      autoComplete="off"
+                      className={KIOSK_INPUT_CLASS}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -532,20 +824,14 @@ export default function KioskTerminal() {
                 <p className="text-center text-sm text-slate-400">
                   {faceScan
                     ? "Face captured — not verified yet. Press an action button below to verify and record attendance."
-                    : "Enter your employee ID, capture your face, and press an action button."}
+                    : fingerprintScan
+                      ? "Fingerprint captured — press an action button below to record attendance."
+                      : "Touch the fingerprint sensor, or enter your Employee ID and passcode, then press an action button."}
                 </p>
               )}
 
               <div>
-                <div className="relative flex items-center gap-3">
-                  <div className="h-px flex-1 bg-slate-200" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                    Or
-                  </span>
-                  <div className="h-px flex-1 bg-slate-200" />
-                </div>
-
-                <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-center gap-3">
                   <button
                     type="button"
                     onClick={handleFaceCapture}
@@ -565,7 +851,7 @@ export default function KioskTerminal() {
                     ) : (
                       <>
                         <HiOutlineFaceSmile className="h-6 w-6" />
-                         Capture face
+                        Use face instead of passcode
                       </>
                     )}
                   </button>
@@ -584,7 +870,7 @@ export default function KioskTerminal() {
                 </div>
               </div>
 
-              {faceScan ? (
+              {canPunch ? (
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   {EVENT_ORDER.map((eventType) => {
                     const { label, button, Icon } = EVENT_META[eventType];
@@ -604,7 +890,11 @@ export default function KioskTerminal() {
                 </div>
               ) : (
                 <p className="text-center text-sm text-slate-400">
-                  Capture your face to see attendance actions.
+                  {faceScanning
+                    ? "Scanning your face…"
+                    : fingerprintScanning
+                      ? "Waiting for fingerprint…"
+                      : "Verify your identity to see attendance actions."}
                 </p>
               )}
             </div>

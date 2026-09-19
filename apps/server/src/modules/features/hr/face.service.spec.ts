@@ -354,15 +354,16 @@ describe('FaceService', () => {
       },
     );
 
-    it.each([KIOSK_FACE_MATCH_DISTANCE, KIOSK_FACE_MATCH_DISTANCE + 0.000001, 1])(
-      'rejects distance %s at or above threshold',
-      async (distance) => {
-        await expectUnrecognized({
-          ...INPUT,
-          descriptor: [distance, ...DESCRIPTOR.slice(1)],
-        });
-      },
-    );
+    it.each([
+      KIOSK_FACE_MATCH_DISTANCE,
+      KIOSK_FACE_MATCH_DISTANCE + 0.000001,
+      1,
+    ])('rejects distance %s at or above threshold', async (distance) => {
+      await expectUnrecognized({
+        ...INPUT,
+        descriptor: [distance, ...DESCRIPTOR.slice(1)],
+      });
+    });
 
     it('rejects an unknown EID without looking up enrollments', async () => {
       empFindByEid.mockResolvedValue(undefined);

@@ -155,6 +155,20 @@
       "when": 1789805710286,
       "tag": "0021_amused_retro_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1789818080054,
+      "tag": "0022_employee_webauthn_credentials",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1789820677730,
+      "tag": "0023_employee_webauthn_enroll_permission",
+      "breakpoints": true
     }
   ]
 }

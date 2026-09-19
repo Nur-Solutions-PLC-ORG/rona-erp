@@ -169,7 +169,9 @@ export class AuthService {
       const cachedRoles = await redisClient.get<UserRole>(roleKey);
       if (cachedRoles) return cachedRoles;
     } catch (error) {
-      this.logger.warn(`Role cache unavailable; using database: ${String(error)}`);
+      this.logger.warn(
+        `Role cache unavailable; using database: ${String(error)}`,
+      );
     }
 
     const role = await this.authRepository.findUserRoleByUserId(userId);
@@ -276,7 +278,8 @@ export class AuthService {
       `auth:attempts:forgot-ip:${ip}`,
       FORGOT_ATTEMPT_LIMIT,
       FORGOT_WINDOW_SECONDS,
-    ).then((ok) => ok)
+    )
+      .then((ok) => ok)
       .catch(() => true);
     if (!ipAllowed) throw new TooManyAttemptsException();
 
@@ -284,7 +287,8 @@ export class AuthService {
       `auth:attempts:forgot:${normalizedEmail}`,
       FORGOT_ATTEMPT_LIMIT,
       FORGOT_WINDOW_SECONDS,
-    ).then((ok) => ok)
+    )
+      .then((ok) => ok)
       .catch(() => true);
     if (!allowed) throw new TooManyAttemptsException();
 
@@ -325,12 +329,7 @@ export class AuthService {
       this.logger.warn(`Reset-code cache write failed: ${String(error)}`);
     }
 
-    this.deliverCode(
-      email,
-      code,
-      'reset',
-      user.telegramChatId ?? undefined,
-    );
+    this.deliverCode(email, code, 'reset', user.telegramChatId ?? undefined);
 
     try {
       await redisClient.set(lastSendKey, Date.now(), {
@@ -383,7 +382,9 @@ export class AuthService {
     await this.authRepository.updateUserPassword(user.id, passwordHash);
 
     await this.authRepository.deleteCode(normalizedEmail, 'reset');
-    await redisClient.del(`auth:reset-code:${normalizedEmail}`).catch(() => undefined);
+    await redisClient
+      .del(`auth:reset-code:${normalizedEmail}`)
+      .catch(() => undefined);
     await redisClient.del(attemptKey).catch(() => undefined);
   }
 
@@ -411,7 +412,7 @@ export class AuthService {
     email: string,
     code: string,
     purpose: 'login' | 'reset',
-    telegramChatId?: string | undefined,
+    telegramChatId?: string,
   ) {
     void this.deliverCodeInBackground(email, code, purpose, telegramChatId);
   }
@@ -420,7 +421,7 @@ export class AuthService {
     email: string,
     code: string,
     purpose: 'login' | 'reset',
-    telegramChatId?: string | undefined,
+    telegramChatId?: string,
   ) {
     const sendEmail =
       purpose === 'reset' ? sendPasswordResetEmail : sendVerificationEmail;

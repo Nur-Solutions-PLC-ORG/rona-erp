@@ -42,10 +42,7 @@ export class UserNotFoundException extends ApiException {
 
 export class MemberEmailExistsException extends ApiException {
   constructor() {
-    super(
-      HttpStatus.CONFLICT,
-      'A user with this email already exists',
-    );
+    super(HttpStatus.CONFLICT, 'A user with this email already exists');
   }
 }
 

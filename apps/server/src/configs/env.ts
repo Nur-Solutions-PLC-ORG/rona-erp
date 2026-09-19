@@ -15,14 +15,11 @@ const normalizeMailbox = (value: string) => {
   return cleaned;
 };
 
-const emailAddress = z.string().refine(
-  (value) => {
-    const cleaned = normalizeMailbox(value);
-    const match = cleaned.match(/^.*<([^<>]+)>$/);
-    return z.email().safeParse(match ? match[1] : cleaned).success;
-  },
-  'Invalid email address',
-);
+const emailAddress = z.string().refine((value) => {
+  const cleaned = normalizeMailbox(value);
+  const match = cleaned.match(/^.*<([^<>]+)>$/);
+  return z.email().safeParse(match ? match[1] : cleaned).success;
+}, 'Invalid email address');
 
 const envSchema = z.object({
   NODE_ENV: z
@@ -48,6 +45,17 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_URL: z.url(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(1),
 
+  WEB_AUTHN_RP_ID: z.preprocess(
+    emptyToUndefined,
+    z
+      .string()
+      .refine(
+        (value) => /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/.test(value),
+        'WEB_AUTHN_RP_ID must be a valid hostname without a scheme',
+      )
+      .optional(),
+  ),
+
   RESEND_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
   RESEND_EMAIL_FROM: z.preprocess(emptyToUndefined, z.email().optional()),
 
@@ -62,7 +70,10 @@ const envSchema = z.object({
 
   TELEGRAM_BOT_TOKEN: z.preprocess(emptyToUndefined, z.string().optional()),
   TELEGRAM_WEBHOOK_URL: z.preprocess(emptyToUndefined, z.string().optional()),
-  TELEGRAM_WEBHOOK_SECRET: z.preprocess(emptyToUndefined, z.string().optional()),
+  TELEGRAM_WEBHOOK_SECRET: z.preprocess(
+    emptyToUndefined,
+    z.string().optional(),
+  ),
 
   GOOGLE_CLIENT_ID: z.preprocess(emptyToUndefined, z.string().optional()),
   GOOGLE_CLIENT_SECRET: z.preprocess(emptyToUndefined, z.string().optional()),

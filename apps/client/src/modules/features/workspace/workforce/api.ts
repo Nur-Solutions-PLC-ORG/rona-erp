@@ -7,6 +7,8 @@ import {
   API_HR_EMPLOYEE_ARCHIVE_URL,
   API_HR_EMPLOYEE_DETAILS_URL,
   API_HR_EMPLOYEE_RESTORE_URL,
+  API_HR_EMPLOYEE_WEBAUTHN_REGISTER_OPTIONS_URL,
+  API_HR_EMPLOYEE_WEBAUTHN_REGISTER_VERIFY_URL,
   API_HR_EMPLOYEES_URL,
   API_HR_POSITION_ARCHIVE_URL,
   API_HR_POSITIONS_URL,
@@ -14,6 +16,7 @@ import {
   API_HR_SHIFTS_URL,
   API_HR_SHIFT_DETAILS_URL,
 } from "@rona/routes/workspace";
+import type { PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/browser";
 import type {
   AttendanceEvent,
   AttendanceEventType,
@@ -29,6 +32,7 @@ import type {
   Shift,
   ShiftCreateInput,
   ShiftUpdateInput,
+  WebAuthnRegistrationVerifyInput,
 } from "@rona/types/hr";
 
 export const ApiGetEmployees = Request<Employee[]>("get", API_HR_EMPLOYEES_URL);
@@ -120,3 +124,25 @@ export const ApiPatchShift = Request<Shift, ShiftUpdateInput>(
   "patch",
   API_HR_SHIFT_DETAILS_URL,
 );
+
+export interface EmployeeWebAuthnRegisterOptionsResult {
+  challengeId: string;
+  options: PublicKeyCredentialCreationOptionsJSON;
+}
+
+export interface EmployeeWebAuthnRegisteredCredential {
+  credentialId: string;
+  deviceType: string;
+  counter: number;
+  employeeId: string;
+}
+
+export const ApiPostEmployeeWebAuthnRegisterOptions = Request<EmployeeWebAuthnRegisterOptionsResult>(
+  "post",
+  API_HR_EMPLOYEE_WEBAUTHN_REGISTER_OPTIONS_URL,
+);
+
+export const ApiPostEmployeeWebAuthnRegisterVerify = Request<
+  EmployeeWebAuthnRegisteredCredential,
+  WebAuthnRegistrationVerifyInput
+>("post", API_HR_EMPLOYEE_WEBAUTHN_REGISTER_VERIFY_URL);

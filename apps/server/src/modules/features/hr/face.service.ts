@@ -118,7 +118,10 @@ export class FaceService {
           employee.id,
           tx,
         );
-        this.assertSelfEmployee(locked);
+        this.assertSelfEmployee(locked, {
+          organizationId: employee.organizationId,
+          userId: employee.userId,
+        });
         const [row] = await this.faceRepository.revokeExisting(employee.id, tx);
         if (!row) return null;
         await this.auditService.record(
@@ -239,11 +242,16 @@ export class FaceService {
   private assertSelfEmployee(
     employee:
       Awaited<ReturnType<EmployeesRepository['findByUserId']>> | undefined,
+    expected?: { organizationId: string; userId: string | null },
   ): asserts employee is NonNullable<typeof employee> {
+    const { organizationId, userId } = expected ?? {
+      organizationId: this.tenantContext.organizationId,
+      userId: this.tenantContext.userId,
+    };
     if (
       !employee ||
-      employee.organizationId !== this.tenantContext.organizationId ||
-      employee.userId !== this.tenantContext.userId
+      employee.organizationId !== organizationId ||
+      employee.userId !== userId
     ) {
       throw new EmployeeSelfNotFoundException();
     }

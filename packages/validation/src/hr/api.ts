@@ -174,3 +174,24 @@ export const employeeShiftEndSchema = z.object({
 export const departmentListSearchParamsSchema = paginationSearchParamsSchema;
 
 export const shiftListSearchParamsSchema = paginationSearchParamsSchema;
+
+export const webauthnRegistrationVerifySchema = z.object({
+  challenge: z.string().trim().min(1, "Challenge is required").max(512),
+  response: z.object({
+    id: z.string().trim().min(1, "Credential ID is required"),
+    rawId: z.string().trim().min(1, "Credential raw ID is required"),
+    type: z.literal("public-key"),
+    response: z.object({
+      clientDataJSON: z.string().trim().min(1, "clientDataJSON is required"),
+      attestationObject: z
+        .string()
+        .trim()
+        .min(1, "attestationObject is required"),
+      transports: z.array(z.string().trim().min(1)).optional(),
+    }),
+    authenticatorAttachment: z
+      .enum(["cross-platform", "platform"])
+      .optional(),
+    clientExtensionResults: z.record(z.string(), z.unknown()).optional(),
+  }),
+});

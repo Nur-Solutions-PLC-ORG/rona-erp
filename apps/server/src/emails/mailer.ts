@@ -59,11 +59,19 @@ async function sendMail(to: string, subject: string, html: string) {
 }
 
 export const sendVerificationEmail = async (email: string, code: string) => {
-  return sendMail(email, 'Your Login Verification Code', getVerificationEmailTemplate(code));
+  return sendMail(
+    email,
+    'Your Login Verification Code',
+    getVerificationEmailTemplate(code),
+  );
 };
 
 export const sendPasswordResetEmail = async (email: string, code: string) => {
-  return sendMail(email, 'Your Password Reset Code', getPasswordResetEmailTemplate(code));
+  return sendMail(
+    email,
+    'Your Password Reset Code',
+    getPasswordResetEmailTemplate(code),
+  );
 };
 
 export const sendAccountCredentialsEmail = async (

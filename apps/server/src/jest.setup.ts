@@ -2,6 +2,7 @@ process.env.NODE_ENV = process.env.NODE_ENV ?? 'test';
 process.env.DATABASE_URL =
   process.env.DATABASE_URL ??
   'postgresql://postgres:postgres@localhost:5432/rona_test';
+process.env.CLIENT_URL = process.env.CLIENT_URL ?? 'http://localhost:3000';
 process.env.JWT_SECRET =
   process.env.JWT_SECRET ?? 'test-jwt-secret-value-at-least-16-chars';
 process.env.UPSTASH_REDIS_REST_URL =
