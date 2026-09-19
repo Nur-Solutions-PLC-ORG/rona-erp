@@ -19,6 +19,7 @@ import {
   HiOutlinePaperAirplane,
   HiOutlineXCircle,
 } from "react-icons/hi2";
+import Dropdown from "@/components/custom/dropdown";
 
 export function TypewriterText({
   text,
@@ -377,18 +378,6 @@ export function ChatComposer({
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const languageIndex = Math.max(
-    0,
-    AI_LANGUAGES.findIndex((option) => option.value === language),
-  );
-  const activeLanguage = AI_LANGUAGES[languageIndex];
-
-  const cycleLanguage = () => {
-    const next =
-      AI_LANGUAGES[(languageIndex + 1) % AI_LANGUAGES.length];
-    onLanguageChange(next.value);
-  };
-
   const submit = (question: string) => {
     const trimmed = question.trim();
     if (!trimmed || isSending) return;
@@ -438,19 +427,17 @@ export function ChatComposer({
           />
         </div>
 
-        <button
-          type="button"
-          onClick={cycleLanguage}
+        <Dropdown
+          options={AI_LANGUAGES.map((option) => ({
+            label: option.label,
+            value: option.value,
+          }))}
+          value={language}
+          onChange={onLanguageChange}
           disabled={isSending}
-          title={`Answer language: ${activeLanguage.label}`}
-          aria-label={`Answer language: ${activeLanguage.label}`}
-          className="flex h-11 shrink-0 items-center gap-2 rounded-xl border border-zinc-300 bg-white px-3.5 text-sm font-medium text-zinc-700 transition hover:border-zinc-400 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-500/30 disabled:opacity-50"
-        >
-          <HiOutlineGlobeAlt className="h-5 w-5 text-zinc-500" />
-          <span className="hidden sm:inline">
-            {activeLanguage.value.toUpperCase()}
-          </span>
-        </button>
+          icon={HiOutlineGlobeAlt}
+          className="h-11 w-auto min-w-16 max-w-36 shrink-0 rounded-xl border-zinc-300 bg-white px-2.5 text-sm font-medium text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50 sm:min-w-24 sm:px-3"
+        />
 
         <button
           type="submit"

@@ -110,10 +110,10 @@ export default function AssistantRoot() {
   }, [summary]);
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-8.5rem)] w-full max-w-7xl flex-col lg:flex-row gap-5">
+    <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 lg:h-[calc(100vh-8.5rem)] lg:flex-row">
       <section
         aria-label="AI assistant workspace"
-        className="flex min-h-0 flex-1 flex-col lg:max-w-[46%]"
+        className="flex h-[72vh] min-h-0 flex-1 flex-col lg:h-auto lg:max-w-[46%]"
       >
         <Card className="flex min-h-0 flex-1 flex-col rounded-xl shadow-sm">
           <SectionHeader
@@ -194,7 +194,7 @@ export default function AssistantRoot() {
 
       <aside
         aria-label="Rona AI overview"
-        className="min-w-0 flex-1 space-y-5 overflow-y-auto pr-1"
+        className="min-w-0 flex-1 space-y-5 pr-1 lg:overflow-y-auto"
       >
         <section aria-label="Key metrics">
           {isLoading ? (
