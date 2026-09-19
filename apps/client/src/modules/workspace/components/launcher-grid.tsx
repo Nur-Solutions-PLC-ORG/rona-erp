@@ -18,6 +18,7 @@ import { MdOutlinePrecisionManufacturing } from "react-icons/md";
 import { useCurrentOrganization, usePermissions } from "@/modules/workspace/hooks";
 import type { Permission } from "@rona/types/tenancy";
 import { LAUNCHER_MODULES, NAV_GROUPS } from "./shell/nav-config";
+import OrgLogo from "@/components/custom/org-logo";
 
 const MODULE_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Dashboard: HiOutlineChartBar,
@@ -148,13 +149,20 @@ export default function LauncherGrid() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
-      <header className="mb-8 space-y-1">
-        <h1 className="bg-gradient-to-r from-zinc-900 to-zinc-600 bg-clip-text text-2xl font-bold tracking-tight text-transparent">
-          Welcome{organization?.name ? ` to ${organization.name}` : ""}
-        </h1>
-        <p className="text-sm text-zinc-500">
-          Pick a workspace to get started.
-        </p>
+      <header className="mb-8 flex items-center gap-3">
+        <OrgLogo
+          src={organization?.logoUrl}
+          className="h-11 w-11 bg-white shadow-sm"
+          iconClassName="h-5 w-5"
+        />
+        <div className="space-y-1">
+          <h1 className="bg-gradient-to-r from-zinc-900 to-zinc-600 bg-clip-text text-2xl font-bold tracking-tight text-transparent">
+            Welcome{organization?.name ? ` to ${organization.name}` : ""}
+          </h1>
+          <p className="text-sm text-zinc-500">
+            Pick a workspace to get started.
+          </p>
+        </div>
       </header>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4">

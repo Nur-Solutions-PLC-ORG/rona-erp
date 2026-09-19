@@ -32,6 +32,7 @@ export interface OrganizationRow {
   email: string | null;
   phone: string | null;
   country: string | null;
+  logoUrl: string | null;
   status: "active" | "inactive" | "suspended";
   createdAt: string;
   updatedAt: string;

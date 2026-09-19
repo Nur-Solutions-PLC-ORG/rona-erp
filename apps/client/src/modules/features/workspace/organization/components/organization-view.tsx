@@ -20,6 +20,8 @@ import {
   LabeledSelect,
   ModalActions,
 } from "@/modules/workspace/components/form";
+import LogoUpload from "@/components/custom/logo-upload";
+import OrgLogo from "@/components/custom/org-logo";
 import {
   useOrganization,
   useOrganizationSettings,
@@ -33,6 +35,7 @@ interface OrgForm {
   phone: string;
   country: string;
   status: string;
+  logoUrl: string;
 }
 
 const toForm = (organization: {
@@ -41,6 +44,7 @@ const toForm = (organization: {
   email: string | null;
   phone: string | null;
   country: string | null;
+  logoUrl: string | null;
   status: string;
 }): OrgForm => ({
   name: organization.name,
@@ -49,6 +53,7 @@ const toForm = (organization: {
   phone: organization.phone ?? "",
   country: organization.country ?? "",
   status: organization.status,
+  logoUrl: organization.logoUrl ?? "",
 });
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -75,6 +80,7 @@ export default function OrganizationView() {
     phone: "",
     country: "",
     status: "",
+    logoUrl: "",
   });
 
   const { organization, isLoading } = useOrganization();
@@ -102,6 +108,7 @@ export default function OrganizationView() {
       phone: form.phone || undefined,
       country: form.country || undefined,
       status: form.status || undefined,
+      logoUrl: form.logoUrl ? form.logoUrl : null,
     });
 
     if (!parsed.success) {
@@ -147,7 +154,14 @@ export default function OrganizationView() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <Card className="lg:col-span-2 p-5">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-zinc-800">Profile</h2>
+              <div className="flex items-center gap-2">
+                <OrgLogo
+                  src={organization.logoUrl}
+                  className="h-7 w-7 bg-white"
+                  iconClassName="h-3.5 w-3.5"
+                />
+                <h2 className="text-sm font-semibold text-zinc-800">Profile</h2>
+              </div>
               <StatusBadge status={organization.status} />
             </div>
             <div>
@@ -198,6 +212,15 @@ export default function OrganizationView() {
         icon={<HiOutlinePencilSquare className="w-4 h-4" />}
         maxWidth="max-w-lg"
       >
+        <div>
+          <label className="block mb-1.5 text-xs font-medium text-zinc-600">
+            Logo
+          </label>
+          <LogoUpload
+            value={form.logoUrl}
+            onChange={(value) => updateForm("logoUrl", value ?? "")}
+          />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <LabeledInput
             label="Name"

@@ -12,12 +12,17 @@ import {
   OrganizationListSearchParamsSchema,
 } from "@rona/types/admin";
 import { organizationListSearchParamsSchema } from "@rona/validation/admin";
-import { HiOutlineBuildingOffice2, HiOutlinePlus } from "react-icons/hi2";
+import {
+  HiOutlineBuildingOffice2,
+  HiOutlinePlus,
+} from "react-icons/hi2";
 import {
   BTN_PRIMARY,
   PageHeader,
   StatusBadge,
 } from "@/modules/workspace/components/ui";
+import OrgLogo from "@/components/custom/org-logo";
+import { highlightSearchMatch } from "@/lib/create-columns";
 
 const Client = () => {
   const customSearchParams =
@@ -33,7 +38,26 @@ const Client = () => {
     includeActions: true,
     searchQuery: customSearchParams.searchParams.searchQuery,
     extraColumns: [
-      { accessorKey: "name", header: "Organization", isBold: true },
+      {
+        accessorKey: "name",
+        header: "Organization",
+        isBold: true,
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            <OrgLogo
+              src={(row.original as OrganizationDto).logoUrl}
+              className="h-6 w-6"
+              iconClassName="h-3 w-3"
+            />
+            <span className="text-xs font-semibold text-zinc-800">
+              {highlightSearchMatch(
+                row.original.name,
+                customSearchParams.searchParams.searchQuery,
+              )}
+            </span>
+          </div>
+        ),
+      },
       { accessorKey: "slug", header: "Slug", highlight: true },
       { accessorKey: "email", header: "Email" },
       { accessorKey: "phone", header: "Phone" },

@@ -7,6 +7,18 @@ import {
 import { ORGANIZATION_STATUS_LIST } from "@rona/config/admin";
 import { paginationSearchParamsSchema } from "../global/api.js";
 
+export const organizationLogoUrlSchema = z
+  .string()
+  .trim()
+  .max(1_500_000, "Logo is too large")
+  .refine(
+    (value) =>
+      value === "" ||
+      value.startsWith("data:image/") ||
+      /^https:\/\/.+/i.test(value),
+    "Logo must be an uploaded image or an https URL",
+  );
+
 export const organizationUpdateSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(200).optional(),
   slug: z
@@ -23,6 +35,8 @@ export const organizationUpdateSchema = z.object({
   phone: z.string().trim().min(1).max(50).optional(),
   country: z.string().trim().min(1).max(100).optional(),
   status: z.enum(ORGANIZATION_STATUS_LIST).optional(),
+  // Send null explicitly to remove the logo.
+  logoUrl: organizationLogoUrlSchema.nullable().optional(),
 });
 
 export const membershipCreateSchema = z.object({

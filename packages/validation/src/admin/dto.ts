@@ -34,6 +34,7 @@ export const organizationDto = z.object({
   email: z.string(),
   phone: z.string(),
   country: z.string(),
+  logoUrl: z.string().nullable(),
   status: z.enum(ORGANIZATION_STATUS_LIST),
   createdAt: z.date(),
 });

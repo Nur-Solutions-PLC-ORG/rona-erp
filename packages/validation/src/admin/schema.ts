@@ -31,6 +31,18 @@ export const userSchema = z.object({
 });
 export const userUpdateSchema = userSchema.partial();
 
+export const organizationLogoUrlSchema = z
+  .string()
+  .trim()
+  .max(1_500_000, "Logo is too large")
+  .refine(
+    (value) =>
+      value === "" ||
+      value.startsWith("data:image/") ||
+      /^https:\/\/.+/i.test(value),
+    "Logo must be an uploaded image or an https URL",
+  );
+
 export const organizationSchema = z.object({
   name: z.string().min(2, "Organization name is required"),
   slug: z
@@ -42,6 +54,7 @@ export const organizationSchema = z.object({
   country: z.string().min(2, "Country is required"),
   status: z.enum(ORGANIZATION_STATUS_LIST),
   ownerUserId: z.string().uuid("Owner user ID must be a valid UUID").optional(),
+  logoUrl: organizationLogoUrlSchema.optional(),
 });
 export const organizationUpdateSchema = organizationSchema.partial();
 

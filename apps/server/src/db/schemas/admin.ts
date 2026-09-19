@@ -44,6 +44,8 @@ export const organizations = pgTable('organizations', {
   email: text('email').notNull(),
   phone: text('phone').notNull(),
   country: text('country').notNull(),
+  // Data URL (client-resized upload) or https URL; null shows a fallback icon.
+  logoUrl: text('logo_url'),
   status: organizationStatusList('status').default('active').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()

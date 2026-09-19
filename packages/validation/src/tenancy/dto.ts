@@ -26,6 +26,7 @@ export const membershipWithUserDto = membershipDto.extend({
       id: z.string(),
       name: z.string(),
       slug: z.string(),
+      logoUrl: z.string().nullable().optional(),
     })
     .optional(),
   permissions: z.array(z.enum(PERMISSION_LIST)).optional(),

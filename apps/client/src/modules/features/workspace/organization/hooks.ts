@@ -82,6 +82,9 @@ export const useUpdateOrganization = () => {
     (data) => {
       toast.success(data.message);
       void queryClient.invalidateQueries({ queryKey: ["organization"] });
+      // The org name/logo also drive the workspace chrome (sidebar/navbar),
+      // which reads org details from the membership set.
+      void queryClient.invalidateQueries({ queryKey: ["me-memberships"] });
     },
     (error) => toast.error(error.message),
   );

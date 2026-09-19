@@ -97,6 +97,7 @@ export class TenancyRepository {
         updatedAt: organizationMemberships.updatedAt,
         organizationName: organizations.name,
         organizationSlug: organizations.slug,
+        organizationLogoUrl: organizations.logoUrl,
         userFullName: users.fullName,
         userEmail: users.email,
       })
@@ -171,6 +172,7 @@ export class TenancyRepository {
         id: row.organizationId,
         name: row.organizationName,
         slug: row.organizationSlug,
+        logoUrl: row.organizationLogoUrl,
       },
       user: {
         id: row.userId,

@@ -27,6 +27,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ApiPatchOrganization, ApiPostOrganization } from "../api";
 import { Button } from "@/components/ui/button";
+import LogoUpload from "@/components/custom/logo-upload";
 
 const defaultValues: OrganizationSchema = {
   name: "",
@@ -35,6 +36,7 @@ const defaultValues: OrganizationSchema = {
   phone: "",
   country: "",
   status: "active",
+  logoUrl: "",
 };
 
 const OrganizationModal = () => {
@@ -81,7 +83,7 @@ const OrganizationModal = () => {
     if (modalData && modalData.organization) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, createdAt, ...values } = modalData.organization;
-      form.reset(values);
+      form.reset({ ...values, logoUrl: values.logoUrl ?? "" });
     } else form.reset(defaultValues);
   }, [open, modalData, form]);
 
@@ -120,6 +122,23 @@ const OrganizationModal = () => {
         className="space-y-6 flex px-4 pt-4 flex-col flex-1"
       >
         <FieldGroup>
+          <Controller
+            control={form.control}
+            name={"logoUrl"}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel>Logo</FieldLabel>
+                <LogoUpload
+                  value={field.value ?? null}
+                  disabled={!!view}
+                  onChange={(value) => field.onChange(value ?? "")}
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
           <ControllerGroup>
             <Controller
               control={form.control}

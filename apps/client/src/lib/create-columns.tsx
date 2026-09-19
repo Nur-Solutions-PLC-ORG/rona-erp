@@ -52,7 +52,7 @@ interface CreateColumnsOptions<T> {
   actionsItems?: ActionItem<T>[];
 }
 
-function highlightSearchMatch(
+export function highlightSearchMatch(
   value: string,
   searchQuery?: string,
 ): React.ReactNode {

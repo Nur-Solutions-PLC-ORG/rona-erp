@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import {
   HiOutlineArrowRightOnRectangle,
   HiOutlineBell,
-  HiOutlineBuildingOffice2,
   HiOutlineCheck,
   HiOutlineChevronDown,
   HiOutlineMagnifyingGlass,
@@ -33,6 +32,7 @@ import {
   useDashboardProductionOrders,
 } from "@/modules/features/workspace/dashboard/hooks";
 import { humanize } from "../ui";
+import OrgLogo from "@/components/custom/org-logo";
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en-US", {
@@ -286,8 +286,12 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
             type="button"
             onClick={() => setOrgOpen((previous) => !previous)}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white border border-zinc-200 hover:bg-zinc-50 transition overflow-hidden">
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-zinc-100 text-zinc-600 sm:hidden">
-              <HiOutlineBuildingOffice2 className="h-3 w-3" />
+            <span className="flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden rounded bg-zinc-100 text-zinc-600 sm:hidden">
+              <OrgLogo
+                src={organization?.logoUrl}
+                className="h-4 w-4 border-0 rounded-sm"
+                iconClassName="h-3 w-3"
+              />
             </span>
             <span className="hidden sm:block max-w-40 truncate text-xs font-semibold text-zinc-800">
               {primaryRole ? humanize(primaryRole) : (organization?.name ?? "Select org")}
@@ -324,6 +328,11 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
                           ? "text-zinc-900"
                           : "text-transparent",
                       )}
+                    />
+                    <OrgLogo
+                      src={item.organization?.logoUrl}
+                      className="h-5 w-5"
+                      iconClassName="h-2.5 w-2.5"
                     />
                     <span className="min-w-0 flex-1">
                       <span className="block text-xs font-medium text-zinc-800 truncate">

@@ -50,6 +50,7 @@ import {
 import { humanize } from "@/modules/workspace/components/ui";
 import type { Permission } from "@rona/types/tenancy";
 import { NAV_GROUPS } from "./nav-config";
+import OrgLogo from "@/components/custom/org-logo";
 
 const ITEM_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Dashboard: HiOutlineChartBar,
@@ -371,7 +372,11 @@ export function Sidebar({
           )}
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-zinc-600">
-            <HiOutlineBuildingOffice2 className="h-4 w-4" />
+            <OrgLogo
+              src={organization?.logoUrl}
+              className="h-8 w-8 bg-white"
+              iconClassName="h-4 w-4"
+            />
           </span>
           {!collapsed ? (
             <span className="min-w-0 flex-1 text-left">
@@ -431,6 +436,11 @@ export function Sidebar({
                       ? "text-zinc-900"
                       : "text-transparent",
                   )}
+                />
+                <OrgLogo
+                  src={item.organization?.logoUrl}
+                  className="h-5 w-5"
+                  iconClassName="h-2.5 w-2.5"
                 />
                 <span className="min-w-0 flex-1">
                   <span className="block text-xs font-medium text-zinc-800 truncate">
