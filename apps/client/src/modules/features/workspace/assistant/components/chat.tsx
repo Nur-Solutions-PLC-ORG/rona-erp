@@ -209,12 +209,15 @@ export function AnimatedAnswer({
         </div>
       )}
 
-      {answerDone && result.source.length === 0 && result.dataAvailable && (
-        <p className="text-xs italic text-zinc-400">
-          This answer was generated from general context, not a specific data
-          module.
-        </p>
-      )}
+      {answerDone &&
+        result.source.length === 0 &&
+        result.supportingData.length === 0 &&
+        result.dataAvailable && (
+          <p className="text-xs italic text-zinc-400">
+            This answer was generated from general context, not a specific data
+            module.
+          </p>
+        )}
 
       {answerDone && !result.dataAvailable && (
         <p className="text-xs italic text-zinc-400">

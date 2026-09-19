@@ -35,6 +35,74 @@ interface GeminiEnv {
 
 const env: GeminiEnv = process.env;
 
+const DOMAIN_TOKENS = [
+  'hr',
+  'attendance',
+  'production',
+  'inventory',
+  'quality',
+  'finance',
+  'sales',
+  'organization',
+  'bom',
+];
+
+const RESPONSE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    answer: { type: 'STRING' },
+    supporting_data: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          label: { type: 'STRING' },
+          value: { type: 'STRING' },
+          unit: { type: 'STRING', nullable: true },
+          comparison: { type: 'STRING', nullable: true },
+        },
+        required: ['label', 'value'],
+      },
+    },
+    recommendation: { type: 'STRING', nullable: true },
+    kb_citations: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          document_id: { type: 'STRING' },
+          title: { type: 'STRING' },
+          version: { type: 'INTEGER' },
+          chunk_id: { type: 'STRING' },
+          section: { type: 'STRING' },
+          domain: { type: 'STRING' },
+        },
+        required: [
+          'document_id',
+          'title',
+          'version',
+          'chunk_id',
+          'section',
+          'domain',
+        ],
+      },
+    },
+    source: {
+      type: 'ARRAY',
+      items: { type: 'STRING', enum: DOMAIN_TOKENS },
+    },
+    data_available: { type: 'BOOLEAN' },
+  },
+  required: [
+    'answer',
+    'supporting_data',
+    'recommendation',
+    'kb_citations',
+    'source',
+    'data_available',
+  ],
+};
+
 export function llmConfigured(): boolean {
   return Boolean(env.GOOGLE_API_KEY);
 }
@@ -108,6 +176,7 @@ export class GeminiClient {
             AI_GEMINI_MAX_OUTPUT_TOKENS_DEFAULT,
         ),
         responseMimeType: 'application/json',
+        responseSchema: RESPONSE_SCHEMA,
         ...(this.isThinkingModel()
           ? {
               thinkingConfig: {
