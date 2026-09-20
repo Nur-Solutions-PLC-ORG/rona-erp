@@ -298,7 +298,8 @@ export function MovementsTable({
   itemLookup: Map<string, ItemDto>;
 }) {
   return (
-    <table className="w-full text-[13px]">
+    <div className="overflow-x-auto">
+      <table className="w-full text-[13px]">
       <thead>
         <tr className="border-b border-slate-200 bg-slate-50/80">
           <th className={TH}>Date</th>
@@ -330,7 +331,8 @@ export function MovementsTable({
           </tr>
         ))}
       </tbody>
-    </table>
+            </table>
+    </div>
   );
 }
 
@@ -342,7 +344,8 @@ export function ProductionOrdersTable({
   itemLookup: Map<string, ItemDto>;
 }) {
   return (
-    <table className="w-full text-[13px]">
+    <div className="overflow-x-auto">
+      <table className="w-full text-[13px]">
       <thead>
         <tr className="border-b border-slate-200 bg-slate-50/80">
           <th className={TH}>Order</th>
@@ -374,7 +377,8 @@ export function ProductionOrdersTable({
           </tr>
         ))}
       </tbody>
-    </table>
+            </table>
+    </div>
   );
 }
 
@@ -392,7 +396,8 @@ export function InspectionsTable({
   itemLookup: Map<string, ItemDto>;
 }) {
   return (
-    <table className="w-full text-[13px]">
+    <div className="overflow-x-auto">
+      <table className="w-full text-[13px]">
       <thead>
         <tr className="border-b border-slate-200 bg-slate-50/80">
           <th className={TH}>Inspection</th>
@@ -424,7 +429,8 @@ export function InspectionsTable({
           </tr>
         ))}
       </tbody>
-    </table>
+            </table>
+    </div>
   );
 }
 
@@ -445,7 +451,8 @@ export function LotsTable({
   itemLookup: Map<string, ItemDto>;
 }) {
   return (
-    <table className="w-full text-[13px]">
+    <div className="overflow-x-auto">
+      <table className="w-full text-[13px]">
       <thead>
         <tr className="border-b border-slate-200 bg-slate-50/80">
           <th className={TH}>Lot</th>
@@ -477,13 +484,15 @@ export function LotsTable({
           </tr>
         ))}
       </tbody>
-    </table>
+            </table>
+    </div>
   );
 }
 
 export function EmployeesTable({ employees }: { employees: Employee[] }) {
   return (
-    <table className="w-full text-[13px]">
+    <div className="overflow-x-auto">
+      <table className="w-full text-[13px]">
       <thead>
         <tr className="border-b border-slate-200 bg-slate-50/80">
           <th className={TH}>EID</th>
@@ -512,7 +521,8 @@ export function EmployeesTable({ employees }: { employees: Employee[] }) {
           </tr>
         ))}
       </tbody>
-    </table>
+            </table>
+    </div>
   );
 }
 
@@ -524,7 +534,8 @@ export function AttendanceEventsTable({
   nameLookup: Map<string, string>;
 }) {
   return (
-    <table className="w-full text-[13px]">
+    <div className="overflow-x-auto">
+      <table className="w-full text-[13px]">
       <thead>
         <tr className="border-b border-slate-200 bg-slate-50/80">
           <th className={TH}>Time</th>
@@ -554,6 +565,7 @@ export function AttendanceEventsTable({
           </tr>
         ))}
       </tbody>
-    </table>
+            </table>
+    </div>
   );
 }
