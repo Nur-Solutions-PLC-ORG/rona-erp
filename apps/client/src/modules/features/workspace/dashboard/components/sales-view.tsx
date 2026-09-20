@@ -302,7 +302,8 @@ export default function SalesDashboardView() {
 
 function SalesOrdersTable({ orders }: { orders: SalesOrderRow[] }) {
   return (
-    <table className="w-full text-[13px]">
+    <div className="overflow-x-auto">
+      <table className="w-full text-[13px]">
       <thead>
         <tr className="border-b border-slate-200 bg-slate-50/80">
           <th className={TH}>Order</th>
@@ -336,6 +337,7 @@ function SalesOrdersTable({ orders }: { orders: SalesOrderRow[] }) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }
 
@@ -362,7 +364,7 @@ function CustomersTable({ customers }: { customers: CustomerRow[] }) {
             </td>
             <td className="px-4 py-2">
               <StatusBadge status={customer.status} />
-            </td>
+</td>
           </tr>
         ))}
       </tbody>
