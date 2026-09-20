@@ -118,7 +118,7 @@ export default function ProductionDashboardView() {
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           <ChartCard
             title="Production orders, last 6 months"
             description="New production orders per month."
@@ -148,7 +148,7 @@ export default function ProductionDashboardView() {
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-3">
-        <div className="space-y-5 lg:col-span-2">
+        <div className="min-w-0 space-y-5 lg:col-span-2">
           <DataCard
             title="Active Production Orders"
             action={<ViewAllLink href={CLIENT_PRODUCTION_ORDERS_PAGE} />}

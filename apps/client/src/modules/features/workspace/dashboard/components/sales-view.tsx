@@ -187,7 +187,7 @@ export default function SalesDashboardView() {
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           <ChartCard
             title="Order value, last 6 months"
             description="Monthly sum of sales order totals."
@@ -215,7 +215,7 @@ export default function SalesDashboardView() {
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           <ChartCard
             title="Orders per day, last 30 days"
             description="Daily order count."
@@ -242,7 +242,7 @@ export default function SalesDashboardView() {
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-3">
-        <div className="space-y-5 lg:col-span-2">
+        <div className="min-w-0 space-y-5 lg:col-span-2">
           <DataCard
             title="Recent Sales Orders"
             action={<ViewAllLink href={CLIENT_SALES_ORDERS_PAGE} />}

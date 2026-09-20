@@ -196,7 +196,7 @@ export default function FinanceDashboardView() {
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           <ChartCard
             title="Cash flow, last 6 months"
             description="Monthly invoiced vs collected vs costs."

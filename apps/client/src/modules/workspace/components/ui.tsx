@@ -226,7 +226,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "bg-white rounded-lg border border-slate-200 shadow-[0_1px_2px_0_rgb(15_23_42_/_0.05)]",
+        "bg-white rounded-lg border border-slate-200 shadow-[0_1px_2px_0_rgb(15_23_42_/_0.05)] min-w-0",
         className,
       )}
     >

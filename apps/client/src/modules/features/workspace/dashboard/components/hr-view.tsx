@@ -95,7 +95,7 @@ export default function HrDashboardView() {
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="min-w-0 lg:col-span-2">
           <ChartCard
             title="Clock-ins, last 14 days"
             description="Daily CLOCK_IN events from kiosks and HR."
