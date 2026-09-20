@@ -27,8 +27,8 @@ import type { KioskDeviceContext } from './kiosk.service';
 import type {
   WebAuthnAuthenticationChallengeResult,
   WebAuthnAuthenticatedSession,
-  WebAuthnService,
 } from './webauthn.service';
+import { WebAuthnService } from './webauthn.service';
 
 @Injectable()
 export class KioskWebAuthnService {
