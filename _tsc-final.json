@@ -1,5 +1,0 @@
-{
-  "exitCode": 1,
-  "stderr": "",
-  "tail": "src/modules/kiosk/components/kiosk-terminal.tsx(18,3): error TS2305: Module '\"../api\"' has no exported member 'postKioskFaceSignature'.\r\nsrc/modules/kiosk/components/kiosk-terminal.tsx(186,30): error TS2304: Cannot find name 'postKioskAuthenticate'.\r\ntest/e2e/day6-flow.spec.ts(1,1): error TS2582: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.\r\ntest/e2e/day6-flow.spec.ts(2,3): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.\r\ntest/e2e/day6-flow.spec.ts(3,5): error TS2304: Cannot find name 'expect'.\r\n"
-}
