@@ -47,7 +47,6 @@ export type PlatformConfigKey = (typeof PLATFORM_CONFIG_KEY_LIST)[number];
 export type Currency = (typeof CURRENCY_LIST)[number];
 export type Gender = (typeof GENDER_LIST)[number];
 
-// Schemas
 export type UserListSearchParamsSchema = z.infer<
   typeof userListSearchParamsSchema
 >;
@@ -88,7 +87,6 @@ export type EmployeeSchema = z.infer<typeof employeeSchema>;
 export type EmployeeUpdateSchema = z.infer<typeof employeeUpdateSchema>;
 export type PlatformConfigSchema = z.infer<typeof platformConfigSchema>;
 
-// DTOs
 export type UserDto = z.infer<typeof userDto>;
 export type UserCredentialsDto = z.infer<typeof userCredentialsDto>;
 export type OrganizationDto = z.infer<typeof organizationDto>;
@@ -98,7 +96,6 @@ export type BranchDto = z.infer<typeof branchDto>;
 export type EmployeeDto = z.infer<typeof employeeDto>;
 export type PlatformConfigDto = z.infer<typeof platformConfigDto>;
 
-// Dashboard status
 export interface AdminDashboardStatus {
   organizations: {
     total: number;

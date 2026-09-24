@@ -1,5 +1,6 @@
 import { db, pooledDb } from '@/db';
 import { userRoles, users } from '@/db/schemas/auth';
+import { organizationMemberships } from '@/db/schemas/tenancy';
 import { Injectable } from '@nestjs/common';
 import {
   and,
@@ -77,6 +78,16 @@ export class UsersRepository {
     return records[0];
   }
 
+  async findTelegramChatIdByUserId(id: string) {
+    const records = await db
+      .select({ telegramChatId: users.telegramChatId })
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+
+    return records[0]?.telegramChatId ?? undefined;
+  }
+
   async findByEmailExceptId(email: string, id: string) {
     const records = await db
       .select({ id: users.id })
@@ -133,6 +144,44 @@ export class UsersRepository {
       .returning({ id: users.id });
 
     return Boolean(deletedUsers[0]);
+  }
+
+  async findMembership(userId: string, organizationId: string) {
+    const records = await db
+      .select()
+      .from(organizationMemberships)
+      .where(
+        and(
+          eq(organizationMemberships.userId, userId),
+          eq(organizationMemberships.organizationId, organizationId),
+        ),
+      )
+      .limit(1);
+
+    return records[0];
+  }
+
+  async createMembership(userId: string, organizationId: string) {
+    const inserted = await db
+      .insert(organizationMemberships)
+      .values({ userId, organizationId, status: 'active' })
+      .onConflictDoNothing()
+      .returning();
+
+    if (inserted[0]) return inserted[0];
+
+    return this.findMembership(userId, organizationId);
+  }
+
+  async deleteMembership(userId: string, organizationId: string) {
+    await db
+      .delete(organizationMemberships)
+      .where(
+        and(
+          eq(organizationMemberships.userId, userId),
+          eq(organizationMemberships.organizationId, organizationId),
+        ),
+      );
   }
 
   private listConditions(params: UserListSearchParamsSchema): SQL[] {

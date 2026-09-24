@@ -1,21 +1,31 @@
-import { sendPasswordResetEmail, sendVerificationEmail } from '@/emails/resend';
+import { sendPasswordResetEmail, sendVerificationEmail } from '@/emails/mailer';
+import { TelegramService } from '@/modules/telegram/telegram.service';
+import { randomBytes } from 'crypto';
 import {
   InvalidCodeException,
   InvalidCredentialsException,
   InvalidResetTokenException,
   SessionException,
-  UserNotFoundException,
+  TooManyAttemptsException,
   UserRoleNotFoundException,
   WaitForResendException,
 } from '@/modules/auth/auth.exception';
 import { getGoogleAuthUrl, getGoogleUserProfile } from '@/google/o-auth';
-import { redisClient } from '@/redis';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { rateLimit, redisClient } from '@/redis';
+import { getRequestContext } from '@/context/request-context';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { AuthRepository } from './auth.repository';
 import {
   OPT_RESEND_DELAY_DURATION_MS,
   CODE_EXPIRY_MS,
   CODE_LENGTH,
+  CODE_MAX_ATTEMPTS,
+  CODE_WINDOW_SECONDS,
+  FORGOT_ATTEMPT_LIMIT,
+  FORGOT_WINDOW_SECONDS,
+  RESET_MAX_ATTEMPTS,
+  SIGN_IN_ATTEMPT_LIMIT,
+  SIGN_IN_WINDOW_SECONDS,
   SESSION_DURATION,
 } from '@rona/config/auth';
 import type { RegisterSchema } from '@rona/types/auth';
@@ -26,9 +36,13 @@ import { generateCombinations } from '@/lib/combinations';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly authRepository: AuthRepository) {}
+  private readonly logger = new Logger(AuthService.name);
 
-  // gets user by email
+  constructor(
+    private readonly authRepository: AuthRepository,
+    private readonly telegramService: TelegramService,
+  ) {}
+
   async validateUserByEmail(email: string) {
     const userRecord = await this.authRepository.findUserByEmail(email);
 
@@ -39,8 +53,16 @@ export class AuthService {
     return userRecord;
   }
 
-  // get user with matching email and password
   async validateCredentials(email: string, password: string) {
+    const attemptKey = `auth:attempts:sign-in:${email.toLowerCase()}`;
+
+    const allowed = await rateLimit(
+      attemptKey,
+      SIGN_IN_ATTEMPT_LIMIT,
+      SIGN_IN_WINDOW_SECONDS,
+    );
+    if (!allowed) throw new TooManyAttemptsException();
+
     const user = await this.validateUserByEmail(email);
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
@@ -49,10 +71,10 @@ export class AuthService {
       throw new InvalidCredentialsException();
     }
 
+    await redisClient.del(attemptKey).catch(() => undefined);
     return user;
   }
 
-  // Random verification code generator
   generateRandomCode(): string {
     return generateCombinations({
       length: CODE_LENGTH,
@@ -63,26 +85,53 @@ export class AuthService {
     });
   }
 
-  // Sends verification code
   async sendVerificationCode(email: string) {
     const lastSendKey = `auth:last_send:${email}`;
 
-    const lastSend = await redisClient.get<number>(lastSendKey);
-
-    if (lastSend && Date.now() - lastSend < OPT_RESEND_DELAY_DURATION_MS) {
-      throw new WaitForResendException();
+    try {
+      const lastSend = await redisClient.get<number>(lastSendKey);
+      if (lastSend && Date.now() - lastSend < OPT_RESEND_DELAY_DURATION_MS) {
+        throw new WaitForResendException();
+      }
+    } catch (error) {
+      if (error instanceof WaitForResendException) throw error;
+      this.logger.warn(`Verification cooldown read failed: ${String(error)}`);
     }
 
     const code = this.generateRandomCode();
+    const telegramToken = randomBytes(16).toString('hex');
 
-    const codeKey = `auth:code:${email}`;
+    await this.authRepository.saveCode(
+      email,
+      'login',
+      code,
+      new Date(Date.now() + CODE_EXPIRY_MS),
+      telegramToken,
+    );
 
-    await redisClient.set(codeKey, code, { px: CODE_EXPIRY_MS });
-    await redisClient.set(lastSendKey, Date.now(), {
-      px: OPT_RESEND_DELAY_DURATION_MS,
-    });
+    try {
+      await redisClient.set(`auth:code:${email}`, code, {
+        px: CODE_EXPIRY_MS,
+      });
+      await redisClient.set(lastSendKey, Date.now(), {
+        px: OPT_RESEND_DELAY_DURATION_MS,
+      });
+    } catch (error) {
+      this.logger.warn(`Verification cache write failed: ${String(error)}`);
+    }
 
-    await sendVerificationEmail(email, code);
+    const chatId = await this.authRepository.findTelegramChatIdByEmail(email);
+    this.deliverCode(email, code, 'login', chatId);
+
+    if (this.telegramService.isConfigured()) {
+      return {
+        telegramUrl: this.telegramService.getTelegramUrl(
+          this.codePayload(telegramToken),
+        ),
+      };
+    }
+
+    return {};
   }
 
   async resendVerificationCode(email: string) {
@@ -90,23 +139,40 @@ export class AuthService {
     await this.sendVerificationCode(email);
   }
 
-  // Verifies code
   async verifyCode(email: string, code: string) {
     const codeKey = `auth:code:${email}`;
-    const storedCode = String(await redisClient.get<string>(codeKey));
+    const attemptKey = `auth:attempts:code:${email}`;
 
+    const allowed = await rateLimit(
+      attemptKey,
+      CODE_MAX_ATTEMPTS,
+      CODE_WINDOW_SECONDS,
+    );
+    if (!allowed) throw new TooManyAttemptsException();
+
+    const storedCode = await this.readCode(email, 'login', codeKey);
     if (!storedCode || storedCode !== code) {
       throw new InvalidCodeException();
     }
 
-    await redisClient.del(codeKey);
+    await this.authRepository.deleteCode(email, 'login');
+    await redisClient.del(codeKey).catch(() => undefined);
+    await redisClient.del(attemptKey).catch(() => undefined);
   }
 
-  // get users role
   async getRoles(userId: string): Promise<UserRole> {
     const roleKey = `auth:role:${userId}`;
-    const cachedRoles = await redisClient.get<UserRole>(roleKey);
-    if (cachedRoles) return cachedRoles;
+
+    // Redis is only a cache. Authentication must continue from Postgres if the
+    // cache credentials are missing, expired, or temporarily unavailable.
+    try {
+      const cachedRoles = await redisClient.get<UserRole>(roleKey);
+      if (cachedRoles) return cachedRoles;
+    } catch (error) {
+      this.logger.warn(
+        `Role cache unavailable; using database: ${String(error)}`,
+      );
+    }
 
     const role = await this.authRepository.findUserRoleByUserId(userId);
 
@@ -119,11 +185,15 @@ export class AuthService {
       modules: role.module,
     };
 
-    await redisClient.set(roleKey, userRole, { ex: SESSION_DURATION / 1000 });
+    try {
+      await redisClient.set(roleKey, userRole, { ex: SESSION_DURATION / 1000 });
+    } catch (error) {
+      this.logger.warn(`Role cache write failed: ${String(error)}`);
+    }
+
     return userRole;
   }
 
-  // encoding a jwt session token
   createSession(user: SessionUser): string {
     try {
       const payload = { user };
@@ -132,12 +202,11 @@ export class AuthService {
         expiresIn: SESSION_DURATION / 1000,
       });
     } catch (e) {
-      console.log('session encoding error: ', e);
+      this.logger.error(`session encoding error: ${String(e)}`);
       throw new SessionException();
     }
   }
 
-  // decoding a jwt session token
   async decodeSession(token: string): Promise<Session> {
     try {
       const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
@@ -152,12 +221,11 @@ export class AuthService {
         expires: new Date(payload.exp * 1000).toISOString(),
       };
     } catch (e) {
-      console.log('session decoding error: ', e);
+      this.logger.error(`session decoding error: ${String(e)}`);
       throw new SessionException();
     }
   }
 
-  // registers a platform user
   async registerUser(data: RegisterSchema) {
     const existing = await this.authRepository.findUserByEmail(data.email);
     if (existing) {
@@ -175,6 +243,7 @@ export class AuthService {
       passwordHash,
       tfaEnabled: data.tfaEnabled,
       isEmailVerified: true,
+      mustChangePassword: true,
     });
 
     await this.authRepository.createUserRole({
@@ -184,12 +253,10 @@ export class AuthService {
     });
   }
 
-  // generates google auth url
   getGoogleAuthUrl(state?: string) {
     return getGoogleAuthUrl(state);
   }
 
-  // handles google callback
   async handleGoogleCallback(code: string) {
     const profile = await getGoogleUserProfile(code);
     const user = await this.validateUserByEmail(profile.email);
@@ -203,50 +270,208 @@ export class AuthService {
     return { token };
   }
 
-  // forgot-password: validates email, generates a secure one-time token, stores it in Redis, and sends a reset email
   async forgotPassword(email: string) {
+    const normalizedEmail = email.toLowerCase();
+    const ip = getRequestContext()?.ip ?? 'unknown';
+
+    const ipAllowed = await rateLimit(
+      `auth:attempts:forgot-ip:${ip}`,
+      FORGOT_ATTEMPT_LIMIT,
+      FORGOT_WINDOW_SECONDS,
+    )
+      .then((ok) => ok)
+      .catch(() => true);
+    if (!ipAllowed) throw new TooManyAttemptsException();
+
+    const allowed = await rateLimit(
+      `auth:attempts:forgot:${normalizedEmail}`,
+      FORGOT_ATTEMPT_LIMIT,
+      FORGOT_WINDOW_SECONDS,
+    )
+      .then((ok) => ok)
+      .catch(() => true);
+    if (!allowed) throw new TooManyAttemptsException();
+
     const user = await this.authRepository.findUserByEmail(email);
 
     if (!user) {
-      throw new UserNotFoundException();
+      return;
     }
 
-    const token = this.generateRandomCode();
+    const lastSendKey = `auth:last_send_reset:${normalizedEmail}`;
 
-    const resetTokenKey = `auth:reset-token:${user.id}`;
-    await redisClient.set(resetTokenKey, token, { px: CODE_EXPIRY_MS });
+    try {
+      const lastSend = await redisClient.get<number>(lastSendKey);
+      if (lastSend && Date.now() - lastSend < OPT_RESEND_DELAY_DURATION_MS) {
+        throw new WaitForResendException();
+      }
+    } catch (error) {
+      if (error instanceof WaitForResendException) throw error;
+      this.logger.warn(`Reset-code cooldown read failed: ${String(error)}`);
+    }
 
-    await sendPasswordResetEmail(email, token);
+    const code = this.generateRandomCode();
+    const telegramToken = randomBytes(16).toString('hex');
+
+    await this.authRepository.saveCode(
+      normalizedEmail,
+      'reset',
+      code,
+      new Date(Date.now() + CODE_EXPIRY_MS),
+      telegramToken,
+    );
+
+    try {
+      await redisClient.set(`auth:reset-code:${normalizedEmail}`, code, {
+        px: CODE_EXPIRY_MS,
+      });
+    } catch (error) {
+      this.logger.warn(`Reset-code cache write failed: ${String(error)}`);
+    }
+
+    this.deliverCode(email, code, 'reset', user.telegramChatId ?? undefined);
+
+    try {
+      await redisClient.set(lastSendKey, Date.now(), {
+        px: OPT_RESEND_DELAY_DURATION_MS,
+      });
+    } catch (error) {
+      this.logger.warn(`Reset-code cooldown write failed: ${String(error)}`);
+    }
+
+    if (this.telegramService.isConfigured()) {
+      return {
+        telegramUrl: this.telegramService.getTelegramUrl(
+          this.codePayload(telegramToken),
+        ),
+      };
+    }
+
+    return {};
   }
 
-  // reset-password: validates the token against Redis, checks expiration, hashes the new password, and updates the user
-  async resetPassword(token: string, password: string) {
-    const resetTokenKey = `auth:reset-token:*`;
-    const [, keys] = await redisClient.scan(0, {
-      match: resetTokenKey,
-      count: 100,
-    });
+  async resetPassword(email: string, code: string, password: string) {
+    const normalizedEmail = email.toLowerCase();
+    const attemptKey = `auth:attempts:reset:${normalizedEmail}`;
 
-    let foundKey: string | null = null;
+    const allowed = await rateLimit(
+      attemptKey,
+      RESET_MAX_ATTEMPTS,
+      CODE_WINDOW_SECONDS,
+    );
+    if (!allowed) throw new TooManyAttemptsException();
 
-    for (const key of keys) {
-      const storedToken = String(await redisClient.get<string>(key));
-      if (storedToken === token) {
-        foundKey = key;
-        break;
-      }
-    }
+    const storedCode = await this.readCode(
+      normalizedEmail,
+      'reset',
+      `auth:reset-code:${normalizedEmail}`,
+    );
 
-    if (!foundKey) {
+    if (!storedCode || storedCode !== code) {
       throw new InvalidResetTokenException();
     }
 
-    const userId = foundKey.replace('auth:reset-token:', '');
+    const user = await this.authRepository.findUserByEmail(email);
+
+    if (!user) {
+      throw new InvalidResetTokenException();
+    }
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    await this.authRepository.updateUserPassword(userId, passwordHash);
+    await this.authRepository.updateUserPassword(user.id, passwordHash);
 
-    await redisClient.del(foundKey);
+    await this.authRepository.deleteCode(normalizedEmail, 'reset');
+    await redisClient
+      .del(`auth:reset-code:${normalizedEmail}`)
+      .catch(() => undefined);
+    await redisClient.del(attemptKey).catch(() => undefined);
+  }
+
+  async changePassword(
+    email: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.validateCredentials(email, currentPassword);
+
+    if (!user.mustChangePassword) {
+      throw new BadRequestException({
+        success: false,
+        message: 'This account does not require a password change.',
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await this.authRepository.updateUserPassword(user.id, passwordHash);
+    await this.authRepository.updateUserMustChangePassword(user.id, false);
+  }
+
+  private deliverCode(
+    email: string,
+    code: string,
+    purpose: 'login' | 'reset',
+    telegramChatId?: string,
+  ) {
+    void this.deliverCodeInBackground(email, code, purpose, telegramChatId);
+  }
+
+  private async deliverCodeInBackground(
+    email: string,
+    code: string,
+    purpose: 'login' | 'reset',
+    telegramChatId?: string,
+  ) {
+    const sendEmail =
+      purpose === 'reset' ? sendPasswordResetEmail : sendVerificationEmail;
+
+    const emailSent = await sendEmail(email, code)
+      .then(() => true)
+      .catch((error) => {
+        this.logger.warn(
+          `Email delivery failed (${purpose}): ${String(error)}`,
+        );
+        return false;
+      });
+
+    let telegramSent = false;
+    if (telegramChatId) {
+      telegramSent = await this.telegramService.sendCodeToChat(
+        telegramChatId,
+        code,
+        purpose,
+      );
+    }
+
+    const deepLinkAvailable = this.telegramService.isConfigured();
+
+    if (!emailSent && !telegramSent && !deepLinkAvailable) {
+      this.logger.warn(
+        `Code delivery failed: email is unavailable and Telegram is not configured.`,
+      );
+    }
+  }
+
+  private codePayload(telegramToken: string) {
+    return `code_${telegramToken}`;
+  }
+
+  private async readCode(
+    email: string,
+    purpose: 'login' | 'reset',
+    redisKey: string,
+  ): Promise<string | undefined> {
+    const dbCode = await this.authRepository.getCode(email, purpose);
+    if (dbCode) return dbCode;
+
+    try {
+      const cached = await redisClient.get<string>(redisKey);
+      if (cached !== null && cached !== undefined) return String(cached);
+    } catch (error) {
+      this.logger.warn(`Code cache read failed: ${String(error)}`);
+    }
+
+    return undefined;
   }
 }

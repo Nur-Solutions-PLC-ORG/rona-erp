@@ -1,8 +1,9 @@
 import { db, pooledDb } from '@/db';
 import { organizationSettings, organizations } from '@/db/schemas/admin';
 import { Injectable } from '@nestjs/common';
-import { CURRENCY_LIST } from '@rona/config/admin';
+import { DEFAULT_ORGANIZATION_CURRENCY } from '@rona/config/admin';
 import { and, count, desc, eq, ilike, ne, type SQL } from 'drizzle-orm';
+import type { Executor } from '@/db/executor';
 import type { OrganizationListSearchParamsSchema } from '@rona/types/admin';
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '@rona/config';
 
@@ -48,38 +49,31 @@ export class OrganizationsRepository {
     return records[0];
   }
 
-  async create(data: typeof organizations.$inferInsert) {
-    return pooledDb.transaction(async (tx) => {
-      const records = await tx.insert(organizations).values(data).returning();
+  async create(data: typeof organizations.$inferInsert, tx?: Executor) {
+    const executor = tx ?? pooledDb;
+    return executor.transaction(async (innerTx) => {
+      const records = await innerTx
+        .insert(organizations)
+        .values(data)
+        .returning();
       const organization = records[0];
 
-      await tx
-        .insert(organizationSettings)
-        .values({ organizationId: organization.id });
-
-      return organization;
-    });
-  }
-
-  async createWithDefaultSettings(
-    data: typeof organizations.$inferInsert,
-    currency: (typeof CURRENCY_LIST)[number],
-  ) {
-    return pooledDb.transaction(async (tx) => {
-      const records = await tx.insert(organizations).values(data).returning();
-      const organization = records[0];
-
-      await tx.insert(organizationSettings).values({
+      await innerTx.insert(organizationSettings).values({
         organizationId: organization.id,
-        currency,
+        currency: DEFAULT_ORGANIZATION_CURRENCY,
       });
 
       return organization;
     });
   }
 
-  async update(id: string, data: Partial<typeof organizations.$inferInsert>) {
-    const records = await db
+  async update(
+    id: string,
+    data: Partial<typeof organizations.$inferInsert>,
+    tx?: Executor,
+  ) {
+    const executor = tx ?? pooledDb;
+    const records = await executor
       .update(organizations)
       .set(data)
       .where(eq(organizations.id, id))
@@ -87,8 +81,9 @@ export class OrganizationsRepository {
     return records[0];
   }
 
-  async delete(id: string) {
-    const records = await db
+  async delete(id: string, tx?: Executor) {
+    const executor = tx ?? pooledDb;
+    const records = await executor
       .delete(organizations)
       .where(eq(organizations.id, id))
       .returning({ id: organizations.id });

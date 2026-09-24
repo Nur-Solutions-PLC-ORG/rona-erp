@@ -3,6 +3,26 @@
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 import { IconType } from "react-icons/lib";
+import Spinner from "@/components/custom/spinner";
+
+const TONE_CLASSES = {
+  icon: {
+    sky: "text-sky-700",
+    orange: "text-amber-700",
+    red: "text-rose-700",
+    blue: "text-sky-700",
+    green: "text-emerald-700",
+    yellow: "text-yellow-700",
+  },
+  accent: {
+    sky: "text-sky-700",
+    orange: "text-amber-700",
+    red: "text-rose-700",
+    blue: "text-sky-700",
+    green: "text-emerald-700",
+    yellow: "text-yellow-700",
+  },
+} as const;
 
 type Props = {
   title: string;
@@ -10,7 +30,7 @@ type Props = {
   className?: string;
   icon?: IconType;
   loading?: boolean;
-  color?: "red" | "purple" | "green" | "yellow" | "blue" | "orange";
+  color?: "red" | "sky" | "green" | "yellow" | "blue" | "orange";
 };
 
 const StatCard = ({
@@ -18,48 +38,54 @@ const StatCard = ({
   value,
   className,
   loading,
-  color = "purple",
+  color = "sky",
   icon: Icon,
 }: Props) => {
   if (loading) {
-    return <div className="rounded-md p-4 bg-black/2 animate-pulse h-20"></div>;
+    return (
+      <div className="flex h-24 items-center justify-center rounded-xl bg-white border border-zinc-100 p-4 shadow-xs">
+        <Spinner className="h-5 w-5 text-zinc-500" />
+      </div>
+    );
   }
 
   return (
     <div
       className={cn(
-        "flex flex-col h-fit bg-white rounded-2xl drop-shadow border relative",
+        "flex flex-col h-fit bg-white rounded-xl border border-zinc-100 shadow-xs",
         className,
       )}
     >
-      <span
-        className={cn("-z-10 rounded-2xl absolute inset-0", {
-          "bg-purple-800/5": color == "purple",
-          "bg-amber-800/5": color == "orange",
-          "bg-red-800/5": color == "red",
-          "bg-blue-800/5": color == "blue",
-          "bg-green-800/5": color == "green",
-          "bg-yellow-800/5": color == "yellow",
-        })}
-      />
-      <div className="flex items-center justify-center px-6 py-3">
-        {Icon && (
-          <Icon
-            className={cn("mr-auto size-5", {
-              "text-purple-800": color == "purple",
-              "text-amber-800": color == "orange",
-              "text-red-800": color == "red",
-              "text-blue-800": color == "blue",
-              "text-green-800": color == "green",
-              "text-yellow-800": color == "yellow",
-            })}
+      <div className="flex items-center gap-3 px-4 py-3">
+        {Icon ? (
+          <span
+            className={cn(
+              "size-4 flex items-center justify-center shrink-0",
+              TONE_CLASSES.icon[color],
+            )}
+          >
+            <Icon className="size-4" />
+          </span>
+        ) : (
+          <span
+            className={cn(
+              "w-1.5 h-8 rounded-full shrink-0",
+              color == "sky" && "bg-sky-700",
+              color == "orange" && "bg-amber-500",
+              color == "red" && "bg-rose-500",
+              color == "blue" && "bg-sky-500",
+              color == "green" && "bg-emerald-500",
+              color == "yellow" && "bg-yellow-500",
+            )}
           />
         )}
-        <p className="opacity-75">{title}</p>
+        <p className="text-xs font-medium text-zinc-500 truncate">{title}</p>
       </div>
-      <span className="border-t w-full" />
-      <div className="flex items-center px-6 py-3">
-        <p className="text-2xl font-heading font-semibold">{value || "0"}</p>
+
+      <div className="flex items-center px-4 pb-3">
+        <p className="text-xl font-bold text-zinc-900 font-mono">
+          {value ?? 0}
+        </p>
       </div>
     </div>
   );
@@ -74,27 +100,31 @@ type InfoCardProps = {
 
 const InfoCard = ({ title, items, loading, action }: InfoCardProps) => {
   if (loading) {
-    return <div className="rounded-md p-4 bg-black/2 animate-pulse h-20" />;
+    return (
+      <div className="flex h-24 items-center justify-center rounded-xl bg-white border border-zinc-100 p-4 shadow-xs">
+        <Spinner className="h-5 w-5 text-zinc-500" />
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col h-fit bg-white drop-shadow rounded-2xl border">
-      <div className="flex items-center justify-between px-6 py-3">
-        <p className="opacity-75">{title}</p>
+    <div className="flex flex-col h-fit bg-white rounded-xl border border-zinc-100 shadow-xs">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
+        <p className="text-sm font-bold text-zinc-900">{title}</p>
         {action}
       </div>
 
-      <div className="border-t" />
-
-      <div className="flex flex-col px-6 py-3 divide-y">
+      <div className="flex flex-col px-4 divide-y divide-zinc-100">
         {items?.map((item) => (
           <div
             key={item.key}
-            className="flex items-center justify-between py-3 text-sm"
+            className="flex items-center justify-between py-2.5 text-xs gap-3"
           >
-            <p>{item.key}</p>
+            <p className="text-zinc-500">{item.key}</p>
 
-            {item.value}
+            <p className="text-zinc-800 font-medium text-right truncate">
+              {item.value}
+            </p>
           </div>
         ))}
       </div>

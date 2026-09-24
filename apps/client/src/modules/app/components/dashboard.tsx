@@ -39,6 +39,7 @@ export type SidebarOptions = SidebarOption[];
 type Props = {
   children: React.ReactNode;
   options?: SidebarOptions;
+  navExtra?: React.ReactNode;
 };
 
 function findActiveSidebarTitle(
@@ -61,7 +62,7 @@ function isGroupActive(option: SidebarOption, pathname: string) {
   return option.children?.some((child) => child.href === pathname) ?? false;
 }
 
-const DashboardWrapper = ({ children, options }: Props) => {
+const DashboardWrapper = ({ children, options, navExtra }: Props) => {
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const collapsed = useSidebarStore((s) => s.collapsed);
@@ -82,6 +83,7 @@ const DashboardWrapper = ({ children, options }: Props) => {
             options={options}
             pathname={pathname}
             isMobile={isMobile}
+            navExtra={navExtra}
           />
           <div className="flex-1 w-full flex flex-col bg-secondary/50 min-w-0">
             {children}
@@ -98,9 +100,10 @@ type NavProps = {
   isMobile?: boolean;
   options?: SidebarOptions;
   pathname: string;
+  navExtra?: React.ReactNode;
 };
 
-const DashboardNav = ({ isMobile, options, pathname }: NavProps) => {
+const DashboardNav = ({ isMobile, options, pathname, navExtra }: NavProps) => {
   const activeTitle = options
     ? findActiveSidebarTitle(options, pathname)
     : undefined;
@@ -150,6 +153,7 @@ const DashboardNav = ({ isMobile, options, pathname }: NavProps) => {
           </div>
         )}
         <span className="ml-auto" />
+        {navExtra}
         <UserButton />
       </div>
     </nav>

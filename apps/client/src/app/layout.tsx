@@ -1,7 +1,7 @@
 import QueryClientWrapper from "@/components/query-client-wrapper";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Poppins, Lato } from "next/font/google";
+import { JetBrains_Mono, Poppins, Plus_Jakarta_Sans, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 
 const fontHeading = Poppins({
@@ -11,10 +11,23 @@ const fontHeading = Poppins({
   variable: "--font-heading",
 });
 
-const font = Lato({
+const font = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  weight: ["100", "300", "400", "700", "900"],
+  weight: ["200", "300", "400", "500", "600", "700", "800"],
   variable: "--font-sans",
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-mono",
+});
+
+const fontSerifDisplay = Source_Serif_4({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  style: ["normal"],
+  variable: "--font-serif-display",
 });
 
 export const metadata: Metadata = {
@@ -47,6 +60,8 @@ export default function RootLayout({
         "font-sans",
         font.variable,
         fontHeading.variable,
+        fontMono.variable,
+        fontSerifDisplay.variable,
       )}
     >
       <body className="min-h-full flex flex-col">

@@ -15,3 +15,11 @@ node_modules/
 # Local DB
 .env
 .env.local
+
+# Dev scratch / temp artifacts
+_probe/
+_propose/
+_tsc-*.json
+_tsc-*.txt
+tsc-relay.mjs
+.zcode/

@@ -35,5 +35,4 @@ export const useSidebarStore = create<SidebarStore>()(
   ),
 );
 
-// exports
 export * from "./modals";
