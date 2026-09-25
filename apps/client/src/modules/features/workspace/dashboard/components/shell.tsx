@@ -309,7 +309,7 @@ export function ViewAllLink({ href, label = "View all" }: { href: string; label?
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 transition-colors hover:text-purple-600"
+      className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 transition-colors hover:text-primary"
     >
       {label}
       <HiOutlineArrowRight className="h-3 w-3" />

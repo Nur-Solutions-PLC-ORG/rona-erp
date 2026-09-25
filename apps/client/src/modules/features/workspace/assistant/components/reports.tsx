@@ -168,8 +168,8 @@ export function AiReportsPanel() {
                     onClick={() => setPeriod(preset)}
                     className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 ${
                       period === preset
-                        ? "border-purple-600 bg-purple-600 text-white"
-                        : "border-slate-300 bg-white text-slate-600 hover:border-purple-400 hover:text-purple-600"
+                        ? "border-primary bg-primary text-white"
+                        : "border-slate-300 bg-white text-slate-600 hover:border-brand-sea hover:text-primary"
                     }`}
                   >
                     {AI_REPORT_PERIOD_LABELS[preset]}
@@ -182,8 +182,8 @@ export function AiReportsPanel() {
                 onClick={() => setPeriod("custom")}
                 className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 ${
                   period === "custom"
-                    ? "border-purple-600 bg-purple-600 text-white"
-                    : "border-slate-300 bg-white text-slate-600 hover:border-purple-400 hover:text-purple-600"
+                    ? "border-primary bg-primary text-white"
+                    : "border-slate-300 bg-white text-slate-600 hover:border-brand-sea hover:text-primary"
                 }`}
               >
                 <HiOutlineCalendarDays className="h-3.5 w-3.5" />
@@ -202,7 +202,7 @@ export function AiReportsPanel() {
                   max={customEnd}
                   onChange={(e) => setCustomStart(e.target.value)}
                   disabled={exportReport.isPending}
-                  className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 transition focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 disabled:opacity-50"
+                  className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 transition focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 disabled:opacity-50"
                 />
               </label>
               <label className="space-y-1.5">
@@ -213,7 +213,7 @@ export function AiReportsPanel() {
                   min={customStart}
                   onChange={(e) => setCustomEnd(e.target.value)}
                   disabled={exportReport.isPending}
-                  className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 transition focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 disabled:opacity-50"
+                  className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 transition focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/40 disabled:opacity-50"
                 />
               </label>
             </div>
@@ -239,11 +239,11 @@ export function AiReportsPanel() {
               type="button"
               onClick={submit}
               disabled={exportReport.isPending}
-              className="flex h-11 shrink-0 items-center gap-2 rounded-lg bg-purple-600 px-5 text-sm font-semibold text-white transition hover:bg-purple-700 active:bg-purple-800 disabled:opacity-50 disabled:pointer-events-none"
+              className="flex h-11 shrink-0 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white transition hover:bg-primary/90 active:bg-primary/80 disabled:opacity-50 disabled:pointer-events-none"
             >
               {exportReport.isPending ? (
                 <>
-                  <Spinner className="h-4 w-4 text-purple-200" />
+                  <Spinner className="h-4 w-4 text-brand-pale" />
                   Queueing…
                 </>
               ) : (
@@ -286,7 +286,7 @@ export function AiReportsPanel() {
                 <a
                   href={aiReportDownloadUrl(job.reportId)}
                   download
-                  className="mt-3 inline-flex h-10 items-center gap-2 rounded-lg bg-purple-600 px-4 text-sm font-semibold text-white transition hover:bg-purple-700"
+                  className="mt-3 inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary/90"
                 >
                   <HiOutlineArrowDownTray className="h-4 w-4" />
                   Download {job.exportFormat.toUpperCase()}

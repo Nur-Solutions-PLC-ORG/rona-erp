@@ -76,7 +76,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "w-full justify-between font-normal min-w-24 border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 hover:text-slate-700 aria-expanded:bg-white aria-expanded:text-slate-700 focus-visible:ring-purple-500/30 focus-visible:border-purple-500",
+            "w-full justify-between font-normal min-w-24 border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 hover:text-slate-700 aria-expanded:bg-white aria-expanded:text-slate-700 focus-visible:ring-ring/40 focus-visible:border-ring",
             ghost &&
               "bg-transparent shadow-none border-none rounded-none hover:bg-transparent",
             translucent && "bg-white/75 shadow-none border-none",
@@ -149,14 +149,14 @@ const Dropdown: React.FC<DropdownProps> = ({
                   className={cn(
                     "relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 data-selected:bg-slate-100 data-selected:text-slate-900",
                     value === option.value &&
-                      "bg-purple-50 text-purple-700 hover:bg-purple-50",
+                      "bg-accent text-primary hover:bg-accent",
                   )}
                 >
                   {option.icon && (
                     <option.icon
                       className={cn(
                         "h-4 w-4 shrink-0 text-slate-400",
-                        value === option.value && "text-purple-600",
+                        value === option.value && "text-primary",
                       )}
                     />
                   )}
@@ -181,7 +181,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                   </span>
                   <Check
                     className={cn(
-                      "h-4 w-4 absolute top-1/2 -translate-y-1/2 right-2 text-purple-600",
+                      "h-4 w-4 absolute top-1/2 -translate-y-1/2 right-2 text-primary",
                       value === option.value ? "opacity-100" : "opacity-0",
                     )}
                   />

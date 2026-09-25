@@ -141,7 +141,7 @@ export default function BomsView() {
               setPage(1);
             }}
             placeholder="Search BOM code or name..."
-            className="w-64 px-3 py-1.5 rounded-lg bg-zinc-50 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:bg-white transition text-xs"
+            className="w-64 px-3 py-1.5 rounded-lg bg-zinc-50 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-ring focus:bg-white transition text-xs"
           />
           <FilterSelect
             value={itemId}
@@ -168,7 +168,7 @@ export default function BomsView() {
           canCreate ? (
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-zinc-800"
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90"
               onClick={() => setCreateOpen(true)}
             >
               <HiOutlinePlus className="h-4 w-4" />

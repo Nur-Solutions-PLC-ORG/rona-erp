@@ -5,10 +5,10 @@ import { Eye, EyeClosed } from "lucide-react";
 import { useState } from "react";
 
 export const AUTH_INPUT =
-  "w-full px-3.5 py-2.5 rounded-md bg-zinc-50 border border-zinc-200/70 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 focus:bg-white transition text-sm";
+  "w-full px-3.5 py-2.5 rounded-md bg-zinc-50 border border-zinc-200/70 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring focus:bg-white transition text-sm";
 
 export const AUTH_PRIMARY_BUTTON =
-  "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-950 text-white text-sm font-semibold transition disabled:opacity-50 disabled:pointer-events-none";
+  "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-primary hover:bg-primary/90 active:bg-primary/80 text-primary-foreground text-sm font-semibold transition disabled:opacity-50 disabled:pointer-events-none";
 
 export const AUTH_OUTLINE_BUTTON =
   "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-white hover:bg-zinc-50 text-zinc-700 text-sm font-medium transition border border-zinc-200 disabled:opacity-50 disabled:pointer-events-none";

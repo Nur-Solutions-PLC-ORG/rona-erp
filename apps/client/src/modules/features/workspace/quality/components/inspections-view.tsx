@@ -125,7 +125,7 @@ export default function InspectionsView() {
         <button
           type="button"
           onClick={() => setDetailsFor(row)}
-          className="text-xs font-medium text-purple-600 hover:text-purple-500"
+          className="text-xs font-medium text-primary hover:text-brand-sea"
         >
           View
         </button>

@@ -320,7 +320,7 @@ export default function FinanceDashboardView() {
           <a
             key={link.href}
             href={link.href}
-            className="rounded-xl border border-zinc-200/80 bg-white px-4 py-3 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:border-purple-300 hover:text-purple-700"
+            className="rounded-xl border border-zinc-200/80 bg-white px-4 py-3 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:border-brand-sea hover:text-primary"
           >
             {link.label} →
           </a>

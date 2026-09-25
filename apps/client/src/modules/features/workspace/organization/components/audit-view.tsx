@@ -302,7 +302,7 @@ export default function AuditView() {
           </div>
           <button
             type="button"
-            className="h-9 px-4 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold transition"
+            className="h-9 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold transition"
             onClick={applyFilters}
           >
             Apply Filters

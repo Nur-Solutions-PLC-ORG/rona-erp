@@ -103,7 +103,7 @@ function DataHeader<TSearchParams>({
                   commitServerSearch();
                 }
               }}
-              className="h-8! rounded-md bg-zinc-100! border-transparent! text-xs placeholder:text-zinc-400 focus-visible:bg-white! focus-visible:ring-1! focus-visible:ring-zinc-500!"
+              className="h-8! rounded-md bg-zinc-100! border-transparent! text-xs placeholder:text-zinc-400 focus-visible:bg-white! focus-visible:ring-1! focus-visible:ring-ring!"
               containerClassName="flex-1"
               placeholder="Filter loaded rows… (Enter to search server)"
             />
@@ -143,7 +143,7 @@ function DataHeader<TSearchParams>({
                     "Select " + (replacement?.label ?? slugToString(key))
                   }
                   value={value}
-                  className="h-8! bg-zinc-50! rounded-md! text-xs min-w-36 focus:ring-1! focus:ring-zinc-500!"
+                  className="h-8! bg-zinc-50! rounded-md! text-xs min-w-36 focus:ring-1! focus:ring-ring!"
                   onChange={(newValue) => {
                     if (!newValue) {
                       removeParams([key as keyof TSearchParams]);

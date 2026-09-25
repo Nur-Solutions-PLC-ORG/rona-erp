@@ -386,7 +386,7 @@ export default function EmployeesView() {
           canCreate ? (
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-zinc-800"
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90"
               onClick={openCreate}
             >
               <HiOutlineUserPlus className="h-4 w-4" />

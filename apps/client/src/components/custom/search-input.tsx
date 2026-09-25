@@ -17,7 +17,7 @@ export default function SearchInput({
   onChange,
   onKeyDown,
   placeholder ="Search…",
-  className = "h-9 rounded-md bg-white border border-zinc-200 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 transition-colors",
+  className = "h-9 rounded-md bg-white border border-zinc-200 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring transition-colors",
   containerClassName = "",
 }: SearchInputProps) {
   return (

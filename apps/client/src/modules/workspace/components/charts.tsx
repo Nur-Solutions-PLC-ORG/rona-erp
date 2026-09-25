@@ -99,11 +99,11 @@ export function Sparkline({
 }
 
 const FUNNEL_BAR_CLASSES = [
-  "bg-indigo-500",
-  "bg-violet-500",
-  "bg-purple-500",
-  "bg-fuchsia-500",
-  "bg-sky-500",
+  "bg-brand-deep",
+  "bg-brand-teal",
+  "bg-brand-sea",
+  "bg-brand-aqua",
+  "bg-brand-mint",
 ];
 
 // Pipeline funnel: horizontal stage bars with per-stage counts and
@@ -533,12 +533,12 @@ export function BarChart({
 }
 
 const BAR_LIST_COLORS = [
-  "bg-purple-600",
-  "bg-violet-500",
-  "bg-sky-500",
-  "bg-teal-500",
+  "bg-brand-teal",
+  "bg-brand-aqua",
+  "bg-brand-green",
+  "bg-brand-sea",
   "bg-slate-400",
-  "bg-purple-400",
+  "bg-brand-mint",
 ];
 
 export function BarList({

@@ -250,7 +250,7 @@ function ConsumeForm({ batchId }: { batchId: string }) {
           type="checkbox"
           checked={isScrap}
           onChange={(event) => setIsScrap(event.target.checked)}
-          className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+          className="rounded border-zinc-300 text-zinc-900 focus:ring-ring"
         />
         Mark as scrap
       </label>

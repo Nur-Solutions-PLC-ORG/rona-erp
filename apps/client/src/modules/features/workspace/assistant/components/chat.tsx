@@ -88,7 +88,7 @@ export function Stagger({
 export function UserBubble({ children }: { children: ReactNode }) {
   return (
     <div className="flex justify-end">
-      <div className="ai-fade-up max-w-[85%] rounded-2xl rounded-br-sm bg-zinc-900 px-4 py-2.5 text-sm text-white shadow-sm">
+      <div className="ai-fade-up max-w-[85%] rounded-2xl rounded-br-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground shadow-sm">
         {children}
       </div>
     </div>
@@ -363,7 +363,7 @@ export const AI_LANGUAGES = [
 ] as const;
 
 const COMPOSER_INPUT =
-  "h-11 w-full rounded-xl border border-zinc-300 bg-white pl-11 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500/30 disabled:opacity-50";
+  "h-11 w-full rounded-xl border border-zinc-300 bg-white pl-11 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-50";
 
 export function ChatComposer({
   onSend,
@@ -446,7 +446,7 @@ export function ChatComposer({
           type="submit"
           disabled={isSending || !value.trim()}
           title="Send"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white transition hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500/40 disabled:opacity-50 disabled:pointer-events-none"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring/40 disabled:opacity-50 disabled:pointer-events-none"
         >
           <HiOutlinePaperAirplane className="h-5 w-5 -rotate-45" />
         </button>

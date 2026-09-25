@@ -88,7 +88,7 @@ const FALLBACK_ICON = HiOutlineInboxStack;
 const EXPANDED_STORAGE_KEY = "rona-workspace-sidebar-expanded";
 
 const FOCUS_RING =
-  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-500";
+  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
 export function Sidebar({
   collapsed,

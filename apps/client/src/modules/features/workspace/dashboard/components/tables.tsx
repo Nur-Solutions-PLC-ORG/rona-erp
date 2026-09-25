@@ -157,7 +157,7 @@ export function LowStockTable({
           </p>
           <Link
             href="/inventory/items"
-            className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-purple-700"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-primary/90"
           >
             <HiOutlineArchiveBox className="h-3.5 w-3.5" />
             {filter === "ALL" ? "Create an item" : "View items"}
@@ -205,12 +205,12 @@ export function LowStockTable({
 }
 
 const BAR_CLASSES = [
-  "bg-purple-600",
-  "bg-violet-500",
-  "bg-sky-500",
-  "bg-teal-500",
+  "bg-brand-teal",
+  "bg-brand-aqua",
+  "bg-brand-green",
+  "bg-brand-sea",
   "bg-slate-400",
-  "bg-purple-400",
+  "bg-brand-mint",
 ];
 
 export function DistributionCard({
@@ -251,7 +251,7 @@ export function DistributionCard({
             </p>
             <Link
               href="/inventory/warehouses"
-              className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-purple-700"
+              className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-primary/90"
             >
               <HiOutlineBuildingStorefront className="h-3.5 w-3.5" />
               View warehouses

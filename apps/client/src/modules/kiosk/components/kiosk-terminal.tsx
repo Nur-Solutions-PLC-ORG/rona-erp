@@ -91,7 +91,7 @@ const EVENT_ORDER: AttendanceEventType[] = [
 ];
 
 const KIOSK_INPUT_CLASS =
-  "w-full rounded-xl bg-white border border-slate-300 px-6 py-5 text-2xl text-center font-mono tracking-widest text-slate-900 placeholder:font-sans placeholder:tracking-normal placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 transition-colors";
+  "w-full rounded-xl bg-white border border-slate-300 px-6 py-5 text-2xl text-center font-mono tracking-widest text-slate-900 placeholder:font-sans placeholder:tracking-normal placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition-colors";
 
 function scanExpired(expiresAt: number): boolean {
   return expiresAt <= Date.now();

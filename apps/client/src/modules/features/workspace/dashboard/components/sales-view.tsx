@@ -123,12 +123,12 @@ export default function SalesDashboardView() {
       {
         label: "Confirmed",
         value: data.orders.filter((order) => order.status === "CONFIRMED").length,
-        color: "bg-indigo-500",
+        color: "bg-brand-teal",
       },
       {
         label: "Fulfilling",
         value: data.orders.filter((order) => order.status === "FULFILLING").length,
-        color: "bg-violet-500",
+        color: "bg-brand-aqua",
       },
       {
         label: "Fulfilled",
@@ -252,7 +252,7 @@ export default function SalesDashboardView() {
             emptyAction={
               <Link
                 href={CLIENT_SALES_ORDERS_PAGE}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-purple-700"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-primary/90"
               >
                 <HiOutlineClipboardDocumentList className="h-3.5 w-3.5" />
                 Create an order
@@ -285,7 +285,7 @@ export default function SalesDashboardView() {
             emptyAction={
               <Link
                 href={CLIENT_CUSTOMERS_PAGE}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-purple-700"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-primary/90"
               >
                 <HiOutlineUsers className="h-3.5 w-3.5" />
                 Add a customer
