@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { slugify } from "./search-config";
 import type { LucideIcon } from "lucide-react";
 import {
   AlertTriangle,
@@ -10,8 +11,7 @@ import {
 
 export const hairline = "border-ink";
 
-export const serif =
-  "font-heading tracking-[-0.01em]";
+export const serif = "font-heading tracking-[-0.01em]";
 
 type Tone = "info" | "warn" | "ok";
 
@@ -111,7 +111,7 @@ export function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-12">
+    <section id={slugify(title)} className="mt-12 scroll-mt-6">
       <h2
         className={`text-2xl font-semibold text-ink sm:text-[1.7rem] ${serif}`}
       >
@@ -124,14 +124,17 @@ export function Section({
 
 export function H3({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[15px] font-semibold text-ink">{children}</h3>
+    <h3
+      id={typeof children === "string" ? slugify(children) : undefined}
+      className="scroll-mt-6 text-[15px] font-semibold text-ink"
+    >
+      {children}
+    </h3>
   );
 }
 
 export function P({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[13.5px] leading-relaxed text-ink-2">{children}</p>
-  );
+  return <p className="text-[13.5px] leading-relaxed text-ink-2">{children}</p>;
 }
 
 export function Card({
@@ -359,9 +362,7 @@ export function Exchange({
         >
           AI
         </span>
-        <p className="text-[12.5px] leading-relaxed text-ink-2">
-          {response}
-        </p>
+        <p className="text-[12.5px] leading-relaxed text-ink-2">{response}</p>
       </div>
     </div>
   );

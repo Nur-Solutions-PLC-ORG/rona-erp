@@ -10,12 +10,14 @@ import {
   Database,
   Home,
   Menu,
+  Search,
   Package,
   Shield,
   Sparkles,
   X,
 } from "lucide-react";
 import { hairline } from "./ui";
+import { DocsSearch, DocsSearchTrigger, openDocsSearch } from "./docs-search";
 
 const sidebarSections = [
   {
@@ -90,9 +92,8 @@ export default function DocsLayout({
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-background lg:h-screen">
-      <header
-        className={`relative z-50 shrink-0 border-b ${hairline} bg-card`}
-      >
+      <DocsSearch />
+      <header className={`relative z-50 shrink-0 border-b ${hairline} bg-card`}>
         <nav className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4">
             <button
@@ -111,6 +112,7 @@ export default function DocsLayout({
             </Link>
           </div>
           <div className="flex items-center gap-0">
+            <DocsSearchTrigger className="mr-2" />
             <ThemeToggle className="mr-2 rounded-none border-ink/30 text-ink-2" />
             <Link
               href="/"
@@ -147,6 +149,17 @@ export default function DocsLayout({
           <nav
             className={`h-full overflow-y-auto overscroll-contain border-b-2 ${hairline} bg-card p-4 pt-14 lg:border-b-0 lg:pt-4`}
           >
+            <button
+              type="button"
+              onClick={() => {
+                setIsSidebarOpen(false);
+                openDocsSearch();
+              }}
+              className="mb-6 flex w-full items-center gap-2 border border-ink/30 bg-card px-3 py-2 text-[12.5px] text-ink-3 hover:border-ink hover:text-ink lg:hidden"
+            >
+              <Search className="h-4 w-4" />
+              Search docs…
+            </button>
             <nav className="space-y-7">
               {sidebarSections.map((section) => (
                 <div key={section.title}>
