@@ -27,6 +27,7 @@ import {
   type Column,
 } from "@/modules/workspace/components/ui";
 import {
+  CHART_COLORS,
   AreaChart,
   BarList,
   ChartCard,
@@ -509,7 +510,7 @@ export default function SalesOrdersPage() {
     {
       key: "order-value",
       label: "Order value",
-      color: "#18181b",
+      color: CHART_COLORS.primary,
     },
   );
 
@@ -620,7 +621,7 @@ export default function SalesOrdersPage() {
               {
                 key: "order-count",
                 label: "Orders",
-                color: "#18181b",
+                color: CHART_COLORS.primary,
               },
             ).points}
             valueFormat={(value) => String(value)}

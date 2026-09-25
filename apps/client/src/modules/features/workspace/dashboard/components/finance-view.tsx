@@ -10,6 +10,7 @@ import {
 import { formatMoney, safeNumber } from "@/lib/format";
 import { humanize } from "@/modules/workspace/components/ui";
 import {
+  CHART_COLORS,
   BarChart,
   BarList,
   ChartCard,
@@ -63,7 +64,7 @@ export default function FinanceDashboardView() {
         6,
         (invoice) => invoice.issueDate ?? invoice.createdAt,
         (invoice) => (invoice.status === "VOID" ? 0 : safeNumber(invoice.total)),
-        { key: "invoiced", label: "Invoiced amount", color: "#4f46e5" },
+        { key: "invoiced", label: "Invoiced amount", color: CHART_COLORS.primary },
       ),
     [data.invoices],
   );
@@ -75,7 +76,7 @@ export default function FinanceDashboardView() {
         6,
         (cost) => cost.costDate,
         (cost) => safeNumber(cost.amount),
-        { key: "costs", label: "Costs", color: "#e11d48" },
+        { key: "costs", label: "Costs", color: CHART_COLORS.negative },
       ),
     [data.costs],
   );
@@ -87,7 +88,7 @@ export default function FinanceDashboardView() {
         6,
         (payment) => payment.paidAt,
         (payment) => safeNumber(payment.amount),
-        { key: "collected", label: "Collected", color: "#14b8a6" },
+        { key: "collected", label: "Collected", color: CHART_COLORS.accent },
       ),
     [data.payments],
   );
@@ -143,7 +144,7 @@ export default function FinanceDashboardView() {
             value: formatMoney(totals.invoiced),
             hint: "Non-void invoices",
             spark: invoicedSeries.points.map((point) => point.value),
-            sparkColor: "#4f46e5",
+            sparkColor: CHART_COLORS.primary,
           },
           {
             icon: <HiOutlineBanknotes className="h-5 w-5" />,
@@ -151,7 +152,7 @@ export default function FinanceDashboardView() {
             value: formatMoney(totals.collected),
             hint: "Payments received",
             spark: collectedSeries.points.map((point) => point.value),
-            sparkColor: "#14b8a6",
+            sparkColor: CHART_COLORS.accent,
           },
           {
             icon: <HiOutlineExclamationTriangle className="h-5 w-5" />,
@@ -167,7 +168,7 @@ export default function FinanceDashboardView() {
             value: formatMoney(totals.costs),
             hint: `${data.costs.length} entries`,
             spark: costSeries.points.map((point) => point.value),
-            sparkColor: "#e11d48",
+            sparkColor: CHART_COLORS.negative,
           },
         ].map((kpi) => (
           <div

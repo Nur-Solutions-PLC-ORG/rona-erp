@@ -12,6 +12,7 @@ import {
   CLIENT_PRODUCTION_ORDERS_PAGE,
 } from "@rona/routes/workspace";
 import {
+  CHART_COLORS,
   AreaChart,
   ChartCard,
   DonutChart,
@@ -42,7 +43,7 @@ export default function ProductionDashboardView() {
         6,
         (order) => order.createdAt,
         () => 1,
-        { key: "orders", label: "Orders created", color: "#4f46e5" },
+        { key: "orders", label: "Orders created", color: CHART_COLORS.primary },
       ),
     [data.orders],
   );

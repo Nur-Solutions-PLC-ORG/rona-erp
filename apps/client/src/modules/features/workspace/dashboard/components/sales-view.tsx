@@ -17,6 +17,7 @@ import {
   CLIENT_SALES_ORDERS_PAGE,
 } from "@rona/routes/workspace";
 import {
+  CHART_COLORS,
   AreaChart,
   BarChart,
   BarList,
@@ -56,7 +57,7 @@ export default function SalesDashboardView() {
         6,
         (order) => order.orderDate,
         (order) => Number(order.total) || 0,
-        { key: "sales", label: "Order value", color: "#4f46e5" },
+        { key: "sales", label: "Order value", color: CHART_COLORS.primary },
       ),
     [data.orders],
   );
@@ -84,7 +85,7 @@ export default function SalesDashboardView() {
         30,
         (order) => order.orderDate,
         () => 1,
-        { key: "orders", label: "Orders", color: "#4f46e5" },
+        { key: "orders", label: "Orders", color: CHART_COLORS.primary },
       ),
     [data.orders],
   );
@@ -96,7 +97,7 @@ export default function SalesDashboardView() {
         6,
         (order) => order.fulfilledAt ?? order.orderDate,
         () => 1,
-        { key: "fulfilled", label: "Fulfilled", color: "#10b981" },
+        { key: "fulfilled", label: "Fulfilled", color: CHART_COLORS.accent },
       ),
     [data.fulfilledOrders],
   );
@@ -108,7 +109,7 @@ export default function SalesDashboardView() {
         6,
         (order) => order.orderDate,
         (order) => Number(order.total) || 0,
-        { key: "open-value", label: "Open value", color: "#7c3aed" },
+        { key: "open-value", label: "Open value", color: CHART_COLORS.secondary },
       ),
     [data.openOrders],
   );
@@ -171,7 +172,7 @@ export default function SalesDashboardView() {
           value={data.fulfilledOrders.length}
           hint="Completed deliveries"
           spark={monthlyFulfilled.points.map((point) => point.value)}
-          sparkColor="#10b981"
+          sparkColor={CHART_COLORS.accent}
           isLoading={data.isLoading}
         />
         <KpiCard
@@ -181,7 +182,7 @@ export default function SalesDashboardView() {
           hint="Sum of open order totals"
           unit="ETB"
           spark={monthlyOpenValue.points.map((point) => point.value)}
-          sparkColor="#7c3aed"
+          sparkColor={CHART_COLORS.secondary}
           isLoading={data.isLoading}
         />
       </div>

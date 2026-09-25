@@ -5,6 +5,16 @@ import { cn } from "@/lib/utils";
 import { humanize } from "@/modules/workspace/components/ui";
 import { Skeleton } from "@/components/custom/skeleton";
 
+// Series colors from the Rona brand palette. Negative series stay red so
+// losses and outflows read as such regardless of brand.
+export const CHART_COLORS = {
+  primary: "#386163",
+  secondary: "#6ec3c7",
+  accent: "#03af68",
+  muted: "#518985",
+  negative: "#e11d48",
+} as const;
+
 export interface ChartPoint {
   label: string;
   value: number;
@@ -44,7 +54,7 @@ function formatFull(value: number): string {
 // Tiny trend line for KPI cards. No axes, no interaction — just shape.
 export function Sparkline({
   values,
-  color = "#4f46e5",
+  color = CHART_COLORS.primary,
   className,
 }: {
   values: number[];
@@ -278,7 +288,7 @@ export function AreaChart({
               x2="100"
               y1={AREA_HEIGHT * ratio}
               y2={AREA_HEIGHT * ratio}
-              stroke="#f4f4f5"
+              stroke="#eef1f3"
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
             />
@@ -306,7 +316,7 @@ export function AreaChart({
                 x2={activeCoord.x}
                 y1="0"
                 y2={AREA_HEIGHT}
-                stroke="#e4e4e7"
+                stroke="#dde4e6"
                 strokeWidth="1"
                 strokeDasharray="3 3"
                 vectorEffect="non-scaling-stroke"
@@ -428,7 +438,7 @@ export function BarChart({
               x2="100"
               y1={BAR_CHART_HEIGHT * ratio}
               y2={BAR_CHART_HEIGHT * ratio}
-              stroke="#f4f4f5"
+              stroke="#eef1f3"
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
             />
@@ -470,7 +480,7 @@ export function BarChart({
               x2={hovered * groupWidth + groupWidth / 2}
               y1="0"
               y2={BAR_CHART_HEIGHT}
-              stroke="#e4e4e7"
+              stroke="#dde4e6"
               strokeWidth="1"
               strokeDasharray="3 3"
               vectorEffect="non-scaling-stroke"
@@ -594,15 +604,15 @@ export function BarList({
 }
 
 const DONUT_PALETTE = [
-  "#4f46e5",
-  "#7c3aed",
-  "#0ea5e9",
-  "#14b8a6",
+  "#386163",
+  "#6ec3c7",
+  "#03af68",
+  "#518985",
   "#64748b",
-  "#818cf8",
-  "#a78bfa",
-  "#38bdf8",
-  "#2dd4bf",
+  "#85d0c4",
+  "#1d3536",
+  "#9fd8da",
+  "#5fcf96",
   "#94a3b8",
 ];
 
@@ -661,7 +671,7 @@ export function DonutChart({
             cy="50"
             r={radius}
             fill="none"
-            stroke="#f4f4f5"
+            stroke="#eef1f3"
             strokeWidth="12"
           />
           {segments.map((segment) => {

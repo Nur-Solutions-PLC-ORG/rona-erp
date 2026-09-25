@@ -21,7 +21,7 @@ import {
   HiOutlineUsers,
 } from "react-icons/hi2";
 
-const BAR_FILL = "#18181B";
+const BAR_FILL = "#1d3536";
 const SCENE_MS = 5000;
 
 const SCENES = ["dashboard", "movements", "items", "trace"] as const;

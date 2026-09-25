@@ -10,6 +10,7 @@ import {
   type Column,
 } from "@/modules/workspace/components/ui";
 import {
+  CHART_COLORS,
   AreaChart,
   ChartCard,
   ChartStatStrip,
@@ -129,7 +130,7 @@ export default function FinancePaymentsPage() {
     {
       key: "collected",
       label: "Collected amount",
-      color: "#059669",
+      color: CHART_COLORS.accent,
     },
   );
 
