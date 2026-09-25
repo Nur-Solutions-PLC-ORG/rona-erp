@@ -7,7 +7,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BookOpen,
-  ChevronRight,
   Database,
   Home,
   Menu,
@@ -151,20 +150,16 @@ export default function DocsLayout({
             <nav className="space-y-7">
               {sidebarSections.map((section) => (
                 <div key={section.title}>
-                  <div className="mb-3 flex items-center gap-2">
-                    <span
-                      className={`flex h-6 w-6 items-center justify-center border ${hairline} bg-tint`}
-                    >
-                      <section.icon
-                        className="h-3.5 w-3.5 text-ink"
-                        strokeWidth={1.5}
-                      />
-                    </span>
+                  <div className="mb-2 flex items-center gap-2 px-1">
+                    <section.icon
+                      className="h-3.5 w-3.5 shrink-0 text-ink-3"
+                      strokeWidth={1.75}
+                    />
                     <h3 className="font-mono text-[10px] font-bold uppercase tracking-widest text-ink-3">
                       {section.title}
                     </h3>
                   </div>
-                  <ul className="space-y-0.5">
+                  <ul className="ml-[11px] border-l border-ink/15">
                     {section.items.map((item) => {
                       const isActive = pathname === item.href;
                       return (
@@ -172,15 +167,13 @@ export default function DocsLayout({
                           <Link
                             href={item.href}
                             onClick={() => setIsSidebarOpen(false)}
-                            className={`flex items-center gap-2 border-l-2 px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
+                            aria-current={isActive ? "page" : undefined}
+                            className={`-ml-px block border-l-2 py-1.5 pr-3 pl-4 text-[12.5px] transition-colors ${
                               isActive
-                                ? `border-ink bg-ink text-card`
-                                : `border-transparent text-ink-2 hover:border-ink hover:bg-tint hover:text-ink`
+                                ? "border-primary bg-tint font-semibold text-ink"
+                                : "border-transparent text-ink-2 hover:border-ink/40 hover:text-ink"
                             }`}
                           >
-                            <ChevronRight
-                              className={`h-3 w-3 shrink-0 ${isActive ? "text-card" : "text-ink-3"}`}
-                            />
                             {item.title}
                           </Link>
                         </li>
