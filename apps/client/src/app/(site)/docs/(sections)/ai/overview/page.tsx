@@ -81,17 +81,17 @@ export default function AiOverviewPage() {
           ].map((cap) => (
             <Card key={cap.title}>
               <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center border border-[#581c87] bg-[#f3eefb]">
+                <span className="flex h-8 w-8 items-center justify-center border border-[#1d3536] bg-[#e8f3f2]">
                   <cap.icon
-                    className="h-4 w-4 text-[#581c87]"
+                    className="h-4 w-4 text-[#1d3536]"
                     strokeWidth={1.5}
                   />
                 </span>
-                <h3 className="text-[14px] font-semibold text-[#581c87]">
+                <h3 className="text-[14px] font-semibold text-[#1d3536]">
                   {cap.title}
                 </h3>
               </div>
-              <p className="mt-3 text-[13px] leading-relaxed text-[#5c4d77]">
+              <p className="mt-3 text-[13px] leading-relaxed text-[#386163]">
                 {cap.body}
               </p>
               <div className="mt-4">
@@ -169,9 +169,9 @@ export default function AiOverviewPage() {
 
       <Section title="Example queries">
         <Card shadow>
-          <div className="flex items-center gap-2.5 border-b border-[#581c87] pb-3">
-            <Sparkles className="h-4 w-4 text-[#581c87]" strokeWidth={1.5} />
-            <h3 className="text-[14px] font-semibold text-[#581c87]">
+          <div className="flex items-center gap-2.5 border-b border-[#1d3536] pb-3">
+            <Sparkles className="h-4 w-4 text-[#1d3536]" strokeWidth={1.5} />
+            <h3 className="text-[14px] font-semibold text-[#1d3536]">
               Ask anything about your operation
             </h3>
           </div>

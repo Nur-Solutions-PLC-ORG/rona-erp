@@ -86,11 +86,11 @@ export default function FinanceApiPage() {
         <Card tone="ok" shadow>
           <div className="flex items-start gap-3">
             <CheckCircle2
-              className="mt-0.5 h-5 w-5 shrink-0 text-[#581c87]"
+              className="mt-0.5 h-5 w-5 shrink-0 text-[#1d3536]"
               strokeWidth={1.5}
             />
             <div>
-              <h3 className="text-[14px] font-semibold text-[#581c87]">
+              <h3 className="text-[14px] font-semibold text-[#1d3536]">
                 You have covered every section
               </h3>
               <P>

@@ -45,7 +45,7 @@ export default function RolesPage() {
       </Section>
 
       <Section title="Default roles">
-        <div className="grid grid-cols-1 gap-px border border-[#581c87] bg-[#581c87] sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-px border border-[#1d3536] bg-[#1d3536] sm:grid-cols-2">
           {[
             {
               name: "Admin",
@@ -77,18 +77,18 @@ export default function RolesPage() {
               perms: ["READ ONLY", "REPORTS", "DASHBOARDS"],
             },
           ].map((role) => (
-            <div key={role.name} className="bg-white p-5 hover:bg-[#f9f7fd]">
-              <h3 className="text-[14px] font-semibold text-[#581c87]">
+            <div key={role.name} className="bg-white p-5 hover:bg-[#f2f3fa]">
+              <h3 className="text-[14px] font-semibold text-[#1d3536]">
                 {role.name}
               </h3>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#5c4d77]">
+              <p className="mt-2 text-[12.5px] leading-relaxed text-[#386163]">
                 {role.body}
               </p>
-              <div className="mt-4 flex flex-wrap gap-1.5 border-t border-[#e9e2f2] pt-3">
+              <div className="mt-4 flex flex-wrap gap-1.5 border-t border-[#d6e8e6] pt-3">
                 {role.perms.map((perm) => (
                   <span
                     key={perm}
-                    className="border border-[#581c87] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#581c87]"
+                    className="border border-[#1d3536] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#1d3536]"
                   >
                     {perm}
                   </span>

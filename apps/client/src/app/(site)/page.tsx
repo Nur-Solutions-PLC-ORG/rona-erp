@@ -1,9 +1,8 @@
 "use client";
 
 import Logo from "@/components/custom/logo";
-import { useMemo } from "react";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   Boxes,
@@ -26,7 +25,7 @@ import { CLIENT_APP_LAUNCHER_PAGE } from "@rona/routes/app";
 import { MobileMenu } from "./mobile-menu";
 
 const container = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
-const hairline = "border-[#581c87]";
+const hairline = "border-[#1d3536]";
 
 const serif = "font-heading tracking-[-0.01em]";
 
@@ -38,7 +37,7 @@ const springSnap = {
 } as const;
 
 const hoverFill =
-  "transition-none group-hover:bg-[#581c87] group-hover:text-white group-hover:border-[#581c87]";
+  "transition-none group-hover:bg-[#1d3536] group-hover:text-white group-hover:border-[#1d3536]";
 
 const navLinks = [
   { label: "Platform", href: "#platform" },
@@ -63,7 +62,7 @@ function Navbar() {
             <a
               key={link.label}
               href={link.href}
-              className="flex h-full items-center border-l border-[#e9e2f2] px-5 text-[13px] font-medium text-[#5c4d77] hover:bg-[#f3eefb] hover:text-[#581c87]"
+              className="flex h-full items-center border-l border-[#d6e8e6] px-5 text-[13px] font-medium text-[#386163] hover:bg-[#e8f3f2] hover:text-[#1d3536]"
             >
               {link.label}
             </a>
@@ -74,9 +73,9 @@ function Navbar() {
           {user ? (
             <Link
               href={CLIENT_APP_LAUNCHER_PAGE}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-[#5c4d77] hover:text-[#581c87]"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-[#386163] hover:text-[#1d3536]"
             >
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#581c87] text-[10px] font-bold uppercase text-white">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1d3536] text-[10px] font-bold uppercase text-white">
                 {user.name?.slice(0, 1) ?? "U"}
               </span>
               My account
@@ -84,14 +83,14 @@ function Navbar() {
           ) : (
             <Link
               href="/sign-in"
-              className="hidden sm:flex items-center px-4 py-2 text-[13px] font-medium text-[#5c4d77] hover:text-[#581c87]"
+              className="hidden sm:flex items-center px-4 py-2 text-[13px] font-medium text-[#386163] hover:text-[#1d3536]"
             >
               Sign in
             </Link>
           )}
           <Link
             href={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
-            className="group hidden items-center gap-2 border border-[#581c87] bg-[#581c87] px-4 py-2 text-[13px] font-semibold text-white hover:bg-white hover:text-[#581c87] sm:flex"
+            className="group hidden items-center gap-2 border border-[#1d3536] bg-[#1d3536] px-4 py-2 text-[13px] font-semibold text-white hover:bg-white hover:text-[#1d3536] sm:flex"
           >
             {user ? "Go to workspace" : "Launch Workspace"}
             <ArrowRight className="h-3.5 w-3.5" />
@@ -105,93 +104,6 @@ function Navbar() {
         </div>
       </nav>
     </header>
-  );
-}
-
-function HeroBackdrop() {
-  const { scrollY } = useScroll();
-  const gridY = useTransform(scrollY, [0, 600], [0, 48]);
-
-  const gridLines = useMemo(() => {
-    const v: number[] = [];
-    const h: number[] = [];
-    for (let x = 0; x <= 1440; x += 48) v.push(x);
-    for (let y = 0; y <= 900; y += 48) h.push(y);
-    return { v, h };
-  }, []);
-
-  return (
-    <div
-      aria-hidden
-      className="absolute inset-0 overflow-hidden pointer-events-none"
-    >
-      <motion.svg
-        style={{ y: gridY }}
-        className="absolute inset-x-0 -top-24 h-[140%] w-full"
-        viewBox="0 0 1440 900"
-        preserveAspectRatio="xMidYMin slice"
-      >
-        {gridLines.v.map((x) => (
-          <line
-            key={`v${x}`}
-            x1={x}
-            y1={0}
-            x2={x}
-            y2={900}
-            stroke="#e9e2f2"
-            strokeWidth="1"
-          />
-        ))}
-        {gridLines.h.map((y) => (
-          <line
-            key={`h${y}`}
-            x1={0}
-            y1={y}
-            x2={1440}
-            y2={y}
-            stroke="#e9e2f2"
-            strokeWidth="1"
-          />
-        ))}
-        {Array.from({ length: 14 }, (_, i) => i).map((i) => {
-          const cx = 144 + i * 96;
-          const cy = 144 + ((i * 7) % 4) * 96;
-          return (
-            <g key={`c${i}`} stroke="#a893c9" strokeWidth="1">
-              <line x1={cx - 4} y1={cy} x2={cx + 4} y2={cy} />
-              <line x1={cx} y1={cy - 4} x2={cx} y2={cy + 4} />
-            </g>
-          );
-        })}
-      </motion.svg>
-
-      <motion.svg
-        animate={{ rotate: 360 }}
-        transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-        className="absolute -right-20 top-10 w-[420px] h-[420px] opacity-70"
-        viewBox="0 0 200 200"
-      >
-        <g stroke="#cfc2ea" strokeWidth="0.75" fill="none">
-          <rect x="55" y="55" width="90" height="90" />
-          <rect x="75" y="35" width="90" height="90" />
-          <path d="M55 55 L75 35 M145 55 L165 35 M55 145 L75 125 M145 145 L165 125" />
-        </g>
-      </motion.svg>
-
-      <motion.svg
-        animate={{ rotate: -360 }}
-        transition={{ duration: 160, repeat: Infinity, ease: "linear" }}
-        className="absolute -left-24 bottom-16 w-[360px] h-[360px] opacity-60"
-        viewBox="0 0 200 200"
-      >
-        <g stroke="#cfc2ea" strokeWidth="0.75" fill="none">
-          <circle cx="100" cy="100" r="70" />
-          <circle cx="100" cy="100" r="45" />
-          <circle cx="100" cy="100" r="20" />
-          <path d="M100 30 L100 170 M30 100 L170 100 M50 50 L150 150 M150 50 L50 150" />
-        </g>
-      </motion.svg>
-    </div>
   );
 }
 
@@ -211,16 +123,16 @@ function SnapBadge({
   delay?: number;
 }) {
   const tones = {
-    ok: "text-[#581c87]",
-    warn: "text-[#581c87]",
-    neutral: "text-[#581c87]",
+    ok: "text-[#1d3536]",
+    warn: "text-[#1d3536]",
+    neutral: "text-[#1d3536]",
   };
   return (
     <motion.div
       initial={{ opacity: 0, x: -14, scale: 0.94 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       transition={{ ...springSnap, delay }}
-      className={`absolute z-20 hidden lg:flex items-center gap-2.5 border ${hairline} bg-white px-3 py-2.5 shadow-[4px_4px_0_0_#581c87] ${className ?? ""}`}
+      className={`absolute z-20 hidden lg:flex items-center gap-2.5 border ${hairline} bg-white px-3 py-2.5 shadow-[4px_4px_0_0_#1d3536] ${className ?? ""}`}
     >
       <span
         className={`flex h-7 w-7 items-center justify-center border ${hairline} ${
@@ -228,14 +140,14 @@ function SnapBadge({
             ? "bg-[#e8f5e9]"
             : tone === "warn"
               ? "bg-[#fdeeca]"
-              : "bg-[#f3eefb]"
+              : "bg-[#e8f3f2]"
         }`}
       >
         {icon}
       </span>
       <div className={tones[tone]}>
         <div className="text-[11px] font-semibold leading-tight">{title}</div>
-        <div className="text-[10px] font-mono text-[#6c5f8a] leading-tight">
+        <div className="text-[10px] font-mono text-[#518985] leading-tight">
           {meta}
         </div>
       </div>
@@ -252,7 +164,7 @@ function DashboardPreview() {
       qty: "450.00 KG",
       pct: 82,
       status: "OK",
-      st: "bg-[#581c87] text-white",
+      st: "bg-[#1d3536] text-white",
     },
     {
       sku: "VC-012",
@@ -261,7 +173,7 @@ function DashboardPreview() {
       qty: "12.00 EA",
       pct: 12,
       status: "LOW",
-      st: "bg-[#fdeeca] text-[#581c87] border border-[#581c87]",
+      st: "bg-[#fdeeca] text-[#1d3536] border border-[#1d3536]",
     },
     {
       sku: "BR-100",
@@ -270,7 +182,7 @@ function DashboardPreview() {
       qty: "230.00 EA",
       pct: 64,
       status: "OK",
-      st: "bg-[#581c87] text-white",
+      st: "bg-[#1d3536] text-white",
     },
     {
       sku: "DR-045",
@@ -279,7 +191,7 @@ function DashboardPreview() {
       qty: "0.00 EA",
       pct: 0,
       status: "OUT",
-      st: "bg-[#581c87] text-white",
+      st: "bg-[#1d3536] text-white",
     },
   ];
 
@@ -325,21 +237,21 @@ function DashboardPreview() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        className={`relative border-2 ${hairline} bg-white shadow-[8px_8px_0_0_#581c87]`}
+        className={`relative border-2 ${hairline} bg-white shadow-[8px_8px_0_0_#1d3536]`}
       >
         <div
-          className={`flex h-9 items-center border-b ${hairline} bg-[#f3eefb] px-3`}
+          className={`flex h-9 items-center border-b ${hairline} bg-[#e8f3f2] px-3`}
         >
           <div className="flex gap-1.5">
-            <span className="h-2.5 w-2.5 border border-[#581c87] bg-white" />
-            <span className="h-2.5 w-2.5 border border-[#581c87] bg-white" />
-            <span className="h-2.5 w-2.5 border border-[#581c87] bg-[#581c87]" />
+            <span className="h-2.5 w-2.5 border border-[#1d3536] bg-white" />
+            <span className="h-2.5 w-2.5 border border-[#1d3536] bg-white" />
+            <span className="h-2.5 w-2.5 border border-[#1d3536] bg-[#1d3536]" />
           </div>
-          <div className="mx-auto flex items-center gap-1.5 border border-[#581c87] bg-white px-3 py-0.5 font-mono text-[10px] text-[#6c5f8a]">
+          <div className="mx-auto flex items-center gap-1.5 border border-[#1d3536] bg-white px-3 py-0.5 font-mono text-[10px] text-[#518985]">
             <Lock className="h-2.5 w-2.5" />
             app.rona-erp.com/dashboard
           </div>
-          <span className="font-mono text-[10px] text-[#6c5f8a]">v2.6.1</span>
+          <span className="font-mono text-[10px] text-[#518985]">v2.6.1</span>
         </div>
 
         <div className="grid grid-cols-12">
@@ -365,12 +277,12 @@ function DashboardPreview() {
                 key={m}
                 className={`flex items-center gap-2 border-b ${hairline} px-3 py-2 text-[11px] font-medium ${
                   i === 1
-                    ? "bg-[#581c87] text-white"
-                    : "text-[#5c4d77] hover:bg-[#f3eefb]"
+                    ? "bg-[#1d3536] text-white"
+                    : "text-[#386163] hover:bg-[#e8f3f2]"
                 }`}
               >
                 <span
-                  className={`h-1.5 w-1.5 border ${i === 1 ? "border-white" : "border-[#581c87]"}`}
+                  className={`h-1.5 w-1.5 border ${i === 1 ? "border-white" : "border-[#1d3536]"}`}
                 />
                 {m}
               </div>
@@ -394,17 +306,17 @@ function DashboardPreview() {
               ].map((s) => (
                 <div
                   key={s.k}
-                  className="group bg-white px-4 py-3 hover:bg-[#f3eefb]"
+                  className="group bg-white px-4 py-3 hover:bg-[#e8f3f2]"
                 >
-                  <div className="font-mono text-[9px] uppercase tracking-widest text-[#7c6f96]">
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-[#518985]">
                     {s.k}
                   </div>
                   <div className="mt-1 flex items-baseline gap-2">
                     <span className="font-mono text-xl font-semibold tabular-nums">
                       {s.v}
                     </span>
-                    <span className="text-[10px] text-[#7c6f96]">{s.d}</span>
-                    <span className="ml-auto font-mono text-[10px] text-[#581c87]">
+                    <span className="text-[10px] text-[#518985]">{s.d}</span>
+                    <span className="ml-auto font-mono text-[10px] text-[#1d3536]">
                       {s.delta}
                     </span>
                   </div>
@@ -422,14 +334,14 @@ function DashboardPreview() {
                   <span className="text-[12px] font-semibold">
                     Stock balances
                   </span>
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-[#7c6f96]">
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-[#518985]">
                     Live
                   </span>
                 </div>
                 <table className="w-full text-left">
                   <thead>
                     <tr
-                      className={`border-b ${hairline} font-mono text-[9px] uppercase tracking-wider text-[#7c6f96]`}
+                      className={`border-b ${hairline} font-mono text-[9px] uppercase tracking-wider text-[#518985]`}
                     >
                       <th className="px-4 py-1.5 font-medium">SKU</th>
                       <th className="px-2 py-1.5 font-medium">Item</th>
@@ -444,13 +356,13 @@ function DashboardPreview() {
                     {stockRows.map((r) => (
                       <tr
                         key={r.sku}
-                        className={`border-b ${hairline} text-[11px] hover:bg-[#f3eefb]`}
+                        className={`border-b ${hairline} text-[11px] hover:bg-[#e8f3f2]`}
                       >
                         <td className="px-4 py-2 font-mono font-semibold">
                           {r.sku}
                         </td>
-                        <td className="px-2 py-2 text-[#4a3a68]">{r.item}</td>
-                        <td className="px-2 py-2 font-mono text-[#6c5f8a]">
+                        <td className="px-2 py-2 text-[#386163]">{r.item}</td>
+                        <td className="px-2 py-2 font-mono text-[#518985]">
                           {r.lot}
                         </td>
                         <td className="px-2 py-2 text-right font-mono tabular-nums">
@@ -478,19 +390,19 @@ function DashboardPreview() {
                 {prodOrders.map((o) => (
                   <div
                     key={o.id}
-                    className={`border-b ${hairline} px-4 py-2.5 hover:bg-[#f3eefb]`}
+                    className={`border-b ${hairline} px-4 py-2.5 hover:bg-[#e8f3f2]`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-[10px] font-semibold">
                         {o.id}
                       </span>
-                      <span className="font-mono text-[9px] text-[#7c6f96]">
+                      <span className="font-mono text-[9px] text-[#518985]">
                         {o.stage}
                       </span>
                     </div>
-                    <div className="mt-1.5 flex h-2 border border-[#581c87] bg-white">
+                    <div className="mt-1.5 flex h-2 border border-[#1d3536] bg-white">
                       <div
-                        className="h-full bg-[#581c87]"
+                        className="h-full bg-[#1d3536]"
                         style={{ width: `${o.progress}%` }}
                       />
                     </div>
@@ -502,15 +414,15 @@ function DashboardPreview() {
                 {events.map((e) => (
                   <div
                     key={e.ref}
-                    className={`border-b ${hairline} px-4 py-2 text-[10px] hover:bg-[#f3eefb]`}
+                    className={`border-b ${hairline} px-4 py-2 text-[10px] hover:bg-[#e8f3f2]`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[#7c6f96]">{e.t}</span>
-                      <span className="border border-[#581c87] bg-[#f3eefb] px-1 font-mono font-semibold">
+                      <span className="font-mono text-[#518985]">{e.t}</span>
+                      <span className="border border-[#1d3536] bg-[#e8f3f2] px-1 font-mono font-semibold">
                         {e.ref}
                       </span>
                     </div>
-                    <div className="mt-1 text-[#4a3a68]">{e.msg}</div>
+                    <div className="mt-1 text-[#386163]">{e.msg}</div>
                   </div>
                 ))}
               </div>
@@ -519,13 +431,13 @@ function DashboardPreview() {
         </div>
 
         <div
-          className={`flex items-center justify-between border-t ${hairline} bg-[#f3eefb] px-3 py-1.5`}
+          className={`flex items-center justify-between border-t ${hairline} bg-[#e8f3f2] px-3 py-1.5`}
         >
-          <span className="font-mono text-[9px] text-[#7c6f96]">
+          <span className="font-mono text-[9px] text-[#518985]">
             TENANT: 7c9e · REGION: eu-west · SYNCED 3s ago
           </span>
-          <span className="flex items-center gap-1.5 font-mono text-[9px] text-[#581c87]">
-            <span className="h-1.5 w-1.5 bg-[#581c87]" />
+          <span className="flex items-center gap-1.5 font-mono text-[9px] text-[#1d3536]">
+            <span className="h-1.5 w-1.5 bg-[#1d3536]" />
             OPERATIONAL
           </span>
         </div>
@@ -534,47 +446,69 @@ function DashboardPreview() {
   );
 }
 
+const brandPillars = [
+  "Smart QR Integration",
+  "Multi-Currency Finance",
+  "Complete HR Suite",
+];
+
 function Hero() {
   const { user } = useSession();
   return (
-    <section className="relative overflow-hidden border-b border-[#581c87] bg-[#f9f7fd]">
-      <HeroBackdrop />
+    <section className="brand-gradient relative isolate overflow-hidden border-b border-[#1d3536]">
+      <div aria-hidden className="brand-waves absolute inset-0 -z-10 opacity-30!" />
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 bg-[radial-gradient(55%_45%_at_50%_42%,rgb(28_26_27/0.85),transparent)]"
+      />
       <div className={`${container} relative z-10 pt-16 pb-20 sm:pt-24`}>
         <div className="mx-auto max-w-3xl text-center">
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
-            className="inline-flex items-center border border-[#581c87] bg-white px-3 py-1.5"
+            className="inline-flex items-center border border-white/20 bg-white/5 px-3 py-1.5 text-brand-pale"
           >
-            <span className="border-r border-[#581c87] pr-2 font-mono text-[10px] font-bold uppercase tracking-widest">
+            <span className="border-r border-white/20 pr-2 font-mono text-[10px] font-bold uppercase tracking-widest text-brand-green">
               New
             </span>
-            <span className="pl-2 text-[12px] text-[#4a3a68]">
+            <span className="pl-2 text-[12px]">
               Rona AI assistant is now built into every module
             </span>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.04 }}
+            className="mt-10 flex justify-center"
+          >
+            <Logo className="h-16 sm:h-20" />
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.08 }}
-            className={`mt-7 text-[2.6rem] font-semibold leading-[1.05] text-[#111] sm:text-6xl lg:text-[4.4rem] ${serif}`}
+            className="mt-8 font-sans text-[2.4rem] font-normal leading-[1.1] tracking-tight sm:text-6xl lg:text-[4.2rem]"
           >
-            Run your entire operation
+            <span className="text-brand-green">Streamline Your Success</span>
             <br />
-            from one workspace
+            <span className="text-brand-green">with</span>{" "}
+            <span className="text-brand-pale">RONA.</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.16 }}
-            className="mx-auto mt-6 max-w-xl text-[15px] leading-relaxed text-[#5c4d77]"
+            className="mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-brand-pale/80"
           >
-            Inventory, manufacturing, quality, and traceability — unified in a
-            single, precise platform built for operations that cannot afford
-            blind spots.
+            The enterprise-grade platform dedicated to transforming complex
+            operations into streamlined success. A complete solution for
+            retail, manufacturing, services, and distribution companies —
+            inventory management, financial tracking, and employee management
+            in one place.
           </motion.p>
 
           <motion.div
@@ -585,25 +519,36 @@ function Hero() {
           >
             <Link
               href={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
-              className="group flex items-center gap-2 border border-[#581c87] bg-[#581c87] px-6 py-3 text-[13px] font-semibold text-white hover:bg-white hover:text-[#581c87]"
+              className="group flex items-center gap-2 border border-brand-green bg-brand-green px-6 py-3 text-[13px] font-semibold text-brand-ink transition-colors hover:border-brand-mint hover:bg-brand-mint"
             >
               {user ? "Go to workspace" : "Launch Workspace"}
               <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#platform"
-              className="group flex items-center gap-2 border border-[#581c87] bg-white px-6 py-3 text-[13px] font-semibold text-[#581c87] hover:bg-[#581c87] hover:text-white"
+              className="group flex items-center gap-2 border border-white/30 px-6 py-3 text-[13px] font-semibold text-white transition-colors hover:bg-white/10"
             >
               Explore platform
               <ArrowRight className="h-4 w-4" />
             </a>
           </motion.div>
-          <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-[#7c6f96]">
+          <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-brand-pale/60">
             Free 14-day trial · No card required
           </p>
+
+          <ul className="mt-12 grid grid-cols-1 gap-3 border-t border-white/10 pt-8 sm:grid-cols-3">
+            {brandPillars.map((pillar) => (
+              <li
+                key={pillar}
+                className="text-sm font-bold tracking-wide text-brand-green"
+              >
+                {pillar}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className="mx-auto mt-16 max-w-6xl">
+        <div className="mx-auto mt-14 max-w-6xl">
           <DashboardPreview />
         </div>
       </div>
@@ -622,7 +567,7 @@ function StatsStrip() {
   return (
     <section className={`border-b ${hairline} bg-white`}>
       <div
-        className={`${container} grid grid-cols-2 divide-x divide-[#e9e2f2] lg:grid-cols-4`}
+        className={`${container} grid grid-cols-2 divide-x divide-[#d6e8e6] lg:grid-cols-4`}
       >
         {stats.map((s, i) => (
           <motion.div
@@ -633,14 +578,14 @@ function StatsStrip() {
             transition={{ duration: 0.3, delay: i * 0.06 }}
             className={`group ${i < 2 ? "border-b lg:border-b-0" : ""} ${
               i % 2 === 1 ? "border-l lg:border-l" : ""
-            } border-[#e9e2f2] px-6 py-8 hover:bg-[#f9f7fd]`}
+            } border-[#d6e8e6] px-6 py-8 hover:bg-[#f2f3fa]`}
           >
             <div
               className={`font-mono text-3xl font-semibold tabular-nums ${hoverFill} px-1 -mx-1`}
             >
               {s.v}
             </div>
-            <div className="mt-1.5 text-[12px] font-medium uppercase tracking-wider text-[#7c6f96]">
+            <div className="mt-1.5 text-[12px] font-medium uppercase tracking-wider text-[#518985]">
               {s.k}
             </div>
           </motion.div>
@@ -699,14 +644,14 @@ function ArchitectureSection() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_2fr] lg:items-end">
           <div>
             <h2
-              className={`text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
+              className={`text-3xl font-semibold text-[#1d3536] sm:text-5xl ${serif}`}
             >
               Enterprise-grade
               <br />
               performance
             </h2>
           </div>
-          <p className="text-[14px] leading-relaxed text-[#5c4d77] lg:pb-2">
+          <p className="text-[14px] leading-relaxed text-[#386163] lg:pb-2">
             Designed for organizations that need reliable, fast, and auditable
             operations at scale. No redundant data entry, no manual
             reconciliation, no blind spots across your supply chain.
@@ -714,7 +659,7 @@ function ArchitectureSection() {
         </div>
 
         <div
-          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-[#581c87] sm:grid-cols-2 lg:grid-cols-3`}
+          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-[#1d3536] sm:grid-cols-2 lg:grid-cols-3`}
         >
           {archFeatures.map((f, i) => (
             <motion.article
@@ -723,21 +668,21 @@ function ArchitectureSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.35, delay: (i % 3) * 0.08 }}
-              className="group relative bg-white p-6 hover:bg-[#f9f7fd]"
+              className="group relative bg-white p-6 hover:bg-[#f2f3fa]"
             >
               <div className="flex items-start justify-between">
-                <f.icon className="h-5 w-5 text-[#581c87]" strokeWidth={1.5} />
-                <span className="font-mono text-[10px] tabular-nums text-[#a893c9] group-hover:text-[#581c87]">
+                <f.icon className="h-5 w-5 text-[#1d3536]" strokeWidth={1.5} />
+                <span className="font-mono text-[10px] tabular-nums text-[#518985] group-hover:text-[#1d3536]">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
-              <h3 className="mt-5 text-[14px] font-semibold text-[#581c87]">
+              <h3 className="mt-5 text-[14px] font-semibold text-[#1d3536]">
                 {f.title}
               </h3>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#5c4d77]">
+              <p className="mt-2 text-[12.5px] leading-relaxed text-[#386163]">
                 {f.body}
               </p>
-              <div className="mt-5 border-t border-[#e9e2f2] pt-3 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#7c6f96] group-hover:border-[#581c87] group-hover:text-[#581c87]">
+              <div className="mt-5 border-t border-[#d6e8e6] pt-3 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#518985] group-hover:border-[#1d3536] group-hover:text-[#1d3536]">
                 {f.spec}
               </div>
             </motion.article>
@@ -779,18 +724,18 @@ function WorkflowSection() {
   return (
     <section
       id="workflow"
-      className={`border-b ${hairline} bg-[#f9f7fd] py-20 sm:py-28`}
+      className={`border-b ${hairline} bg-[#f2f3fa] py-20 sm:py-28`}
     >
       <div className={container}>
         <div className="max-w-2xl">
           <h2
-            className={`text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
+            className={`text-3xl font-semibold text-[#1d3536] sm:text-5xl ${serif}`}
           >
             Dock to finished goods,
             <br />
             in four steps
           </h2>
-          <p className="mt-4 text-[14px] leading-relaxed text-[#5c4d77]">
+          <p className="mt-4 text-[14px] leading-relaxed text-[#386163]">
             A single, repeatable flow your whole team can trust. Every step
             writes an immutable audit record.
           </p>
@@ -808,7 +753,7 @@ function WorkflowSection() {
               y1="1"
               x2="1200"
               y2="1"
-              stroke="#581c87"
+              stroke="#1d3536"
               strokeWidth="2"
               strokeDasharray="8 6"
               initial={{ pathLength: 0 }}
@@ -828,23 +773,23 @@ function WorkflowSection() {
                 transition={{ ...springSnap, delay: 0.25 + i * 0.35 }}
                 className="group relative"
               >
-                <div className="relative z-10 flex h-14 w-14 items-center justify-center border-2 border-[#581c87] bg-white text-[#581c87] shadow-[4px_4px_0_0_#581c87] group-hover:bg-[#581c87] group-hover:text-white group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
+                <div className="relative z-10 flex h-14 w-14 items-center justify-center border-2 border-[#1d3536] bg-white text-[#1d3536] shadow-[4px_4px_0_0_#1d3536] group-hover:bg-[#1d3536] group-hover:text-white group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
                   <step.icon className="h-6 w-6" strokeWidth={1.5} />
                 </div>
                 <div className="mt-6 flex items-baseline gap-3">
-                  <span className="font-mono text-[11px] font-bold tabular-nums text-[#a893c9]">
+                  <span className="font-mono text-[11px] font-bold tabular-nums text-[#518985]">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <h3
-                    className={`text-xl font-semibold text-[#581c87] ${serif}`}
+                    className={`text-xl font-semibold text-[#1d3536] ${serif}`}
                   >
                     {step.title}
                   </h3>
                 </div>
-                <p className="mt-2.5 text-[12.5px] leading-relaxed text-[#5c4d77]">
+                <p className="mt-2.5 text-[12.5px] leading-relaxed text-[#386163]">
                   {step.body}
                 </p>
-                <div className="mt-4 inline-block border border-[#581c87] bg-white px-2 py-1 font-mono text-[10px] font-semibold text-[#581c87] group-hover:bg-[#581c87] group-hover:text-white">
+                <div className="mt-4 inline-block border border-[#1d3536] bg-white px-2 py-1 font-mono text-[10px] font-semibold text-[#1d3536] group-hover:bg-[#1d3536] group-hover:text-white">
                   {step.detail}
                 </div>
               </motion.div>
@@ -925,10 +870,10 @@ const aiPrompts = [
 function RonaAiIntro() {
   return (
     <div
-      className={`mt-14 border-2 ${hairline} bg-white shadow-[8px_8px_0_0_#581c87]`}
+      className={`mt-14 border-2 ${hairline} bg-white shadow-[8px_8px_0_0_#1d3536]`}
     >
       <div
-        className={`flex items-center justify-between border-b-2 ${hairline} bg-[#581c87] px-5 py-3`}
+        className={`flex items-center justify-between border-b-2 ${hairline} bg-[#1d3536] px-5 py-3`}
       >
         <div className="flex items-center gap-3">
           <Sparkles className="h-4 w-4 text-white" strokeWidth={1.5} />
@@ -939,7 +884,7 @@ function RonaAiIntro() {
             Built-in
           </span>
         </div>
-        <span className="hidden font-mono text-[9px] uppercase tracking-widest text-[#e4dcf5] sm:block">
+        <span className="hidden font-mono text-[9px] uppercase tracking-widest text-[#d6e8e6] sm:block">
           ASSISTANT · EVERY MODULE
         </span>
       </div>
@@ -949,13 +894,13 @@ function RonaAiIntro() {
           className={`border-b ${hairline} p-6 lg:col-span-2 lg:border-b-0 lg:border-r`}
         >
           <h3
-            className={`text-2xl font-semibold leading-tight text-[#581c87] ${serif}`}
+            className={`text-2xl font-semibold leading-tight text-[#1d3536] ${serif}`}
           >
             An operations analyst
             <br />
             that never sleeps
           </h3>
-          <p className="mt-4 text-[12.5px] leading-relaxed text-[#5c4d77]">
+          <p className="mt-4 text-[12.5px] leading-relaxed text-[#386163]">
             Rona AI lives inside every module with full context of your
             inventory, production, quality, and finance data. Ask it to trace
             lots, draft reports, flag anomalies, or summarize performance — it
@@ -970,9 +915,9 @@ function RonaAiIntro() {
             ].map((t) => (
               <li
                 key={t}
-                className="flex items-start gap-2.5 text-[12.5px] text-[#4a3a68]"
+                className="flex items-start gap-2.5 text-[12.5px] text-[#386163]"
               >
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-[#581c87]" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-[#1d3536]" />
                 {t}
               </li>
             ))}
@@ -987,33 +932,33 @@ function RonaAiIntro() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ ...springSnap, delay: i * 0.15 }}
-              className={`group border-b ${hairline} p-5 last:border-b-0 hover:bg-[#f9f7fd]`}
+              className={`group border-b ${hairline} p-5 last:border-b-0 hover:bg-[#f2f3fa]`}
             >
               <div className="flex items-start gap-3">
                 <span
-                  className={`shrink-0 border ${hairline} bg-[#581c87] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-white`}
+                  className={`shrink-0 border ${hairline} bg-[#1d3536] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-white`}
                 >
                   You
                 </span>
-                <p className="text-[13px] font-medium text-[#581c87]">{m.q}</p>
+                <p className="text-[13px] font-medium text-[#1d3536]">{m.q}</p>
               </div>
               <div className="mt-3 flex items-start gap-3">
                 <span
-                  className={`shrink-0 border ${hairline} bg-white px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-[#581c87]`}
+                  className={`shrink-0 border ${hairline} bg-white px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-[#1d3536]`}
                 >
                   AI
                 </span>
-                <p className="text-[12.5px] leading-relaxed text-[#4a3a68]">
+                <p className="text-[12.5px] leading-relaxed text-[#386163]">
                   {m.a}
                 </p>
               </div>
             </motion.div>
           ))}
           <div
-            className={`flex items-center gap-2 border-t-2 ${hairline} bg-[#f9f7fd] px-5 py-3`}
+            className={`flex items-center gap-2 border-t-2 ${hairline} bg-[#f2f3fa] px-5 py-3`}
           >
-            <span className="h-1.5 w-1.5 animate-pulse bg-[#581c87]" />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-[#7c6f96]">
+            <span className="h-1.5 w-1.5 animate-pulse bg-[#1d3536]" />
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#518985]">
               Ask anything about your operation
             </span>
           </div>
@@ -1033,14 +978,14 @@ function ModulesSection() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_2fr] lg:items-end">
           <div>
             <h2
-              className={`text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
+              className={`text-3xl font-semibold text-[#1d3536] sm:text-5xl ${serif}`}
             >
               One platform,
               <br />
               every module
             </h2>
           </div>
-          <p className="text-[14px] leading-relaxed text-[#5c4d77] lg:pb-2">
+          <p className="text-[14px] leading-relaxed text-[#386163] lg:pb-2">
             Eight operational modules plus Rona AI on a single data core — every
             record cross-linked, every change audited, no third-party glue
             holding your operation together.
@@ -1048,7 +993,7 @@ function ModulesSection() {
         </div>
 
         <div
-          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-[#581c87] sm:grid-cols-2 lg:grid-cols-4`}
+          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-[#1d3536] sm:grid-cols-2 lg:grid-cols-4`}
         >
           {modules.map((m, i) => (
             <motion.article
@@ -1057,29 +1002,29 @@ function ModulesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.35, delay: (i % 3) * 0.08 }}
-              className="group relative bg-white p-6 hover:bg-[#f9f7fd]"
+              className="group relative bg-white p-6 hover:bg-[#f2f3fa]"
             >
               <div className="flex items-start justify-between">
                 <span
-                  className={`font-mono text-xl font-bold ${serif} text-[#581c87]`}
+                  className={`font-mono text-xl font-bold ${serif} text-[#1d3536]`}
                 >
                   {m.abbr}
                 </span>
-                <span className="font-mono text-[10px] tabular-nums text-[#a893c9] group-hover:text-[#581c87]">
+                <span className="font-mono text-[10px] tabular-nums text-[#518985] group-hover:text-[#1d3536]">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
-              <h3 className="mt-4 text-[14px] font-semibold text-[#581c87]">
+              <h3 className="mt-4 text-[14px] font-semibold text-[#1d3536]">
                 {m.name}
               </h3>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#5c4d77]">
+              <p className="mt-2 text-[12.5px] leading-relaxed text-[#386163]">
                 {m.body}
               </p>
-              <div className="mt-5 flex flex-wrap gap-1.5 border-t border-[#e9e2f2] pt-3">
+              <div className="mt-5 flex flex-wrap gap-1.5 border-t border-[#d6e8e6] pt-3">
                 {m.tags.map((t) => (
                   <span
                     key={t}
-                    className="border border-[#581c87] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#581c87] group-hover:bg-[#581c87] group-hover:text-white"
+                    className="border border-[#1d3536] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#1d3536] group-hover:bg-[#1d3536] group-hover:text-white"
                   >
                     {t}
                   </span>
@@ -1099,27 +1044,28 @@ function CtaSlab() {
   const { user } = useSession();
 
   return (
-    <section className="bg-[#581c87] py-20 sm:py-24">
+    <section className="brand-gradient-teal relative isolate overflow-hidden py-20 sm:py-24">
+      <div aria-hidden className="brand-waves absolute inset-0 -z-10 opacity-25!" />
       <div className={`${container} text-center`}>
         <h2
           className={`text-3xl font-semibold text-white sm:text-5xl ${serif}`}
         >
           {user ? "Welcome back." : "Ready to streamline your operations?"}
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-[14px] leading-relaxed text-[#e4dcf5]">
+        <p className="mx-auto mt-4 max-w-xl text-[14px] leading-relaxed text-[#d6e8e6]">
           {user
             ? "Your workspace is ready — pick up right where you left off."
             : "Launch your workspace and manage inventory, manufacturing, and traceability in one place."}
         </p>
         <Link
           href={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
-          className="group mt-9 inline-flex items-center gap-2 border border-white bg-white px-7 py-3.5 text-[13px] font-semibold text-[#581c87] hover:bg-[#581c87] hover:text-white"
+          className="group mt-9 inline-flex items-center gap-2 border border-brand-green bg-brand-green px-7 py-3.5 text-[13px] font-semibold text-brand-ink transition-colors hover:border-brand-mint hover:bg-brand-mint"
         >
           {user ? "Go to workspace" : "Launch Workspace"}
           <ArrowRight className="h-4 w-4" />
         </Link>
         {user ? null : (
-          <p className="mt-5 font-mono text-[10px] uppercase tracking-widest text-[#7c6f96]">
+          <p className="mt-5 font-mono text-[10px] uppercase tracking-widest text-brand-pale/60">
             Free 14-day trial · No card required
           </p>
         )}
@@ -1170,16 +1116,17 @@ function Footer() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center">
-              <Logo variant="dark" className="h-6 w-auto" />
+              <Logo variant="dark" lockup className="h-7 w-auto" />
             </Link>
-            <p className="mt-4 max-w-xs text-[12.5px] leading-relaxed text-[#5c4d77]">
-              Effective and efficient management for workforce, inventory, and
-              production — built for organizations that demand precision.
+            <p className="mt-4 max-w-xs text-[12.5px] leading-relaxed text-[#386163]">
+              Streamline Your Success with RONA. Inventory management, financial
+              tracking, and employee management — built for organizations that
+              demand precision.
             </p>
           </div>
           {cols.map((c) => (
             <div key={c.h}>
-              <h4 className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#7c6f96]">
+              <h4 className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#518985]">
                 {c.h}
               </h4>
               <ul className="mt-4 space-y-2.5">
@@ -1187,7 +1134,7 @@ function Footer() {
                   <li key={item.l}>
                     <Link
                       href={item.href}
-                      className="text-[12.5px] font-medium text-[#4a3a68] hover:text-[#581c87] hover:underline hover:underline-offset-4 hover:decoration-[#581c87]"
+                      className="text-[12.5px] font-medium text-[#386163] hover:text-[#1d3536] hover:underline hover:underline-offset-4 hover:decoration-[#1d3536]"
                     >
                       {item.l}
                     </Link>
@@ -1198,13 +1145,13 @@ function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-[#e9e2f2] pt-6 sm:flex-row">
-          <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#5c4d77]">
-            <span className="h-1.5 w-1.5 bg-[#581c87]" />
+        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-[#d6e8e6] pt-6 sm:flex-row">
+          <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#386163]">
+            <span className="h-1.5 w-1.5 bg-[#1d3536]" />
             All systems operational
           </span>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-[#7c6f96]">
-            © {new Date().getFullYear()} Rona ERP — All rights reserved
+          <span className="font-mono text-[10px] uppercase tracking-widest text-[#518985]">
+            © {new Date().getFullYear()} Rona · Enterprise Business Management Platform
           </span>
         </div>
       </div>

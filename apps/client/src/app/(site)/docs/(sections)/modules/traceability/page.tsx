@@ -84,8 +84,8 @@ export default function TraceabilityPage() {
           all affected finished goods.
         </P>
         <Card shadow>
-          <div className="space-y-2 font-mono text-[12.5px] text-[#581c87]">
-            <p className="font-sans text-[13px] font-semibold text-[#581c87]">
+          <div className="space-y-2 font-mono text-[12.5px] text-[#1d3536]">
+            <p className="font-sans text-[13px] font-semibold text-[#1d3536]">
               Scenario — lot LOT-2026-001 (wheat flour) failed quality
               inspection
             </p>
@@ -93,27 +93,27 @@ export default function TraceabilityPage() {
             <p>→ Produced finished lot FG-LOT-001 (Bread Loaves)</p>
             <p>→ Shipped to Customer A (50 units)</p>
             <p>→ Shipped to Customer B (30 units)</p>
-            <p className="border-t border-[#e9e2f2] pt-2 font-sans text-[13px] font-semibold">
+            <p className="border-t border-[#d6e8e6] pt-2 font-sans text-[13px] font-semibold">
               Action — recall 80 units from Customers A and B
             </p>
           </div>
         </Card>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Card tone="warn">
-            <h3 className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#581c87]">
+            <h3 className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#1d3536]">
               Without traceability
             </h3>
-            <p className="mt-2 text-[13px] leading-relaxed text-[#5c4d77]">
+            <p className="mt-2 text-[13px] leading-relaxed text-[#386163]">
               You would have to recall ALL bread loaves produced during the
               entire period when the lot might have been used — potentially
               thousands of units across all customers.
             </p>
           </Card>
           <Card tone="ok">
-            <h3 className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#581c87]">
+            <h3 className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#1d3536]">
               With traceability
             </h3>
-            <p className="mt-2 text-[13px] leading-relaxed text-[#5c4d77]">
+            <p className="mt-2 text-[13px] leading-relaxed text-[#386163]">
               You know exactly which 80 units were affected and can target the
               recall to those specific customers — minimizing cost, protecting
               brand reputation, and maintaining customer trust.
@@ -129,7 +129,7 @@ export default function TraceabilityPage() {
           materials caused the problem.
         </P>
         <Card shadow>
-          <div className="space-y-2 font-mono text-[12.5px] text-[#581c87]">
+          <div className="space-y-2 font-mono text-[12.5px] text-[#1d3536]">
             <p className="font-sans text-[13px] font-semibold">
               Scenario — customer reports an issue with Bread Loaf FG-LOT-001
             </p>
@@ -138,7 +138,7 @@ export default function TraceabilityPage() {
             <p>← Consumed Yeast LOT-2026-002 (0.01 KG)</p>
             <p>← Consumed Water LOT-2026-003 (0.3 L)</p>
             <p>← Consumed Salt LOT-2026-004 (0.005 KG)</p>
-            <p className="border-t border-[#e9e2f2] pt-2 font-sans text-[13px] font-semibold">
+            <p className="border-t border-[#d6e8e6] pt-2 font-sans text-[13px] font-semibold">
               Action — investigate which input lot caused the issue
             </p>
           </div>
@@ -152,20 +152,20 @@ export default function TraceabilityPage() {
           then become finished goods.
         </P>
         <Card shadow>
-          <div className="space-y-3 font-mono text-[12.5px] text-[#581c87]">
+          <div className="space-y-3 font-mono text-[12.5px] text-[#1d3536]">
             <div>
-              <p className="font-sans text-[12px] font-bold uppercase tracking-widest text-[#7c6f96]">
+              <p className="font-sans text-[12px] font-bold uppercase tracking-widest text-[#518985]">
                 Hop 1 — raw material to intermediate
               </p>
               <p className="mt-1">Wheat Flour LOT-001 → Dough LOT-A</p>
             </div>
             <div>
-              <p className="font-sans text-[12px] font-bold uppercase tracking-widest text-[#7c6f96]">
+              <p className="font-sans text-[12px] font-bold uppercase tracking-widest text-[#518985]">
                 Hop 2 — intermediate to finished good
               </p>
               <p className="mt-1">Dough LOT-A → Bread Loaf FG-001</p>
             </div>
-            <p className="border-t border-[#e9e2f2] pt-2">
+            <p className="border-t border-[#d6e8e6] pt-2">
               Full trace: FG-001 → LOT-A → LOT-001 → Supplier
             </p>
           </div>

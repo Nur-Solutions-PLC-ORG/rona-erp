@@ -77,7 +77,7 @@ export default function WorkforcePage() {
           and capture a fresh face scan for server matching instead of a passcode. See the{" "}
           <Link
             href="/docs/modules/kiosk"
-            className="font-semibold text-[#581c87] underline underline-offset-4"
+            className="font-semibold text-[#1d3536] underline underline-offset-4"
           >
             Kiosk guide
           </Link>{" "}
@@ -159,7 +159,7 @@ export default function WorkforcePage() {
           ]}
         />
         <Card tone="info">
-          <div className="space-y-1.5 font-mono text-[12.5px] text-[#581c87]">
+          <div className="space-y-1.5 font-mono text-[12.5px] text-[#1d3536]">
             <p>Morning Shift · 06:00 – 14:00 · Mon–Fri</p>
             <p>Afternoon Shift · 14:00 – 22:00 · Mon–Fri</p>
             <p>Night Shift · 22:00 – 06:00 · Mon–Fri</p>
@@ -256,7 +256,7 @@ export default function WorkforcePage() {
           end. See the{" "}
           <Link
             href="/docs/modules/kiosk"
-            className="font-semibold text-[#581c87] underline underline-offset-4"
+            className="font-semibold text-[#1d3536] underline underline-offset-4"
           >
             Kiosk guide
           </Link>{" "}

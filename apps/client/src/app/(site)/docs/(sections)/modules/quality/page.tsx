@@ -75,15 +75,15 @@ export default function QualityPage() {
           {statuses.map((status) => (
             <Card key={status.name} tone={status.tone}>
               <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center border border-[#581c87] bg-white">
+                <span className="flex h-8 w-8 items-center justify-center border border-[#1d3536] bg-white">
                   <status.icon
-                    className="h-4 w-4 text-[#581c87]"
+                    className="h-4 w-4 text-[#1d3536]"
                     strokeWidth={1.5}
                   />
                 </span>
                 <Pill label={status.name} />
               </div>
-              <p className="mt-3 text-[13px] leading-relaxed text-[#5c4d77]">
+              <p className="mt-3 text-[13px] leading-relaxed text-[#386163]">
                 {status.body}
               </p>
             </Card>

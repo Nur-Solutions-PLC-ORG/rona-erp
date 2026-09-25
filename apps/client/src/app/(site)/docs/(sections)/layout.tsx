@@ -89,7 +89,7 @@ export default function DocsLayout({
   }, [pathname]);
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-[#f9f7fd] lg:h-screen">
+    <div className="flex h-dvh flex-col overflow-hidden bg-[#f2f3fa] lg:h-screen">
       <header
         className={`relative z-50 shrink-0 border-b ${hairline} bg-white`}
       >
@@ -97,7 +97,7 @@ export default function DocsLayout({
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className={`border ${hairline} p-2 text-[#581c87] hover:bg-[#f3eefb] lg:hidden`}
+              className={`border ${hairline} p-2 text-[#1d3536] hover:bg-[#e8f3f2] lg:hidden`}
               aria-label="Toggle navigation"
             >
               {isSidebarOpen ? (
@@ -113,7 +113,7 @@ export default function DocsLayout({
           <div className="flex items-center gap-0">
             <Link
               href="/"
-              className="hidden px-4 py-2 text-[13px] font-medium text-[#5c4d77] hover:text-[#581c87] sm:block"
+              className="hidden px-4 py-2 text-[13px] font-medium text-[#386163] hover:text-[#1d3536] sm:block"
             >
               <span className="inline-flex items-center gap-1.5">
                 <Home className="h-3.5 w-3.5" />
@@ -122,7 +122,7 @@ export default function DocsLayout({
             </Link>
             <Link
               href="/docs"
-              className={`flex items-center gap-1.5 border-l ${hairline} px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-widest text-[#581c87] hover:bg-[#f3eefb]`}
+              className={`flex items-center gap-1.5 border-l ${hairline} px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-widest text-[#1d3536] hover:bg-[#e8f3f2]`}
             >
               Docs Hub
             </Link>
@@ -133,7 +133,7 @@ export default function DocsLayout({
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {isSidebarOpen ? (
           <div
-            className="fixed inset-0 z-40 bg-[#581c87]/30 lg:hidden"
+            className="fixed inset-0 z-40 bg-[#1d3536]/30 lg:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
         ) : null}
@@ -151,14 +151,14 @@ export default function DocsLayout({
                 <div key={section.title}>
                   <div className="mb-3 flex items-center gap-2">
                     <span
-                      className={`flex h-6 w-6 items-center justify-center border ${hairline} bg-[#f3eefb]`}
+                      className={`flex h-6 w-6 items-center justify-center border ${hairline} bg-[#e8f3f2]`}
                     >
                       <section.icon
-                        className="h-3.5 w-3.5 text-[#581c87]"
+                        className="h-3.5 w-3.5 text-[#1d3536]"
                         strokeWidth={1.5}
                       />
                     </span>
-                    <h3 className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#7c6f96]">
+                    <h3 className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#518985]">
                       {section.title}
                     </h3>
                   </div>
@@ -172,12 +172,12 @@ export default function DocsLayout({
                             onClick={() => setIsSidebarOpen(false)}
                             className={`flex items-center gap-2 border-l-2 px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
                               isActive
-                                ? `border-[#581c87] bg-[#581c87] text-white`
-                                : `border-transparent text-[#5c4d77] hover:border-[#581c87] hover:bg-[#f3eefb] hover:text-[#581c87]`
+                                ? `border-[#1d3536] bg-[#1d3536] text-white`
+                                : `border-transparent text-[#386163] hover:border-[#1d3536] hover:bg-[#e8f3f2] hover:text-[#1d3536]`
                             }`}
                           >
                             <ChevronRight
-                              className={`h-3 w-3 shrink-0 ${isActive ? "text-white" : "text-[#a893c9]"}`}
+                              className={`h-3 w-3 shrink-0 ${isActive ? "text-white" : "text-[#518985]"}`}
                             />
                             {item.title}
                           </Link>
@@ -190,10 +190,10 @@ export default function DocsLayout({
             </nav>
 
             <div className={`mt-8 border-t ${hairline} pt-5 pb-2`}>
-              <p className="font-mono text-[9px] font-bold uppercase tracking-widest text-[#7c6f96]">
+              <p className="font-mono text-[9px] font-bold uppercase tracking-widest text-[#518985]">
                 Version
               </p>
-              <p className="mt-1.5 font-mono text-[11px] font-semibold text-[#581c87]">
+              <p className="mt-1.5 font-mono text-[11px] font-semibold text-[#1d3536]">
                 v2.6 · Real-time lot tracing
               </p>
             </div>

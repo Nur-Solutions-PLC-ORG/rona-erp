@@ -40,7 +40,7 @@ export function MobileMenu({
         aria-expanded={open}
         aria-controls="site-mobile-menu"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-9 w-9 items-center justify-center border border-[#e9e2f2] text-[#5c4d77] transition-colors hover:bg-[#f3eefb] hover:text-[#581c87]"
+        className="inline-flex h-9 w-9 items-center justify-center border border-[#d6e8e6] text-[#386163] transition-colors hover:bg-[#e8f3f2] hover:text-[#1d3536]"
       >
         {open ? (
           <HiOutlineXMark className="h-5 w-5" />
@@ -52,7 +52,7 @@ export function MobileMenu({
       {open ? (
         <div
           id="site-mobile-menu"
-          className="absolute inset-x-0 top-14 border-b border-[#581c87] bg-white shadow-sm"
+          className="absolute inset-x-0 top-14 border-b border-[#1d3536] bg-white shadow-sm"
         >
           <nav className="mx-auto flex w-full max-w-7xl flex-col px-4 pb-6 pt-2 sm:px-6">
             {links.map((link) => (
@@ -60,7 +60,7 @@ export function MobileMenu({
                 key={link.label}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="border-b border-[#e9e2f2] py-3.5 text-[13px] font-medium text-[#5c4d77] hover:text-[#581c87] last:border-0"
+                className="border-b border-[#d6e8e6] py-3.5 text-[13px] font-medium text-[#386163] hover:text-[#1d3536] last:border-0"
               >
                 {link.label}
               </a>
@@ -68,7 +68,7 @@ export function MobileMenu({
             <Link
               href={ctaHref}
               onClick={() => setOpen(false)}
-              className="mt-4 inline-flex items-center justify-center gap-2 border border-[#581c87] bg-[#581c87] px-4 py-3 text-[13px] font-semibold text-white transition-colors hover:bg-white hover:text-[#581c87]"
+              className="mt-4 inline-flex items-center justify-center gap-2 border border-[#1d3536] bg-[#1d3536] px-4 py-3 text-[13px] font-semibold text-white transition-colors hover:bg-white hover:text-[#1d3536]"
             >
               {ctaLabel}
               <HiOutlineArrowRight className="h-4 w-4" />

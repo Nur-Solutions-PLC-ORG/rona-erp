@@ -257,7 +257,7 @@ export default function SetupPage() {
         <Card tone="info">
           <div className="flex items-start gap-3">
             <CheckCircle2
-              className="mt-0.5 h-5 w-5 shrink-0 text-[#581c87]"
+              className="mt-0.5 h-5 w-5 shrink-0 text-[#1d3536]"
               strokeWidth={1.5}
             />
             <div>

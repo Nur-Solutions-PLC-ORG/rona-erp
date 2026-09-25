@@ -134,10 +134,10 @@ export default function IntroductionPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <span
-                    className={`flex h-8 w-8 items-center justify-center border ${"border-[#581c87]"} bg-[#f3eefb]`}
+                    className={`flex h-8 w-8 items-center justify-center border ${"border-[#1d3536]"} bg-[#e8f3f2]`}
                   >
                     <concept.icon
-                      className="h-4 w-4 text-[#581c87]"
+                      className="h-4 w-4 text-[#1d3536]"
                       strokeWidth={1.5}
                     />
                   </span>
@@ -145,7 +145,7 @@ export default function IntroductionPage() {
                 </div>
                 <Tags items={concept.tags} />
               </div>
-              <p className="mt-3 text-[13px] leading-relaxed text-[#5c4d77]">
+              <p className="mt-3 text-[13px] leading-relaxed text-[#386163]">
                 {concept.body}
               </p>
             </Card>
@@ -159,22 +159,22 @@ export default function IntroductionPage() {
           cross-linked and every change is audited — no third-party glue holding
           your operation together.
         </P>
-        <div className="grid grid-cols-1 gap-px border border-[#581c87] bg-[#581c87] sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-px border border-[#1d3536] bg-[#1d3536] sm:grid-cols-2">
           {modules.map((m) => (
-            <div key={m.abbr} className="group bg-white p-5 hover:bg-[#f9f7fd]">
+            <div key={m.abbr} className="group bg-white p-5 hover:bg-[#f2f3fa]">
               <div className="flex items-baseline justify-between">
-                <span className="font-mono text-lg font-bold text-[#581c87]">
+                <span className="font-mono text-lg font-bold text-[#1d3536]">
                   {m.abbr}
                 </span>
                 <Building2
-                  className="h-4 w-4 text-[#a893c9] group-hover:text-[#581c87]"
+                  className="h-4 w-4 text-[#518985] group-hover:text-[#1d3536]"
                   strokeWidth={1.5}
                 />
               </div>
-              <h3 className="mt-2 text-[13.5px] font-semibold text-[#581c87]">
+              <h3 className="mt-2 text-[13.5px] font-semibold text-[#1d3536]">
                 {m.name}
               </h3>
-              <p className="mt-1.5 text-[12.5px] leading-relaxed text-[#5c4d77]">
+              <p className="mt-1.5 text-[12.5px] leading-relaxed text-[#386163]">
                 {m.desc}
               </p>
             </div>

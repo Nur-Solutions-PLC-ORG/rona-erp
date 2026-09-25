@@ -72,22 +72,22 @@ export default function DashboardPage() {
           At the top of the dashboard, key performance indicators update in real
           time:
         </P>
-        <div className="grid grid-cols-2 gap-px border border-[#581c87] bg-[#581c87] lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-px border border-[#1d3536] bg-[#1d3536] lg:grid-cols-4">
           {[
             { k: "Stock value", v: "1.28M", d: "ETB on hand" },
             { k: "Open orders", v: "18", d: "production" },
             { k: "Pass rate", v: "98.4%", d: "inspections" },
             { k: "Avg latency", v: "8ms", d: "API p95" },
           ].map((s) => (
-            <div key={s.k} className="bg-white px-4 py-4 hover:bg-[#f9f7fd]">
-              <div className="font-mono text-[9px] uppercase tracking-widest text-[#7c6f96]">
+            <div key={s.k} className="bg-white px-4 py-4 hover:bg-[#f2f3fa]">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-[#518985]">
                 {s.k}
               </div>
               <div className="mt-1 flex items-baseline gap-2">
-                <span className="font-mono text-2xl font-semibold tabular-nums text-[#581c87]">
+                <span className="font-mono text-2xl font-semibold tabular-nums text-[#1d3536]">
                   {s.v}
                 </span>
-                <span className="text-[10px] text-[#7c6f96]">{s.d}</span>
+                <span className="text-[10px] text-[#518985]">{s.d}</span>
               </div>
             </div>
           ))}
@@ -99,20 +99,20 @@ export default function DashboardPage() {
           The left sidebar provides quick access to all modules — each with
           specialized tools and views.
         </P>
-        <div className="grid grid-cols-1 gap-px border border-[#581c87] bg-[#581c87] sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-px border border-[#1d3536] bg-[#1d3536] sm:grid-cols-2">
           {modules.map((m) => (
             <div
               key={m.name}
-              className="flex items-start gap-3 bg-white p-4 hover:bg-[#f9f7fd]"
+              className="flex items-start gap-3 bg-white p-4 hover:bg-[#f2f3fa]"
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-[#581c87] bg-[#f3eefb]">
-                <m.icon className="h-4 w-4 text-[#581c87]" strokeWidth={1.5} />
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-[#1d3536] bg-[#e8f3f2]">
+                <m.icon className="h-4 w-4 text-[#1d3536]" strokeWidth={1.5} />
               </span>
               <div>
-                <h3 className="text-[13px] font-semibold text-[#581c87]">
+                <h3 className="text-[13px] font-semibold text-[#1d3536]">
                   {m.name}
                 </h3>
-                <p className="mt-0.5 text-[12px] text-[#5c4d77]">{m.desc}</p>
+                <p className="mt-0.5 text-[12px] text-[#386163]">{m.desc}</p>
               </div>
             </div>
           ))}
@@ -125,7 +125,7 @@ export default function DashboardPage() {
             {alerts.map((alert) => (
               <div key={alert.type} className="flex items-start gap-3">
                 <Pill label={alert.type.toUpperCase().replace(" ", "_")} />
-                <p className="text-[13px] text-[#5c4d77]">{alert.desc}</p>
+                <p className="text-[13px] text-[#386163]">{alert.desc}</p>
               </div>
             ))}
           </div>
@@ -137,7 +137,7 @@ export default function DashboardPage() {
           Every state change is logged with timestamp, actor, and reference —
           the stream shows the latest events across your organization:
         </P>
-        <div className="overflow-hidden border border-[#581c87] bg-white">
+        <div className="overflow-hidden border border-[#1d3536] bg-white">
           {[
             { t: "14:02", ref: "mv-8f42", msg: "Stock moved MAIN → TRANSIT" },
             {
@@ -149,15 +149,15 @@ export default function DashboardPage() {
           ].map((e) => (
             <div
               key={e.ref}
-              className="flex items-center gap-3 border-b border-[#581c87] px-4 py-2.5 last:border-b-0 hover:bg-[#f9f7fd]"
+              className="flex items-center gap-3 border-b border-[#1d3536] px-4 py-2.5 last:border-b-0 hover:bg-[#f2f3fa]"
             >
-              <span className="font-mono text-[10px] text-[#7c6f96]">
+              <span className="font-mono text-[10px] text-[#518985]">
                 {e.t}
               </span>
-              <span className="border border-[#581c87] bg-[#f3eefb] px-1 font-mono text-[10px] font-semibold text-[#581c87]">
+              <span className="border border-[#1d3536] bg-[#e8f3f2] px-1 font-mono text-[10px] font-semibold text-[#1d3536]">
                 {e.ref}
               </span>
-              <span className="text-[12px] text-[#4a3a68]">{e.msg}</span>
+              <span className="text-[12px] text-[#386163]">{e.msg}</span>
             </div>
           ))}
         </div>
@@ -166,11 +166,11 @@ export default function DashboardPage() {
       <Section title="Rona AI assistant">
         <Card tone="info" shadow>
           <div className="flex items-start gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-[#581c87] bg-white">
-              <Sparkles className="h-4 w-4 text-[#581c87]" strokeWidth={1.5} />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-[#1d3536] bg-white">
+              <Sparkles className="h-4 w-4 text-[#1d3536]" strokeWidth={1.5} />
             </span>
             <div>
-              <h3 className="text-[14px] font-semibold text-[#581c87]">
+              <h3 className="text-[14px] font-semibold text-[#1d3536]">
                 Available from every module
               </h3>
               <div className="mt-3">

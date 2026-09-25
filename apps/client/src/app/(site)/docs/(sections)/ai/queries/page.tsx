@@ -142,43 +142,43 @@ export default function AiQueriesPage() {
         <Card shadow>
           <div className="space-y-2.5 text-[13px]">
             <p>
-              <span className="font-mono text-[10px] font-bold uppercase text-[#7c6f96]">
+              <span className="font-mono text-[10px] font-bold uppercase text-[#518985]">
                 Q1
               </span>{" "}
-              <span className="text-[#581c87]">
+              <span className="text-[#1d3536]">
                 &ldquo;Which items are below reorder point?&rdquo;
               </span>
             </p>
-            <p className="text-[#5c4d77]">
-              <span className="font-mono text-[10px] font-bold uppercase text-[#581c87]">
+            <p className="text-[#386163]">
+              <span className="font-mono text-[10px] font-bold uppercase text-[#1d3536]">
                 A1
               </span>{" "}
               2 items: VC-012 (12 &lt; 20), DR-045 (0 &lt; 40)
             </p>
             <p>
-              <span className="font-mono text-[10px] font-bold uppercase text-[#7c6f96]">
+              <span className="font-mono text-[10px] font-bold uppercase text-[#518985]">
                 Q2
               </span>{" "}
-              <span className="text-[#581c87]">
+              <span className="text-[#1d3536]">
                 &ldquo;Show me the stock movements for VC-012&rdquo;
               </span>
             </p>
-            <p className="text-[#5c4d77]">
-              <span className="font-mono text-[10px] font-bold uppercase text-[#581c87]">
+            <p className="text-[#386163]">
+              <span className="font-mono text-[10px] font-bold uppercase text-[#1d3536]">
                 A2
               </span>{" "}
               VC-012 had 3 movements this week: received 50, issued 30, issued 8
             </p>
             <p>
-              <span className="font-mono text-[10px] font-bold uppercase text-[#7c6f96]">
+              <span className="font-mono text-[10px] font-bold uppercase text-[#518985]">
                 Q3
               </span>{" "}
-              <span className="text-[#581c87]">
+              <span className="text-[#1d3536]">
                 &ldquo;When did we issue the 8 units?&rdquo;
               </span>
             </p>
-            <p className="text-[#5c4d77]">
-              <span className="font-mono text-[10px] font-bold uppercase text-[#581c87]">
+            <p className="text-[#386163]">
+              <span className="font-mono text-[10px] font-bold uppercase text-[#1d3536]">
                 A3
               </span>{" "}
               8 units were issued on Jan 14 for order SO-123

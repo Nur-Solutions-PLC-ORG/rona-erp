@@ -120,20 +120,20 @@ export default function AiReportsPage() {
           {formats.map((f) => (
             <Card key={f.name}>
               <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center border border-[#581c87] bg-[#f3eefb]">
+                <span className="flex h-8 w-8 items-center justify-center border border-[#1d3536] bg-[#e8f3f2]">
                   <f.icon
-                    className="h-4 w-4 text-[#581c87]"
+                    className="h-4 w-4 text-[#1d3536]"
                     strokeWidth={1.5}
                   />
                 </span>
-                <h3 className="font-mono text-[13px] font-bold text-[#581c87]">
+                <h3 className="font-mono text-[13px] font-bold text-[#1d3536]">
                   {f.name}
                 </h3>
               </div>
-              <p className="mt-3 text-[12.5px] leading-relaxed text-[#5c4d77]">
+              <p className="mt-3 text-[12.5px] leading-relaxed text-[#386163]">
                 {f.body}
               </p>
-              <div className="mt-4 border-t border-[#e9e2f2] pt-3">
+              <div className="mt-4 border-t border-[#d6e8e6] pt-3">
                 <CheckList items={f.points} />
               </div>
             </Card>
