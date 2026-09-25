@@ -329,7 +329,7 @@ const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
           isIconMode ? "px-2 justify-center" : "px-4 justify-center",
         )}
       >
-        <Logo admin={isAdmin && !isIconMode} icon={isIconMode} />
+        <Logo variant={isIconMode ? "mark" : "dark"} className={isIconMode ? "size-9" : "h-7"} />
       </div>
       <span className="mb-4 w-full" />
       <div className="flex flex-col gap-0.5 overflow-y-auto pb-4">

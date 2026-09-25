@@ -7,9 +7,21 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  /* Brand typography: Quicksand (primary, headings) + Helvetica (secondary, body). */
+  --font-sans: "Helvetica Neue", Helvetica, Arial, ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono);
-  --font-heading: var(--font-heading);
+  --font-heading: var(--font-heading), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /* Rona brand palette (Rona_Branding.pdf, "Color Direction"). */
+  --color-brand-ink: #1c1a1b;
+  --color-brand-wine: #1d0d10;
+  --color-brand-deep: #1d3536;
+  --color-brand-teal: #386163;
+  --color-brand-sea: #518985;
+  --color-brand-aqua: #6ec3c7;
+  --color-brand-mint: #85d0c4;
+  --color-brand-pale: #c9dcda;
+  --color-brand-green: #03af68;
+  --color-brand-mist: #f2f3fa;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,75 +61,75 @@
 }
 
 :root {
-  /* Enterprise palette — cool-slate canvas, white elevated cards,
-     deep-indigo primary accent, slate borders and typography. */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.208 0.042 265.755);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.208 0.042 265.755);
-  --primary: oklch(0.511 0.262 276.966);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.962 0.007 247.896);
-  --secondary-foreground: oklch(0.279 0.041 260.031);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.951 0.029 277.023);
-  --accent-foreground: oklch(0.42 0.19 268.6);
+  /* Rona light app: mist canvas, white cards, deep-teal primary,
+     aqua focus, teal-grey neutrals. Dark brand surfaces use --sidebar-*. */
+  --background: #f2f3fa;
+  --foreground: #1a2b2e;
+  --card: #ffffff;
+  --card-foreground: #1a2b2e;
+  --popover: #ffffff;
+  --popover-foreground: #1a2b2e;
+  --primary: #386163;
+  --primary-foreground: #ffffff;
+  --secondary: #e9f1f0;
+  --secondary-foreground: #1d3536;
+  --muted: #eef1f3;
+  --muted-foreground: #5b6b6e;
+  --accent: #e3f1f0;
+  --accent-foreground: #2b4f50;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.585 0.233 277.117);
-  /* Categorical chart ramp — indigo-led, hue-cohesive. */
-  --chart-1: oklch(0.511 0.262 276.966);
-  --chart-2: oklch(0.606 0.25 292.717);
-  --chart-3: oklch(0.685 0.169 237.323);
-  --chart-4: oklch(0.704 0.14 182.503);
-  --chart-5: oklch(0.554 0.046 257.417);
+  --border: #dde4e6;
+  --input: #d3dcde;
+  --ring: #6ec3c7;
+  /* Categorical chart ramp: teal-led, brand-cohesive. */
+  --chart-1: #386163;
+  --chart-2: #6ec3c7;
+  --chart-3: #03af68;
+  --chart-4: #518985;
+  --chart-5: #94a3a8;
   --radius: 0.5rem;
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-primary: oklch(0.511 0.262 276.966);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.962 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.279 0.041 260.031);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.585 0.233 277.117);
-  --background: oklch(0.984 0.003 247.896);
-  --foreground: oklch(0.208 0.042 265.755);
+  --sidebar: #1d3536;
+  --sidebar-foreground: #e6eeee;
+  --sidebar-primary: #6ec3c7;
+  --sidebar-primary-foreground: #1d3536;
+  --sidebar-accent: #29474a;
+  --sidebar-accent-foreground: #f2f3fa;
+  --sidebar-border: rgb(255 255 255 / 0.08);
+  --sidebar-ring: #6ec3c7;
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.685 0.169 237.323);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
+  --background: #121718;
+  --foreground: #f2f3fa;
+  --card: #1a2426;
+  --card-foreground: #f2f3fa;
+  --popover: #1a2426;
+  --popover-foreground: #f2f3fa;
+  --primary: #6ec3c7;
+  --primary-foreground: #1d3536;
+  --secondary: #243335;
+  --secondary-foreground: #f2f3fa;
+  --muted: #243335;
+  --muted-foreground: #9fb2b4;
+  --accent: #29474a;
+  --accent-foreground: #f2f3fa;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.585 0.233 277.117);
-  --chart-1: oklch(0.685 0.169 237.323);
-  --chart-2: oklch(0.606 0.25 292.717);
-  --chart-3: oklch(0.717 0.15 200.5);
-  --chart-4: oklch(0.704 0.14 182.503);
-  --chart-5: oklch(0.704 0.04 256.788);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.685 0.169 237.323);
-  --sidebar-primary-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.585 0.233 277.117);
+  --border: rgb(255 255 255 / 0.1);
+  --input: rgb(255 255 255 / 0.15);
+  --ring: #6ec3c7;
+  --chart-1: #6ec3c7;
+  --chart-2: #03af68;
+  --chart-3: #85d0c4;
+  --chart-4: #518985;
+  --chart-5: #94a3a8;
+  --sidebar: #0f1b1d;
+  --sidebar-foreground: #e6eeee;
+  --sidebar-primary: #6ec3c7;
+  --sidebar-primary-foreground: #1d3536;
+  --sidebar-accent: #29474a;
+  --sidebar-accent-foreground: #f2f3fa;
+  --sidebar-border: rgb(255 255 255 / 0.08);
+  --sidebar-ring: #6ec3c7;
 }
 
 @layer base {
@@ -127,6 +139,13 @@
 
   body {
     @apply flex flex-col min-h-screen bg-background text-foreground text-base;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
   }
 
   * {
@@ -162,7 +181,7 @@
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background: linear-gradient(90deg, #eef1f3 25%, #e1e7e9 50%, #eef1f3 75%);
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
@@ -236,6 +255,42 @@
 
 .ai-fade-up {
   animation: ai-fade-up 0.35s ease-out both;
+}
+
+/* ---- Brand surfaces -------------------------------------------------------- */
+/* Dark gradients and line-art from the brand book (pages 1 and 3). */
+
+.brand-gradient {
+  background-color: #1c1a1b;
+  background-image: linear-gradient(
+    100deg,
+    #1d0d10 0%,
+    #1c1a1b 35%,
+    #1f2a2c 65%,
+    #1a3334 100%
+  );
+}
+
+.brand-gradient-teal {
+  background-color: #1c1a1b;
+  background-image:
+    radial-gradient(120% 90% at 100% 0%, #3e6b6d 0%, transparent 55%),
+    linear-gradient(110deg, #1c1819 0%, #1e2425 40%, #233739 70%, #284a4c 100%);
+}
+
+/* Absolutely-positioned layer carrying the wave line art. */
+.brand-waves {
+  pointer-events: none;
+  background: url("/brand/rona-waves.webp") center / cover no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.35;
+}
+
+.brand-text-gradient {
+  background-image: linear-gradient(135deg, #85d0c4 0%, #518985 60%, #386163 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* ---- ERP number typography -------------------------------------------------- */

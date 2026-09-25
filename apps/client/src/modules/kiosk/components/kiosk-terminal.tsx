@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Logo from "@/components/custom/logo";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { AttendanceEventType } from "@rona/types/hr";
 import { KIOSK_PASSCODE_LENGTH } from "@rona/config/kiosk";
@@ -552,14 +552,7 @@ export default function KioskTerminal() {
 
       <header className="flex items-center justify-between gap-4 bg-white border-b border-slate-200 px-6 sm:px-10 py-4 shrink-0">
         <div className="flex items-center gap-4 min-w-0">
-          <Image
-            src="/rona-logo.png"
-            alt="Rona ERP"
-            width={120}
-            height={40}
-            className="h-7 w-auto shrink-0"
-            priority
-          />
+          <Logo variant="dark" className="h-7 w-auto shrink-0" />
           {screen !== "setup" && organizationName ? (
             <div className="hidden md:flex items-center gap-2.5 pl-5 border-l border-slate-200 min-w-0">
               <span className="text-sm font-medium text-slate-700 truncate">

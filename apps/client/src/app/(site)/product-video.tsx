@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Logo from "@/components/custom/logo";
 import { useEffect, useState } from "react";
 import {
   HiOutlineArchiveBox,
@@ -386,13 +386,7 @@ export function ProductVideo() {
       <div className="flex h-[480px] sm:h-[580px] flex-col">
         <div className="shrink-0 h-12 bg-white border-b border-slate-200 px-3 sm:px-4 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
-            <Image
-              src="/rona-logo.png"
-              alt="Rona ERP"
-              width={500}
-              height={179}
-              className="h-5 w-auto shrink-0"
-            />
+            <Logo variant="dark" className="h-5 w-auto shrink-0" />
             <div className="hidden md:flex items-center gap-1 pl-3">
               {navChips.map((chip) => (
                 <span

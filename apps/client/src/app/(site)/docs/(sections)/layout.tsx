@@ -1,8 +1,8 @@
 "use client";
 
+import Logo from "@/components/custom/logo";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   BookOpen,
@@ -107,14 +107,7 @@ export default function DocsLayout({
               )}
             </button>
             <Link href="/" className="flex items-center gap-2">
-              <Image
-                src="/rona-logo.png"
-                alt="Rona ERP"
-                width={500}
-                height={179}
-                className="h-6 w-auto"
-                priority
-              />
+              <Logo variant="dark" className="h-6 w-auto" />
             </Link>
           </div>
           <div className="flex items-center gap-0">

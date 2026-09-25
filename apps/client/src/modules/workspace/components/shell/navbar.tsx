@@ -1,7 +1,7 @@
 "use client";
 
+import Logo from "@/components/custom/logo";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -262,14 +262,7 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
           </svg>
         </button>
 
-        <Image
-          src="/rona-logo.png"
-          alt="Rona ERP"
-          width={120}
-          height={40}
-          className="h-5 w-auto shrink-0 hidden min-[360px]:block"
-          priority
-        />
+        <Logo variant="dark" className="h-5 w-auto shrink-0 hidden min-[360px]:block" />
 
         <button
           type="button"

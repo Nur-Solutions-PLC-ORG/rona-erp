@@ -1,8 +1,8 @@
 "use client";
 
+import Logo from "@/components/custom/logo";
 import { useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowRight,
@@ -28,7 +28,7 @@ import { MobileMenu } from "./mobile-menu";
 const container = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
 const hairline = "border-[#581c87]";
 
-const serif = "[font-family:var(--font-serif-display)] tracking-[-0.02em]";
+const serif = "font-heading tracking-[-0.01em]";
 
 const springSnap = {
   type: "spring",
@@ -55,14 +55,7 @@ function Navbar() {
     <header className={`sticky top-0 z-50 border-b ${hairline} bg-white`}>
       <nav className={`${container} flex h-14 items-center justify-between`}>
         <Link href="/" className="flex items-center shrink-0">
-          <Image
-            src="/rona-logo.png"
-            alt="Rona ERP"
-            width={500}
-            height={179}
-            className="h-6 w-auto"
-            priority
-          />
+          <Logo variant="dark" className="h-6 w-auto" />
         </Link>
 
         <div className="hidden md:flex items-center h-full">
@@ -1177,13 +1170,7 @@ function Footer() {
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center">
-              <Image
-                src="/rona-logo.png"
-                alt="Rona ERP"
-                width={500}
-                height={179}
-                className="h-6 w-auto"
-              />
+              <Logo variant="dark" className="h-6 w-auto" />
             </Link>
             <p className="mt-4 max-w-xs text-[12.5px] leading-relaxed text-[#5c4d77]">
               Effective and efficient management for workforce, inventory, and

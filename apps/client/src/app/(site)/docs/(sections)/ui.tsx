@@ -11,7 +11,7 @@ import {
 export const hairline = "border-[#581c87]";
 
 export const serif =
-  "[font-family:var(--font-serif-display)] tracking-[-0.02em]";
+  "font-heading tracking-[-0.01em]";
 
 type Tone = "info" | "warn" | "ok";
 

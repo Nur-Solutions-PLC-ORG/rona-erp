@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Logo from "@/components/custom/logo";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -269,14 +269,7 @@ function AdminNavbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
           </svg>
         </button>
 
-        <Image
-          src="/rona-logo.png"
-          alt="Rona ERP"
-          width={120}
-          height={40}
-          className="h-5 w-auto shrink-0"
-          priority
-        />
+        <Logo variant="dark" className="h-5 w-auto shrink-0" />
 
         <span className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-600">
           <HiOutlineWrenchScrewdriver className="h-3.5 w-3.5" />
