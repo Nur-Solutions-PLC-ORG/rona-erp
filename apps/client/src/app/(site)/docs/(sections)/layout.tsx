@@ -159,7 +159,7 @@ export default function DocsLayout({
                       {section.title}
                     </h3>
                   </div>
-                  <ul className="ml-[11px] border-l border-ink/15">
+                  <ul className="ml-[11px] divide-y divide-ink/10 border-l border-ink/15">
                     {section.items.map((item) => {
                       const isActive = pathname === item.href;
                       return (
