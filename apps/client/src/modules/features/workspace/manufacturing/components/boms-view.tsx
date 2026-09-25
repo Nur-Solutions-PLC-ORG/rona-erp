@@ -141,7 +141,7 @@ export default function BomsView() {
               setPage(1);
             }}
             placeholder="Search BOM code or name..."
-            className="w-64 px-3 py-1.5 rounded-lg bg-zinc-50 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-ring focus:bg-white transition text-xs"
+            className="w-64 px-3 py-1.5 rounded-lg bg-zinc-50 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-ring focus:bg-card transition text-xs"
           />
           <FilterSelect
             value={itemId}

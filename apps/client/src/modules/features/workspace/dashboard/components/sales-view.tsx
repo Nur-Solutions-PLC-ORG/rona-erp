@@ -253,7 +253,7 @@ export default function SalesDashboardView() {
             emptyAction={
               <Link
                 href={CLIENT_SALES_ORDERS_PAGE}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-primary/90"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <HiOutlineClipboardDocumentList className="h-3.5 w-3.5" />
                 Create an order
@@ -286,7 +286,7 @@ export default function SalesDashboardView() {
             emptyAction={
               <Link
                 href={CLIENT_CUSTOMERS_PAGE}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-primary/90"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <HiOutlineUsers className="h-3.5 w-3.5" />
                 Add a customer

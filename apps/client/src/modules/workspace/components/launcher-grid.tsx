@@ -152,7 +152,7 @@ export default function LauncherGrid() {
       <header className="mb-8 flex items-center gap-3">
         <OrgLogo
           src={organization?.logoUrl}
-          className="h-11 w-11 bg-white shadow-sm"
+          className="h-11 w-11 bg-card shadow-sm"
           iconClassName="h-5 w-5"
         />
         <div className="space-y-1">

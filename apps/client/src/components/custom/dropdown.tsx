@@ -76,7 +76,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "w-full justify-between font-normal min-w-24 border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 hover:text-slate-700 aria-expanded:bg-white aria-expanded:text-slate-700 focus-visible:ring-ring/40 focus-visible:border-ring",
+            "w-full justify-between font-normal min-w-24 border-slate-300 bg-card text-slate-700 font-medium hover:bg-slate-50 hover:text-slate-700 aria-expanded:bg-card aria-expanded:text-slate-700 focus-visible:ring-ring/40 focus-visible:border-ring",
             ghost &&
               "bg-transparent shadow-none border-none rounded-none hover:bg-transparent",
             translucent && "bg-white/75 shadow-none border-none",
@@ -121,7 +121,7 @@ const Dropdown: React.FC<DropdownProps> = ({
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-max min-w-(--radix-popover-trigger-width) gap-0 max-h-72 overflow-y-auto rounded-lg border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/5 ring-0"
+        className="w-max min-w-(--radix-popover-trigger-width) gap-0 max-h-72 overflow-y-auto rounded-lg border-slate-200 bg-card p-1.5 shadow-lg shadow-slate-900/5 ring-0"
         align="start"
       >
         <Command className="p-0">

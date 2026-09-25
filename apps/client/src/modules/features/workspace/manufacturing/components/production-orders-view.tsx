@@ -259,7 +259,7 @@ export default function ProductionOrdersView() {
               setPage(1);
             }}
             placeholder="Search order number..."
-            className="w-56 px-3 py-1.5 rounded-lg bg-zinc-50 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-ring focus:bg-white transition text-xs"
+            className="w-56 px-3 py-1.5 rounded-lg bg-zinc-50 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-ring focus:bg-card transition text-xs"
           />
           <FilterSelect
             value={status}

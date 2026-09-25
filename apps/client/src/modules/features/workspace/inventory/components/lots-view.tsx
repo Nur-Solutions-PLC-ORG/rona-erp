@@ -174,7 +174,7 @@ export default function LotsView() {
                   setStatusForm({ qualityStatus: row.qualityStatus });
                   setStatusFor(row);
                 }}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-card px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900"
               >
                 <HiOutlinePencilSquare className="h-3.5 w-3.5" />
                 Status

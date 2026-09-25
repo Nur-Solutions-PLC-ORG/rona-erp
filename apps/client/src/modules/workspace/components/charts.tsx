@@ -8,11 +8,11 @@ import { Skeleton } from "@/components/custom/skeleton";
 // Series colors from the Rona brand palette. Negative series stay red so
 // losses and outflows read as such regardless of brand.
 export const CHART_COLORS = {
-  primary: "#386163",
-  secondary: "#6ec3c7",
-  accent: "#03af68",
-  muted: "#518985",
-  negative: "#e11d48",
+  primary: "var(--series-primary)",
+  secondary: "var(--series-secondary)",
+  accent: "var(--series-accent)",
+  muted: "var(--series-muted)",
+  negative: "var(--series-negative)",
 } as const;
 
 export interface ChartPoint {
@@ -87,8 +87,8 @@ export function Sparkline({
     >
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
+          <stop style={{ stopColor: color }} offset="0%" stopOpacity="0.25" />
+          <stop style={{ stopColor: color }} offset="100%" stopOpacity="0" />
         </linearGradient>
       </defs>
       <polygon
@@ -96,9 +96,9 @@ export function Sparkline({
         fill={`url(#${gradientId})`}
       />
       <polyline
+        style={{ stroke: color }}
         points={line}
         fill="none"
-        stroke={color}
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -191,7 +191,7 @@ export function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-200/80 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-zinc-200/80 bg-card shadow-sm">
       <header className="flex items-center justify-between gap-3 border-b border-zinc-200 px-5 py-3.5">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold text-zinc-900">{title}</h2>
@@ -276,19 +276,27 @@ export function AreaChart({
         >
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={series.color} stopOpacity="0.28" />
-              <stop offset="100%" stopColor={series.color} stopOpacity="0.02" />
+              <stop
+                style={{ stopColor: series.color }}
+                offset="0%"
+                stopOpacity="0.28"
+              />
+              <stop
+                style={{ stopColor: series.color }}
+                offset="100%"
+                stopOpacity="0.02"
+              />
             </linearGradient>
           </defs>
 
           {[0.25, 0.5, 0.75].map((ratio) => (
             <line
+              className="stroke-muted"
               key={ratio}
               x1="0"
               x2="100"
               y1={AREA_HEIGHT * ratio}
               y2={AREA_HEIGHT * ratio}
-              stroke="#eef1f3"
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
             />
@@ -300,9 +308,9 @@ export function AreaChart({
           />
 
           <polyline
+            style={{ stroke: series.color }}
             points={geometry.line}
             fill="none"
-            stroke={series.color}
             strokeWidth="2"
             strokeLinejoin="round"
             strokeLinecap="round"
@@ -312,24 +320,23 @@ export function AreaChart({
           {activeCoord ? (
             <g>
               <line
+                className="stroke-border"
                 x1={activeCoord.x}
                 x2={activeCoord.x}
                 y1="0"
                 y2={AREA_HEIGHT}
-                stroke="#dde4e6"
                 strokeWidth="1"
                 strokeDasharray="3 3"
                 vectorEffect="non-scaling-stroke"
               />
               <circle
+                className="fill-card"
                 cx={activeCoord.x}
                 cy={activeCoord.y}
                 r="3.5"
-                fill="#fff"
-                stroke={series.color}
                 strokeWidth="2"
                 vectorEffect="non-scaling-stroke"
-                style={{ transformBox: "fill-box" }}
+                style={{ stroke: series.color, transformBox: "fill-box" }}
               />
             </g>
           ) : null}
@@ -433,12 +440,12 @@ export function BarChart({
         >
           {[0.25, 0.5, 0.75].map((ratio) => (
             <line
+              className="stroke-muted"
               key={ratio}
               x1="0"
               x2="100"
               y1={BAR_CHART_HEIGHT * ratio}
               y2={BAR_CHART_HEIGHT * ratio}
-              stroke="#eef1f3"
               strokeWidth="1"
               vectorEffect="non-scaling-stroke"
             />
@@ -452,19 +459,21 @@ export function BarChart({
               return (
                 <rect
                   key={`${s.key}:${index}`}
-                  x={index * groupWidth + groupWidth * 0.16 + seriesIndex * barWidth}
+                  x={
+                    index * groupWidth +
+                    groupWidth * 0.16 +
+                    seriesIndex * barWidth
+                  }
                   y={top}
                   width={barWidth * 0.86}
                   height={height}
-                  fill={s.color}
                   opacity={hovered === null || hovered === index ? 1 : 0.45}
                   rx="0.8"
                   style={{
+                    fill: s.color,
                     transformBox: "fill-box",
                     transformOrigin: "bottom",
-                    transform: mounted
-                      ? "scaleY(1)"
-                      : "scaleY(0)",
+                    transform: mounted ? "scaleY(1)" : "scaleY(0)",
                     transition: `transform .7s cubic-bezier(.16,1,.3,1) ${
                       index * 18
                     }ms, opacity .2s ease`,
@@ -476,11 +485,11 @@ export function BarChart({
 
           {hovered !== null ? (
             <line
+              className="stroke-border"
               x1={hovered * groupWidth + groupWidth / 2}
               x2={hovered * groupWidth + groupWidth / 2}
               y1="0"
               y2={BAR_CHART_HEIGHT}
-              stroke="#dde4e6"
               strokeWidth="1"
               strokeDasharray="3 3"
               vectorEffect="non-scaling-stroke"
@@ -494,7 +503,10 @@ export function BarChart({
               key={index}
               type="button"
               aria-label={`${point.label}: ${trimmed
-                .map((s) => `${s.label} ${valueFormat(s.points[index]?.value ?? 0)}`)
+                .map(
+                  (s) =>
+                    `${s.label} ${valueFormat(s.points[index]?.value ?? 0)}`,
+                )
                 .join(", ")}`}
               className="h-full flex-1 cursor-default"
               onMouseEnter={() => setHovered(index)}
@@ -528,13 +540,8 @@ export function BarChart({
 
       <div className="mt-1 flex text-[10px] text-zinc-400">
         {trimmed[0].points.map((point, index) => (
-          <span
-            key={index}
-            className="flex-1 truncate text-center"
-          >
-            {index % labelStep === 0 || index === count - 1
-              ? point.label
-              : ""}
+          <span key={index} className="flex-1 truncate text-center">
+            {index % labelStep === 0 || index === count - 1 ? point.label : ""}
           </span>
         ))}
       </div>
@@ -604,13 +611,13 @@ export function BarList({
 }
 
 const DONUT_PALETTE = [
-  "#386163",
-  "#6ec3c7",
-  "#03af68",
-  "#518985",
+  "var(--series-primary)",
+  "var(--series-secondary)",
+  "var(--series-accent)",
+  "var(--series-muted)",
   "#64748b",
   "#85d0c4",
-  "#1d3536",
+  "#3e6b6d",
   "#9fd8da",
   "#5fcf96",
   "#94a3b8",
@@ -654,7 +661,9 @@ export function DonutChart({
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
   const sweep = mounted
-    ? (top.reduce((sum, point) => sum + point.value, 0) > 0 ? 1 : 0)
+    ? top.reduce((sum, point) => sum + point.value, 0) > 0
+      ? 1
+      : 0
     : 0;
 
   return (
@@ -667,11 +676,11 @@ export function DonutChart({
           aria-label={centerLabel}
         >
           <circle
+            className="stroke-muted"
             cx="50"
             cy="50"
             r={radius}
             fill="none"
-            stroke="#eef1f3"
             strokeWidth="12"
           />
           {segments.map((segment) => {
@@ -679,12 +688,12 @@ export function DonutChart({
             const visibleLength = length * sweep;
             return (
               <circle
+                style={{ stroke: segment.color }}
                 key={segment.point.label}
                 cx="50"
                 cy="50"
                 r={radius}
                 fill="none"
-                stroke={segment.color}
                 strokeWidth="12"
                 strokeDasharray={`${visibleLength} ${circumference - visibleLength}`}
                 strokeDashoffset={
@@ -734,7 +743,11 @@ export function DonutChart({
 export function ChartStatStrip({
   stats,
 }: {
-  stats: { label: string; value: string; tone?: "emerald" | "amber" | "rose" | "zinc" }[];
+  stats: {
+    label: string;
+    value: string;
+    tone?: "emerald" | "amber" | "rose" | "zinc";
+  }[];
 }) {
   const toneClass: Record<string, string> = {
     emerald: "text-emerald-700",
@@ -748,7 +761,7 @@ export function ChartStatStrip({
       {stats.map((stat) => (
         <div
           key={stat.label}
-          className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-sm"
+          className="rounded-xl border border-zinc-200/80 bg-card p-4 shadow-sm"
         >
           <p className="text-xs font-medium text-zinc-500">{stat.label}</p>
           <p
@@ -815,7 +828,11 @@ export function toDailySeries<T>(
 
   const now = new Date();
   for (let offset = days - 1; offset >= 0; offset--) {
-    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset);
+    const date = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - offset,
+    );
     const key = date.toLocaleDateString(undefined, {
       day: "2-digit",
       month: "short",

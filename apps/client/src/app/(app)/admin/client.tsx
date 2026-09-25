@@ -37,7 +37,7 @@ function QuickLink({
   return (
     <Link
       href={href}
-      className="flex h-full flex-col justify-between rounded-xl border border-slate-200 bg-white p-4 sm:p-5"
+      className="flex h-full flex-col justify-between rounded-xl border border-slate-200 bg-card p-4 sm:p-5"
     >
       <span className="flex h-9 w-9 items-center justify-center rounded-md bg-zinc-100 text-zinc-700">
         {icon}

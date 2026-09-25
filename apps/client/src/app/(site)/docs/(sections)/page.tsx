@@ -223,15 +223,15 @@ export default function DocsPage() {
   return (
     <article>
       <header className={`border-b-2 ${hairline} pb-8`}>
-        <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#518985]">
+        <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-3">
           Documentation
         </span>
         <h1
-          className={`mt-3 text-3xl font-semibold leading-tight text-[#1d3536] sm:text-4xl ${serif}`}
+          className={`mt-3 text-3xl font-semibold leading-tight text-ink sm:text-4xl ${serif}`}
         >
           Docs Hub
         </h1>
-        <p className="mt-4 max-w-2xl text-[14px] leading-relaxed text-[#386163]">
+        <p className="mt-4 max-w-2xl text-[14px] leading-relaxed text-ink-2">
           Everything you need to master Rona ERP — from your first warehouse to
           five-hop lot tracing, Rona AI queries, and the full REST API. 25
           guides · 5 sections · updated with every release.
@@ -245,10 +245,10 @@ export default function DocsPage() {
             placeholder="Search the docs — try “lots”, “invoices”, “JWT”…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full border-2 ${hairline} bg-white py-3 pl-4 pr-4 text-[13.5px] text-[#1d3536] shadow-[4px_4px_0_0_#1d3536] placeholder:text-[#518985] focus:outline-none focus:ring-2 focus:ring-[#1d3536]/30`}
+            className={`w-full border-2 ${hairline} bg-card py-3 pl-4 pr-4 text-[13.5px] text-ink shadow-[4px_4px_0_0_var(--ink)] placeholder:text-ink-3 focus:outline-none focus:ring-2 focus:ring-ink/30`}
           />
           {searchQuery ? (
-            <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-[#518985]">
+            <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-ink-3">
               {matchCount} result{matchCount === 1 ? "" : "s"} for &ldquo;
               {searchQuery}&rdquo;
             </p>
@@ -257,14 +257,14 @@ export default function DocsPage() {
 
         {!searchQuery ? (
           <div className="mt-6 flex flex-wrap items-center gap-2">
-            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#518985]">
+            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-ink-3">
               Popular
             </span>
             {popular.map((p) => (
               <Link
                 key={p.href}
                 href={p.href}
-                className={`group inline-flex items-center gap-2 border ${hairline} bg-white px-3 py-1.5 text-[12px] font-medium text-[#1d3536] hover:bg-[#1d3536] hover:text-white`}
+                className={`group inline-flex items-center gap-2 border ${hairline} bg-card px-3 py-1.5 text-[12px] font-medium text-ink hover:bg-ink hover:text-card`}
               >
                 {p.label}
                 <ArrowRight className="h-3 w-3" />
@@ -277,18 +277,18 @@ export default function DocsPage() {
       <section className="mt-12">
         {filteredCategories.length === 0 ? (
           <div
-            className={`mx-auto max-w-md border-2 ${hairline} bg-white p-10 text-center shadow-[8px_8px_0_0_#1d3536]`}
+            className={`mx-auto max-w-md border-2 ${hairline} bg-card p-10 text-center shadow-[8px_8px_0_0_var(--ink)]`}
           >
-            <p className={`text-xl font-semibold text-[#1d3536] ${serif}`}>
+            <p className={`text-xl font-semibold text-ink ${serif}`}>
               No results for &ldquo;{searchQuery}&rdquo;
             </p>
-            <p className="mt-2 text-[13px] text-[#386163]">
+            <p className="mt-2 text-[13px] text-ink-2">
               Try a broader term like &ldquo;inventory&rdquo; or
               &ldquo;roles&rdquo;.
             </p>
             <button
               onClick={() => setSearchQuery("")}
-              className="mt-5 inline-flex items-center gap-2 border border-[#1d3536] bg-[#1d3536] px-4 py-2 text-[13px] font-semibold text-white hover:bg-white hover:text-[#1d3536]"
+              className="mt-5 inline-flex items-center gap-2 border border-ink bg-ink px-4 py-2 text-[13px] font-semibold text-card hover:bg-card hover:text-ink"
             >
               Clear search
             </button>
@@ -305,37 +305,37 @@ export default function DocsPage() {
               >
                 <div className="flex flex-wrap items-end justify-between gap-4">
                   <div>
-                    <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#518985]">
+                    <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-3">
                       {category.eyebrow}
                     </span>
                     <h2
-                      className={`mt-2 flex items-center gap-3 text-2xl font-semibold text-[#1d3536] ${serif}`}
+                      className={`mt-2 flex items-center gap-3 text-2xl font-semibold text-ink ${serif}`}
                     >
                       <category.icon className="h-5 w-5" strokeWidth={1.5} />
                       {category.title}
                     </h2>
                   </div>
-                  <p className="max-w-md text-[12px] leading-relaxed text-[#386163]">
+                  <p className="max-w-md text-[12px] leading-relaxed text-ink-2">
                     {category.description}
                   </p>
                 </div>
 
                 <div
-                  className={`mt-5 grid grid-cols-1 gap-px border ${hairline} bg-[#1d3536] sm:grid-cols-2`}
+                  className={`mt-5 grid grid-cols-1 gap-px border ${hairline} bg-ink sm:grid-cols-2`}
                 >
                   {category.items.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="group relative bg-white p-4 hover:bg-[#e8f3f2]"
+                      className="group relative bg-card p-4 hover:bg-tint"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-[13px] font-semibold text-[#1d3536] group-hover:underline group-hover:underline-offset-4">
+                        <h3 className="text-[13px] font-semibold text-ink group-hover:underline group-hover:underline-offset-4">
                           {item.title}
                         </h3>
-                        <ArrowRight className="h-3.5 w-3.5 shrink-0 text-[#518985] group-hover:translate-x-0.5 group-hover:text-[#1d3536]" />
+                        <ArrowRight className="h-3.5 w-3.5 shrink-0 text-ink-3 group-hover:translate-x-0.5 group-hover:text-ink" />
                       </div>
-                      <p className="mt-1.5 text-[12px] leading-relaxed text-[#386163]">
+                      <p className="mt-1.5 text-[12px] leading-relaxed text-ink-2">
                         {item.meta}
                       </p>
                     </Link>
@@ -349,29 +349,29 @@ export default function DocsPage() {
 
       <section className="mt-14">
         <div
-          className={`border-2 ${hairline} bg-[#1d3536] p-6 text-center sm:p-8`}
+          className={`border-2 ${hairline} bg-ink p-6 text-center sm:p-8`}
         >
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#518985]">
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-card/70">
             Still stuck?
           </span>
-          <h2 className={`mt-2 text-2xl font-semibold text-white ${serif}`}>
+          <h2 className={`mt-2 text-2xl font-semibold text-card ${serif}`}>
             Launch your workspace and learn by doing
           </h2>
-          <p className="mx-auto mt-3 max-w-md text-[12.5px] leading-relaxed text-[#d6e8e6]">
+          <p className="mx-auto mt-3 max-w-md text-[12.5px] leading-relaxed text-tint-2">
             Every guide maps directly to a screen in the app. Open your
             workspace side-by-side with the docs and follow along.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/sign-in"
-              className="group inline-flex items-center gap-2 border border-white bg-white px-5 py-2.5 text-[13px] font-semibold text-[#1d3536] hover:bg-[#1d3536] hover:text-white"
+              className="group inline-flex items-center gap-2 border border-card bg-card px-5 py-2.5 text-[13px] font-semibold text-ink hover:bg-ink hover:text-card"
             >
               Launch Workspace
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
               href="/docs/getting-started/introduction"
-              className="inline-flex items-center gap-2 border border-white px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-white hover:text-[#1d3536]"
+              className="inline-flex items-center gap-2 border border-card px-5 py-2.5 text-[13px] font-semibold text-card hover:bg-card hover:text-ink"
             >
               Start with the basics
             </Link>

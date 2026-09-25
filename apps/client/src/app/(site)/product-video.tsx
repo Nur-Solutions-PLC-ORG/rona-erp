@@ -21,7 +21,7 @@ import {
   HiOutlineUsers,
 } from "react-icons/hi2";
 
-const BAR_FILL = "#1d3536";
+const BAR_FILL = "var(--ink)";
 const SCENE_MS = 5000;
 
 const SCENES = ["dashboard", "movements", "items", "trace"] as const;
@@ -384,7 +384,7 @@ export function ProductVideo() {
   return (
     <div className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
       <div className="flex h-[480px] sm:h-[580px] flex-col">
-        <div className="shrink-0 h-12 bg-white border-b border-slate-200 px-3 sm:px-4 flex items-center justify-between">
+        <div className="shrink-0 h-12 bg-card border-b border-slate-200 px-3 sm:px-4 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <Logo variant="dark" className="h-5 w-auto shrink-0" />
             <div className="hidden md:flex items-center gap-1 pl-3">
@@ -407,7 +407,7 @@ export function ProductVideo() {
               <HiOutlineMagnifyingGlass className="h-3 w-3" />
               Search
             </div>
-            <span className="rounded-md bg-zinc-950 px-2 py-1 text-[10px] font-semibold text-white">
+            <span className="rounded-md bg-ink px-2 py-1 text-[10px] font-semibold text-card">
               Owner
             </span>
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-[9px] font-bold text-slate-500">
@@ -458,7 +458,7 @@ export function ProductVideo() {
                   {kpis.map((kpi) => (
                     <div
                       key={kpi.label}
-                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-2"
+                      className="rounded-lg border border-slate-200 bg-card px-2.5 py-2"
                     >
                       <div className="flex items-center justify-between">
                         <div className="text-[9px] text-slate-400 font-medium leading-tight">
@@ -486,7 +486,7 @@ export function ProductVideo() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-[1fr_200px] gap-3 flex-1 min-h-0">
-                  <div className="flex flex-col min-h-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
+                  <div className="flex flex-col min-h-0 overflow-hidden rounded-lg border border-slate-200 bg-card">
                     <div className="px-3.5 py-2 border-b border-slate-100 flex items-center justify-between">
                       <span className="text-[11px] font-semibold text-slate-600">
                         Recent Stock Movements
@@ -552,7 +552,7 @@ export function ProductVideo() {
                   </div>
 
                   <div className="hidden sm:flex flex-col gap-3 min-h-0">
-                    <div className="flex-1 flex flex-col rounded-lg border border-slate-200 bg-white overflow-hidden">
+                    <div className="flex-1 flex flex-col rounded-lg border border-slate-200 bg-card overflow-hidden">
                       <div className="px-3 py-2 border-b border-slate-100 flex items-center gap-1.5">
                         <HiOutlineExclamationTriangle className="w-3 h-3 text-amber-500" />
                         <span className="text-[11px] font-semibold text-slate-600">
@@ -581,7 +581,7 @@ export function ProductVideo() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col rounded-lg border border-slate-200 bg-white overflow-hidden">
+                    <div className="flex flex-col rounded-lg border border-slate-200 bg-card overflow-hidden">
                       <div className="px-3 py-2 border-b border-slate-100 flex items-center gap-1.5">
                         <HiOutlineCog6Tooth className="w-3 h-3 text-slate-400" />
                         <span className="text-[11px] font-semibold text-slate-600">
@@ -610,7 +610,7 @@ export function ProductVideo() {
                   </div>
                 </div>
 
-                <div className="shrink-0 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5">
+                <div className="shrink-0 rounded-lg border border-slate-200 bg-card px-3.5 py-2.5">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-semibold text-slate-600">
                       Warehouse Utilization
@@ -655,7 +655,7 @@ export function ProductVideo() {
                 key="movements"
                 className="absolute inset-0 px-3 sm:px-4 py-3 overflow-hidden animate-scene-video"
               >
-                <div className="h-full flex flex-col rounded-lg border border-slate-200 bg-white overflow-hidden">
+                <div className="h-full flex flex-col rounded-lg border border-slate-200 bg-card overflow-hidden">
                   <div className="shrink-0 px-3.5 py-2.5 border-b border-slate-100">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-[11px] font-semibold text-slate-600">
@@ -677,7 +677,7 @@ export function ProductVideo() {
                           key={tab}
                           className={`rounded-md px-2 py-0.5 text-[9px] font-medium ${
                             i === 0
-                              ? "bg-slate-900 text-white"
+                              ? "bg-ink text-card"
                               : "bg-slate-100 text-slate-500"
                           }`}
                         >
@@ -760,7 +760,7 @@ export function ProductVideo() {
                       Showing 1–8 of 8
                     </span>
                     <div className="flex items-center gap-1">
-                      <span className="rounded bg-slate-900 px-1.5 py-0.5 text-[9px] font-medium text-white">
+                      <span className="rounded bg-ink px-1.5 py-0.5 text-[9px] font-medium text-card">
                         1
                       </span>
                       <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium text-slate-500">
@@ -777,7 +777,7 @@ export function ProductVideo() {
                 key="items"
                 className="absolute inset-0 px-3 sm:px-4 py-3 overflow-hidden animate-scene-video"
               >
-                <div className="h-full flex flex-col rounded-lg border border-slate-200 bg-white overflow-hidden">
+                <div className="h-full flex flex-col rounded-lg border border-slate-200 bg-card overflow-hidden">
                   <div className="shrink-0 px-3.5 py-2.5 border-b border-slate-100">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-[11px] font-semibold text-slate-600">
@@ -798,7 +798,7 @@ export function ProductVideo() {
                           key={tab}
                           className={`rounded-md px-2 py-0.5 text-[9px] font-medium ${
                             i === 0
-                              ? "bg-slate-900 text-white"
+                              ? "bg-ink text-card"
                               : "bg-slate-100 text-slate-500"
                           }`}
                         >
@@ -879,7 +879,7 @@ export function ProductVideo() {
                       Showing 1–8 of 24
                     </span>
                     <div className="flex items-center gap-1">
-                      <span className="rounded bg-slate-900 px-1.5 py-0.5 text-[9px] font-medium text-white">
+                      <span className="rounded bg-ink px-1.5 py-0.5 text-[9px] font-medium text-card">
                         1
                       </span>
                       <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium text-slate-500">
@@ -900,7 +900,7 @@ export function ProductVideo() {
                 className="absolute inset-0 px-3 sm:px-4 py-3 overflow-hidden animate-scene-video"
               >
                 <div className="h-full flex flex-col sm:flex-row gap-3">
-                  <div className="flex-1 flex flex-col rounded-lg border border-slate-200 bg-white overflow-hidden">
+                  <div className="flex-1 flex flex-col rounded-lg border border-slate-200 bg-card overflow-hidden">
                     <div className="px-3.5 py-2.5 border-b border-slate-100 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-[11px] font-semibold text-slate-600">
@@ -950,7 +950,7 @@ export function ProductVideo() {
                   </div>
 
                   <div className="hidden sm:flex w-[200px] shrink-0 flex-col gap-3">
-                    <div className="rounded-lg border border-slate-200 bg-white p-3">
+                    <div className="rounded-lg border border-slate-200 bg-card p-3">
                       <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
                         Lot Info
                       </div>
@@ -977,7 +977,7 @@ export function ProductVideo() {
                         ))}
                       </div>
                     </div>
-                    <div className="rounded-lg border border-slate-200 bg-white p-3">
+                    <div className="rounded-lg border border-slate-200 bg-card p-3">
                       <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
                         Chain of Custody
                       </div>
@@ -1010,7 +1010,7 @@ export function ProductVideo() {
                         ))}
                       </div>
                     </div>
-                    <div className="rounded-lg border border-slate-200 bg-white p-3">
+                    <div className="rounded-lg border border-slate-200 bg-card p-3">
                       <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
                         Recent Activity
                       </div>

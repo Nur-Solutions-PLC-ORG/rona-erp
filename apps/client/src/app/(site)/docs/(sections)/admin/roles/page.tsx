@@ -45,7 +45,7 @@ export default function RolesPage() {
       </Section>
 
       <Section title="Default roles">
-        <div className="grid grid-cols-1 gap-px border border-[#1d3536] bg-[#1d3536] sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-px border border-ink bg-ink sm:grid-cols-2">
           {[
             {
               name: "Admin",
@@ -77,18 +77,18 @@ export default function RolesPage() {
               perms: ["READ ONLY", "REPORTS", "DASHBOARDS"],
             },
           ].map((role) => (
-            <div key={role.name} className="bg-white p-5 hover:bg-[#f2f3fa]">
-              <h3 className="text-[14px] font-semibold text-[#1d3536]">
+            <div key={role.name} className="bg-card p-5 hover:bg-background">
+              <h3 className="text-[14px] font-semibold text-ink">
                 {role.name}
               </h3>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#386163]">
+              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-2">
                 {role.body}
               </p>
-              <div className="mt-4 flex flex-wrap gap-1.5 border-t border-[#d6e8e6] pt-3">
+              <div className="mt-4 flex flex-wrap gap-1.5 border-t border-tint-2 pt-3">
                 {role.perms.map((perm) => (
                   <span
                     key={perm}
-                    className="border border-[#1d3536] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#1d3536]"
+                    className="border border-ink px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-ink"
                   >
                     {perm}
                   </span>

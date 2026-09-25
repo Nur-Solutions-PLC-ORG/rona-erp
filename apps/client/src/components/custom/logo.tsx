@@ -74,17 +74,18 @@ const VIEW_BOX = "126 301.5 414.5 148";
 
 export type LogoVariant = "gradient" | "light" | "dark" | "mark";
 
+// "dark" is the wordmark for light surfaces, so it turns pale in dark mode.
 const FLAT_FILL: Record<"light" | "dark", string> = {
-  light: "#C9DCDA",
-  dark: "#1D3536",
+  light: "fill-brand-pale",
+  dark: "fill-brand-deep dark:fill-brand-pale",
 };
 
 type Props = {
   className?: string;
   /**
    * gradient: teal gradient wordmark, for dark surfaces (default)
-   * light: flat pale wordmark, for dark surfaces
-   * dark: flat deep-teal wordmark, for light surfaces
+   * light: flat pale wordmark, for always-dark surfaces
+   * dark: flat deep-teal wordmark for light surfaces; pale in dark mode
    * mark: square app-icon tile
    */
   variant?: LogoVariant;
@@ -142,7 +143,7 @@ function Wordmark({
       ) : (
         <path
           d={PIECES.map((piece) => piece.d).join(" ")}
-          fill={FLAT_FILL[variant]}
+          className={FLAT_FILL[variant]}
         />
       )}
     </svg>
@@ -183,14 +184,14 @@ const Logo = ({
       <span
         className={cn(
           "font-heading text-[0.8rem] leading-[1.1] font-medium",
-          variant === "dark" ? "text-brand-teal" : "text-brand-green",
+          "text-tagline",
           lockupClassName,
         )}
       >
         <span
           className={cn(
             "block font-bold",
-            variant === "dark" ? "text-brand-deep" : "text-brand-green",
+            variant === "dark" ? "text-tagline-strong" : "text-tagline",
           )}
         >
           RONA

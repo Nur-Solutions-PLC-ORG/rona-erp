@@ -1,5 +1,6 @@
 "use client";
 
+import ThemeToggle from "@/components/custom/theme-toggle";
 import Logo from "@/components/custom/logo";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -96,8 +97,8 @@ function AdminSidebar({
     cn(
       "relative flex items-center gap-3 mx-2 px-3 py-2 rounded-md text-xs font-medium transition-colors",
       active
-        ? "bg-sidebar-accent text-white font-semibold before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-sidebar-primary"
-        : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-white",
+        ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-sidebar-primary"
+        : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
     );
 
   const renderItem = (label: string, href: string) => {
@@ -163,7 +164,7 @@ function AdminSidebar({
             onClick={onToggleCollapse}
             title="Expand sidebar"
             aria-label="Expand sidebar"
-            className="flex h-9 w-full items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-white"
+            className="flex h-9 w-full items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           >
             <HiOutlineChevronDoubleRight className="h-4 w-4" />
           </button>
@@ -193,7 +194,7 @@ function AdminSidebar({
           >
             <HiOutlineShieldCheck className="h-4 w-4 shrink-0 text-sidebar-primary" />
             <span className="min-w-0 flex-1 text-left">
-              <span className="block truncate text-xs font-semibold text-white">Platform management
+              <span className="block truncate text-xs font-semibold text-sidebar-accent-foreground">Platform management
               </span>
               <span className="block truncate text-[11px] text-sidebar-foreground/55 font-mono">
                 Super admin only
@@ -217,7 +218,7 @@ function AdminSidebar({
             onClick={onToggleCollapse}
             title="Collapse sidebar"
             aria-label="Collapse sidebar"
-            className="flex h-9 w-full items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-white"
+            className="flex h-9 w-full items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           >
             <HiOutlineChevronDoubleLeft className="h-4 w-4" />
           </button>
@@ -246,7 +247,7 @@ function AdminNavbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-zinc-200">
+    <header className="sticky top-0 z-50 bg-card border-b border-zinc-200">
       <div className="h-14 px-4 sm:px-6 flex items-center gap-3">
         <button
           type="button"
@@ -271,7 +272,7 @@ function AdminNavbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
 
         <Logo variant="dark" className="h-5 w-auto shrink-0" />
 
-        <span className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-600">
+        <span className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-card px-2.5 py-1.5 text-xs font-semibold text-zinc-600">
           <HiOutlineWrenchScrewdriver className="h-3.5 w-3.5" />
           Admin
         </span>
@@ -281,6 +282,8 @@ function AdminNavbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
         </span>
 
         <div className="flex-1" />
+
+        <ThemeToggle className="border-transparent" />
 
         <div className="relative">
           <button
@@ -309,7 +312,7 @@ function AdminNavbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
                 className="fixed inset-0 z-10"
                 onClick={() => setProfileOpen(false)}
               />
-              <div className="absolute right-0 top-full mt-1.5 z-20 w-64 rounded-lg bg-white shadow-lg border border-zinc-200 py-1.5">
+              <div className="absolute right-0 top-full mt-1.5 z-20 w-64 rounded-lg bg-card shadow-lg border border-zinc-200 py-1.5">
                 <div className="px-3 py-2 border-b border-zinc-100">
                   <p className="text-xs font-semibold text-zinc-800 truncate">
                     {user?.name ?? "Signed in"}
@@ -356,7 +359,7 @@ const AdminWrapper = ({ children }: Props) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="flex h-screen flex-col app-canvas">
       <AdminNavbar onOpenMobileNav={() => setMobileOpen(true)} />
 
       <div className="flex flex-1 min-h-0">

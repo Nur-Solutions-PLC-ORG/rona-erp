@@ -1,5 +1,6 @@
 "use client";
 
+import ThemeToggle from "@/components/custom/theme-toggle";
 import Logo from "@/components/custom/logo";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -89,15 +90,15 @@ export default function DocsLayout({
   }, [pathname]);
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-[#f2f3fa] lg:h-screen">
+    <div className="flex h-dvh flex-col overflow-hidden bg-background lg:h-screen">
       <header
-        className={`relative z-50 shrink-0 border-b ${hairline} bg-white`}
+        className={`relative z-50 shrink-0 border-b ${hairline} bg-card`}
       >
         <nav className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className={`border ${hairline} p-2 text-[#1d3536] hover:bg-[#e8f3f2] lg:hidden`}
+              className={`border ${hairline} p-2 text-ink hover:bg-tint lg:hidden`}
               aria-label="Toggle navigation"
             >
               {isSidebarOpen ? (
@@ -111,9 +112,10 @@ export default function DocsLayout({
             </Link>
           </div>
           <div className="flex items-center gap-0">
+            <ThemeToggle className="mr-2 rounded-none border-ink/30 text-ink-2" />
             <Link
               href="/"
-              className="hidden px-4 py-2 text-[13px] font-medium text-[#386163] hover:text-[#1d3536] sm:block"
+              className="hidden px-4 py-2 text-[13px] font-medium text-ink-2 hover:text-ink sm:block"
             >
               <span className="inline-flex items-center gap-1.5">
                 <Home className="h-3.5 w-3.5" />
@@ -122,7 +124,7 @@ export default function DocsLayout({
             </Link>
             <Link
               href="/docs"
-              className={`flex items-center gap-1.5 border-l ${hairline} px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-widest text-[#1d3536] hover:bg-[#e8f3f2]`}
+              className={`flex items-center gap-1.5 border-l ${hairline} px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-widest text-ink hover:bg-tint`}
             >
               Docs Hub
             </Link>
@@ -133,32 +135,32 @@ export default function DocsLayout({
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {isSidebarOpen ? (
           <div
-            className="fixed inset-0 z-40 bg-[#1d3536]/30 lg:hidden"
+            className="fixed inset-0 z-40 bg-ink/30 lg:hidden"
             onClick={() => setIsSidebarOpen(false)}
           />
         ) : null}
 
         <aside
-          className={`fixed inset-y-0 left-0 z-40 w-72 transform border-r-2 ${hairline} bg-white transition-transform duration-300 ease-in-out lg:static lg:h-full lg:shrink-0 lg:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-40 w-72 transform border-r-2 ${hairline} bg-card transition-transform duration-300 ease-in-out lg:static lg:h-full lg:shrink-0 lg:translate-x-0 ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
           <nav
-            className={`h-full overflow-y-auto overscroll-contain border-b-2 ${hairline} bg-white p-4 pt-14 lg:border-b-0 lg:pt-4`}
+            className={`h-full overflow-y-auto overscroll-contain border-b-2 ${hairline} bg-card p-4 pt-14 lg:border-b-0 lg:pt-4`}
           >
             <nav className="space-y-7">
               {sidebarSections.map((section) => (
                 <div key={section.title}>
                   <div className="mb-3 flex items-center gap-2">
                     <span
-                      className={`flex h-6 w-6 items-center justify-center border ${hairline} bg-[#e8f3f2]`}
+                      className={`flex h-6 w-6 items-center justify-center border ${hairline} bg-tint`}
                     >
                       <section.icon
-                        className="h-3.5 w-3.5 text-[#1d3536]"
+                        className="h-3.5 w-3.5 text-ink"
                         strokeWidth={1.5}
                       />
                     </span>
-                    <h3 className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#518985]">
+                    <h3 className="font-mono text-[10px] font-bold uppercase tracking-widest text-ink-3">
                       {section.title}
                     </h3>
                   </div>
@@ -172,12 +174,12 @@ export default function DocsLayout({
                             onClick={() => setIsSidebarOpen(false)}
                             className={`flex items-center gap-2 border-l-2 px-3 py-1.5 text-[12.5px] font-medium transition-colors ${
                               isActive
-                                ? `border-[#1d3536] bg-[#1d3536] text-white`
-                                : `border-transparent text-[#386163] hover:border-[#1d3536] hover:bg-[#e8f3f2] hover:text-[#1d3536]`
+                                ? `border-ink bg-ink text-card`
+                                : `border-transparent text-ink-2 hover:border-ink hover:bg-tint hover:text-ink`
                             }`}
                           >
                             <ChevronRight
-                              className={`h-3 w-3 shrink-0 ${isActive ? "text-white" : "text-[#518985]"}`}
+                              className={`h-3 w-3 shrink-0 ${isActive ? "text-card" : "text-ink-3"}`}
                             />
                             {item.title}
                           </Link>
@@ -190,10 +192,10 @@ export default function DocsLayout({
             </nav>
 
             <div className={`mt-8 border-t ${hairline} pt-5 pb-2`}>
-              <p className="font-mono text-[9px] font-bold uppercase tracking-widest text-[#518985]">
+              <p className="font-mono text-[9px] font-bold uppercase tracking-widest text-ink-3">
                 Version
               </p>
-              <p className="mt-1.5 font-mono text-[11px] font-semibold text-[#1d3536]">
+              <p className="mt-1.5 font-mono text-[11px] font-semibold text-ink">
                 v2.6 · Real-time lot tracing
               </p>
             </div>

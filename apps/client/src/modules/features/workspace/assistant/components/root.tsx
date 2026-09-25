@@ -208,7 +208,7 @@ export default function AssistantRoot() {
               {keyStats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+                  className="rounded-xl border border-slate-200 bg-card p-5 shadow-sm"
                 >
                   <p className="text-xs font-medium text-slate-500">
                     {stat.label}

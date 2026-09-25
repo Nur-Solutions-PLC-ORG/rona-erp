@@ -1,4 +1,5 @@
 import QueryClientWrapper from "@/components/query-client-wrapper";
+import ThemeProvider from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { JetBrains_Mono, Quicksand } from "next/font/google";
@@ -39,6 +40,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
         "h-full",
         "antialiased",
@@ -47,8 +49,10 @@ export default function RootLayout({
         fontMono.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">
-        <QueryClientWrapper>{children}</QueryClientWrapper>
+      <body className="app-canvas min-h-full flex flex-col">
+        <ThemeProvider>
+          <QueryClientWrapper>{children}</QueryClientWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

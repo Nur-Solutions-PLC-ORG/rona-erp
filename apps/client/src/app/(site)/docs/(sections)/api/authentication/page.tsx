@@ -64,10 +64,10 @@ export default function AuthenticationPage() {
 
       <Section title="Using the token">
         <Card shadow>
-          <p className="font-mono text-[13px] font-semibold text-[#1d3536]">
+          <p className="font-mono text-[13px] font-semibold text-ink">
             Authorization header
           </p>
-          <p className="mt-2 border-l-2 border-[#1d3536] bg-[#f2f3fa] px-3 py-2 font-mono text-[12px] text-[#386163]">
+          <p className="mt-2 border-l-2 border-ink bg-background px-3 py-2 font-mono text-[12px] text-ink-2">
             Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
           </p>
         </Card>

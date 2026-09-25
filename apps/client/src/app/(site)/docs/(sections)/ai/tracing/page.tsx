@@ -105,7 +105,7 @@ export default function AiTracingPage() {
           products, which then become finished goods.
         </P>
         <Card shadow>
-          <div className="space-y-2.5 font-mono text-[12.5px] text-[#1d3536]">
+          <div className="space-y-2.5 font-mono text-[12.5px] text-ink">
             <p className="font-sans text-[13px] font-semibold">
               Query — &ldquo;Trace lot FG-FINAL-001&rdquo;
             </p>

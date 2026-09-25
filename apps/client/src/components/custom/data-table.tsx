@@ -87,7 +87,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="flex-1 flex">
-      <div className="flex flex-1 bg-white rounded-lg border border-zinc-200 overflow-hidden flex-col">
+      <div className="flex flex-1 bg-card rounded-lg border border-zinc-200 overflow-hidden flex-col">
         <div className="flex w-full flex-col">
           <ScrollArea className="w-full">
             <Table>
@@ -177,7 +177,7 @@ export function DataTable<TData, TValue>({
               <div className="flex items-center gap-2">
                 <p className="text-xs text-zinc-500">Show</p>
                 <Dropdown
-                  className="min-w-0 w-20! max-w-20! h-7! bg-white!"
+                  className="min-w-0 w-20! max-w-20! h-7! bg-card!"
                   options={PAGE_SIZE_OPTIONS}
                   placeholder="Size"
                   value={pagination.limit?.toString() || ""}
@@ -209,7 +209,7 @@ export function DataTable<TData, TValue>({
                   type="button"
                   disabled={!loadMore.hasMore || loading}
                   onClick={loadMore.onLoadMore}
-                  className="ml-auto flex items-center justify-center gap-1.5 px-3 rounded-md bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition border border-zinc-200 disabled:opacity-50 disabled:pointer-events-none h-7"
+                  className="ml-auto flex items-center justify-center gap-1.5 px-3 rounded-md bg-card hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition border border-zinc-200 disabled:opacity-50 disabled:pointer-events-none h-7"
                 >
                   {loading ? (
                     <RiLoader5Fill className="size-3.5 animate-spin" />
@@ -219,7 +219,7 @@ export function DataTable<TData, TValue>({
               ) : (
               <div className="flex items-center gap-2 ml-auto">
                 <p className="text-xs text-zinc-500">Page</p>
-                <div className="flex rounded-lg border border-zinc-200 bg-white overflow-hidden h-7">
+                <div className="flex rounded-lg border border-zinc-200 bg-card overflow-hidden h-7">
                   <button
                     type="button"
                     aria-label="Previous page"

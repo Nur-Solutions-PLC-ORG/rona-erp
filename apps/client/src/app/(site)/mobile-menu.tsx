@@ -40,7 +40,7 @@ export function MobileMenu({
         aria-expanded={open}
         aria-controls="site-mobile-menu"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex h-9 w-9 items-center justify-center border border-[#d6e8e6] text-[#386163] transition-colors hover:bg-[#e8f3f2] hover:text-[#1d3536]"
+        className="inline-flex h-9 w-9 items-center justify-center border border-tint-2 text-ink-2 transition-colors hover:bg-tint hover:text-ink"
       >
         {open ? (
           <HiOutlineXMark className="h-5 w-5" />
@@ -52,7 +52,7 @@ export function MobileMenu({
       {open ? (
         <div
           id="site-mobile-menu"
-          className="absolute inset-x-0 top-14 border-b border-[#1d3536] bg-white shadow-sm"
+          className="absolute inset-x-0 top-14 border-b border-ink bg-card shadow-sm"
         >
           <nav className="mx-auto flex w-full max-w-7xl flex-col px-4 pb-6 pt-2 sm:px-6">
             {links.map((link) => (
@@ -60,7 +60,7 @@ export function MobileMenu({
                 key={link.label}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="border-b border-[#d6e8e6] py-3.5 text-[13px] font-medium text-[#386163] hover:text-[#1d3536] last:border-0"
+                className="border-b border-tint-2 py-3.5 text-[13px] font-medium text-ink-2 hover:text-ink last:border-0"
               >
                 {link.label}
               </a>
@@ -68,7 +68,7 @@ export function MobileMenu({
             <Link
               href={ctaHref}
               onClick={() => setOpen(false)}
-              className="mt-4 inline-flex items-center justify-center gap-2 border border-[#1d3536] bg-[#1d3536] px-4 py-3 text-[13px] font-semibold text-white transition-colors hover:bg-white hover:text-[#1d3536]"
+              className="mt-4 inline-flex items-center justify-center gap-2 border border-ink bg-ink px-4 py-3 text-[13px] font-semibold text-card transition-colors hover:bg-card hover:text-ink"
             >
               {ctaLabel}
               <HiOutlineArrowRight className="h-4 w-4" />

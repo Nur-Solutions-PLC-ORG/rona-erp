@@ -207,8 +207,8 @@ export function Sidebar({
     cn(
       "relative mx-2 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
       active
-        ? "bg-sidebar-accent font-semibold text-white before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-sidebar-primary"
-        : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-white",
+        ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-sidebar-primary"
+        : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
       FOCUS_RING,
     );
 
@@ -229,8 +229,8 @@ export function Sidebar({
           className={cn(
             "relative flex items-center justify-center rounded-lg py-2 transition-colors",
             active
-              ? "bg-sidebar-accent text-white"
-              : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-white",
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
             FOCUS_RING,
           )}
         >
@@ -374,13 +374,13 @@ export function Sidebar({
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-sidebar-accent text-sidebar-foreground">
             <OrgLogo
               src={organization?.logoUrl}
-              className="h-8 w-8 bg-white"
+              className="h-8 w-8 bg-card"
               iconClassName="h-4 w-4"
             />
           </span>
           {!collapsed ? (
             <span className="min-w-0 flex-1 text-left">
-              <span className="block truncate text-sm font-semibold text-white">
+              <span className="block truncate text-sm font-semibold text-sidebar-accent-foreground">
                 {organization?.name ?? "No organization"}
               </span>
               <span className="block truncate text-xs text-sidebar-foreground/55 font-mono">
@@ -410,7 +410,7 @@ export function Sidebar({
             role="menu"
             aria-label="Organizations"
             className={cn(
-              "absolute z-40 w-60 rounded-md bg-white shadow-lg border border-zinc-200 py-1.5",
+              "absolute z-40 w-60 rounded-md bg-card shadow-lg border border-zinc-200 py-1.5",
               collapsed ? "left-full top-1 ml-2" : "left-3 right-3 top-full mt-1",
             )}
           >
@@ -474,7 +474,7 @@ export function Sidebar({
               title="Expand sidebar"
               aria-label="Expand sidebar"
               className={cn(
-                "flex h-9 w-full items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-white",
+                "flex h-9 w-full items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 FOCUS_RING,
               )}
             >
@@ -495,7 +495,7 @@ export function Sidebar({
               title="Collapse sidebar"
               aria-label="Collapse sidebar"
               className={cn(
-                "flex h-9 w-full items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-white",
+                "flex h-9 w-full items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 FOCUS_RING,
               )}
             >
@@ -529,7 +529,7 @@ export function Sidebar({
             title="Close navigation"
             aria-label="Close navigation"
             className={cn(
-              "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-white",
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
               FOCUS_RING,
             )}
           >

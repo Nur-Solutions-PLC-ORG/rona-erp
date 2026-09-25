@@ -173,7 +173,7 @@ export default function FinanceDashboardView() {
         ].map((kpi) => (
           <div
             key={kpi.label}
-            className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-sm"
+            className="rounded-xl border border-zinc-200/80 bg-card p-4 shadow-sm"
           >
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs font-medium text-zinc-500">{kpi.label}</p>
@@ -321,7 +321,7 @@ export default function FinanceDashboardView() {
           <a
             key={link.href}
             href={link.href}
-            className="rounded-xl border border-zinc-200/80 bg-white px-4 py-3 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:border-brand-sea hover:text-primary"
+            className="rounded-xl border border-zinc-200/80 bg-card px-4 py-3 text-sm font-medium text-zinc-700 shadow-sm transition-colors hover:border-brand-sea hover:text-primary"
           >
             {link.label} →
           </a>

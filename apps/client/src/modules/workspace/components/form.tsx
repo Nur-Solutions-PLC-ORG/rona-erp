@@ -170,7 +170,7 @@ export function ModalWrapper({
         role={role}
         aria-modal="true"
         className={cn(
-          "drawer-slide-in fixed inset-y-0 right-0 z-10 flex w-full max-w-lg flex-col overflow-hidden bg-white shadow-xl",
+          "drawer-slide-in fixed inset-y-0 right-0 z-10 flex w-full max-w-lg flex-col overflow-hidden bg-card shadow-xl",
           maxWidth,
         )}
       >

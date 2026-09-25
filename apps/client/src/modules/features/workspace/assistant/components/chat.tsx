@@ -100,7 +100,7 @@ export function AssistantShell({ children }: { children: ReactNode }) {
     <div className="flex justify-start">
       <div className="max-w-[92%]">
         <div className="mb-1.5 text-xs font-semibold text-zinc-500">Rona AI</div>
-        <div className="ai-fade-up rounded-2xl rounded-tl-sm border border-zinc-200 bg-white px-4 py-3 shadow-sm">
+        <div className="ai-fade-up rounded-2xl rounded-tl-sm border border-zinc-200 bg-card px-4 py-3 shadow-sm">
           {children}
         </div>
       </div>
@@ -190,7 +190,7 @@ export function AnimatedAnswer({
             {result.source.map((label) => (
               <span
                 key={label}
-                className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-zinc-600 ring-1 ring-zinc-200"
+                className="rounded-full bg-card px-2 py-0.5 text-xs font-medium text-zinc-600 ring-1 ring-zinc-200"
               >
                 {label}
               </span>
@@ -230,7 +230,7 @@ export function AnimatedAnswer({
 
 export function SummaryMetricGroup({ group }: { group: AiMetricGroup }) {
   return (
-    <div className="h-full rounded-xl border border-zinc-200/80 bg-white p-4 shadow-sm">
+    <div className="h-full rounded-xl border border-zinc-200/80 bg-card p-4 shadow-sm">
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
         {group.label}
       </p>
@@ -301,7 +301,7 @@ export function SummaryAlerts({ alerts }: { alerts: AiAlertOut[] }) {
         return (
           <div
             className={cn(
-              "flex items-start gap-3 rounded-lg border border-zinc-200/80 border-l-4 bg-white px-4 py-3 shadow-sm",
+              "flex items-start gap-3 rounded-lg border border-zinc-200/80 border-l-4 bg-card px-4 py-3 shadow-sm",
               accent.bar,
             )}
           >
@@ -363,7 +363,7 @@ export const AI_LANGUAGES = [
 ] as const;
 
 const COMPOSER_INPUT =
-  "h-11 w-full rounded-xl border border-zinc-300 bg-white pl-11 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-50";
+  "h-11 w-full rounded-xl border border-zinc-300 bg-card pl-11 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-50";
 
 export function ChatComposer({
   onSend,
@@ -402,7 +402,7 @@ export function ChatComposer({
               type="button"
               onClick={() => submit(suggestion)}
               disabled={isSending}
-              className="rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 hover:border-zinc-300 disabled:opacity-50"
+              className="rounded-full border border-zinc-200 bg-card px-3.5 py-2 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 hover:border-zinc-300 disabled:opacity-50"
             >
               {suggestion}
             </button>
@@ -439,7 +439,7 @@ export function ChatComposer({
           onChange={onLanguageChange}
           disabled={isSending}
           icon={HiOutlineGlobeAlt}
-          className="h-11 w-auto min-w-16 max-w-36 shrink-0 rounded-xl border-zinc-300 bg-white px-2.5 text-sm font-medium text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50 sm:min-w-24 sm:px-3"
+          className="h-11 w-auto min-w-16 max-w-36 shrink-0 rounded-xl border-zinc-300 bg-card px-2.5 text-sm font-medium text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50 sm:min-w-24 sm:px-3"
         />
 
         <button

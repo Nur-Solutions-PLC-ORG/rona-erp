@@ -1,5 +1,6 @@
 "use client";
 
+import ThemeToggle from "@/components/custom/theme-toggle";
 import Logo from "@/components/custom/logo";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -25,7 +26,7 @@ import { CLIENT_APP_LAUNCHER_PAGE } from "@rona/routes/app";
 import { MobileMenu } from "./mobile-menu";
 
 const container = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
-const hairline = "border-[#1d3536]";
+const hairline = "border-ink";
 
 const serif = "font-heading tracking-[-0.01em]";
 
@@ -37,7 +38,7 @@ const springSnap = {
 } as const;
 
 const hoverFill =
-  "transition-none group-hover:bg-[#1d3536] group-hover:text-white group-hover:border-[#1d3536]";
+  "transition-none group-hover:bg-ink group-hover:text-card group-hover:border-ink";
 
 const navLinks = [
   { label: "Platform", href: "#platform" },
@@ -51,7 +52,7 @@ function Navbar() {
   const { user } = useSession();
 
   return (
-    <header className={`sticky top-0 z-50 border-b ${hairline} bg-white`}>
+    <header className={`sticky top-0 z-50 border-b ${hairline} bg-card`}>
       <nav className={`${container} flex h-14 items-center justify-between`}>
         <Link href="/" className="flex items-center shrink-0">
           <Logo variant="dark" className="h-6 w-auto" />
@@ -62,7 +63,7 @@ function Navbar() {
             <a
               key={link.label}
               href={link.href}
-              className="flex h-full items-center border-l border-[#d6e8e6] px-5 text-[13px] font-medium text-[#386163] hover:bg-[#e8f3f2] hover:text-[#1d3536]"
+              className="flex h-full items-center border-l border-tint-2 px-5 text-[13px] font-medium text-ink-2 hover:bg-tint hover:text-ink"
             >
               {link.label}
             </a>
@@ -73,9 +74,9 @@ function Navbar() {
           {user ? (
             <Link
               href={CLIENT_APP_LAUNCHER_PAGE}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-[#386163] hover:text-[#1d3536]"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-ink-2 hover:text-ink"
             >
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1d3536] text-[10px] font-bold uppercase text-white">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ink text-[10px] font-bold uppercase text-card">
                 {user.name?.slice(0, 1) ?? "U"}
               </span>
               My account
@@ -83,18 +84,20 @@ function Navbar() {
           ) : (
             <Link
               href="/sign-in"
-              className="hidden sm:flex items-center px-4 py-2 text-[13px] font-medium text-[#386163] hover:text-[#1d3536]"
+              className="hidden sm:flex items-center px-4 py-2 text-[13px] font-medium text-ink-2 hover:text-ink"
             >
               Sign in
             </Link>
           )}
           <Link
             href={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
-            className="group hidden items-center gap-2 border border-[#1d3536] bg-[#1d3536] px-4 py-2 text-[13px] font-semibold text-white hover:bg-white hover:text-[#1d3536] sm:flex"
+            className="group hidden items-center gap-2 border border-ink bg-ink px-4 py-2 text-[13px] font-semibold text-card hover:bg-card hover:text-ink sm:flex"
           >
             {user ? "Go to workspace" : "Launch Workspace"}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
+
+          <ThemeToggle className="ml-2 rounded-none border-ink/30 text-ink-2" />
 
           <MobileMenu
             links={navLinks}
@@ -123,31 +126,31 @@ function SnapBadge({
   delay?: number;
 }) {
   const tones = {
-    ok: "text-[#1d3536]",
-    warn: "text-[#1d3536]",
-    neutral: "text-[#1d3536]",
+    ok: "text-ink",
+    warn: "text-ink",
+    neutral: "text-ink",
   };
   return (
     <motion.div
       initial={{ opacity: 0, x: -14, scale: 0.94 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       transition={{ ...springSnap, delay }}
-      className={`absolute z-20 hidden lg:flex items-center gap-2.5 border ${hairline} bg-white px-3 py-2.5 shadow-[4px_4px_0_0_#1d3536] ${className ?? ""}`}
+      className={`absolute z-20 hidden lg:flex items-center gap-2.5 border ${hairline} bg-card px-3 py-2.5 shadow-[4px_4px_0_0_var(--ink)] ${className ?? ""}`}
     >
       <span
         className={`flex h-7 w-7 items-center justify-center border ${hairline} ${
           tone === "ok"
-            ? "bg-[#e8f5e9]"
+            ? "bg-emerald-50"
             : tone === "warn"
-              ? "bg-[#fdeeca]"
-              : "bg-[#e8f3f2]"
+              ? "bg-warn-soft"
+              : "bg-tint"
         }`}
       >
         {icon}
       </span>
       <div className={tones[tone]}>
         <div className="text-[11px] font-semibold leading-tight">{title}</div>
-        <div className="text-[10px] font-mono text-[#518985] leading-tight">
+        <div className="text-[10px] font-mono text-ink-3 leading-tight">
           {meta}
         </div>
       </div>
@@ -164,7 +167,7 @@ function DashboardPreview() {
       qty: "450.00 KG",
       pct: 82,
       status: "OK",
-      st: "bg-[#1d3536] text-white",
+      st: "bg-ink text-card",
     },
     {
       sku: "VC-012",
@@ -173,7 +176,7 @@ function DashboardPreview() {
       qty: "12.00 EA",
       pct: 12,
       status: "LOW",
-      st: "bg-[#fdeeca] text-[#1d3536] border border-[#1d3536]",
+      st: "bg-warn-soft text-ink border border-ink",
     },
     {
       sku: "BR-100",
@@ -182,7 +185,7 @@ function DashboardPreview() {
       qty: "230.00 EA",
       pct: 64,
       status: "OK",
-      st: "bg-[#1d3536] text-white",
+      st: "bg-ink text-card",
     },
     {
       sku: "DR-045",
@@ -191,7 +194,7 @@ function DashboardPreview() {
       qty: "0.00 EA",
       pct: 0,
       status: "OUT",
-      st: "bg-[#1d3536] text-white",
+      st: "bg-ink text-card",
     },
   ];
 
@@ -237,26 +240,26 @@ function DashboardPreview() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        className={`relative border-2 ${hairline} bg-white shadow-[8px_8px_0_0_#1d3536]`}
+        className={`relative border-2 ${hairline} bg-card shadow-[8px_8px_0_0_var(--ink)]`}
       >
         <div
-          className={`flex h-9 items-center border-b ${hairline} bg-[#e8f3f2] px-3`}
+          className={`flex h-9 items-center border-b ${hairline} bg-tint px-3`}
         >
           <div className="flex gap-1.5">
-            <span className="h-2.5 w-2.5 border border-[#1d3536] bg-white" />
-            <span className="h-2.5 w-2.5 border border-[#1d3536] bg-white" />
-            <span className="h-2.5 w-2.5 border border-[#1d3536] bg-[#1d3536]" />
+            <span className="h-2.5 w-2.5 border border-ink bg-card" />
+            <span className="h-2.5 w-2.5 border border-ink bg-card" />
+            <span className="h-2.5 w-2.5 border border-ink bg-ink" />
           </div>
-          <div className="mx-auto flex items-center gap-1.5 border border-[#1d3536] bg-white px-3 py-0.5 font-mono text-[10px] text-[#518985]">
+          <div className="mx-auto flex items-center gap-1.5 border border-ink bg-card px-3 py-0.5 font-mono text-[10px] text-ink-3">
             <Lock className="h-2.5 w-2.5" />
             app.rona-erp.com/dashboard
           </div>
-          <span className="font-mono text-[10px] text-[#518985]">v2.6.1</span>
+          <span className="font-mono text-[10px] text-ink-3">v2.6.1</span>
         </div>
 
         <div className="grid grid-cols-12">
           <div
-            className={`col-span-2 hidden border-r ${hairline} bg-white md:block`}
+            className={`col-span-2 hidden border-r ${hairline} bg-card md:block`}
           >
             <div
               className={`border-b ${hairline} px-3 py-2.5 font-mono text-[10px] font-semibold uppercase tracking-wider`}
@@ -277,12 +280,12 @@ function DashboardPreview() {
                 key={m}
                 className={`flex items-center gap-2 border-b ${hairline} px-3 py-2 text-[11px] font-medium ${
                   i === 1
-                    ? "bg-[#1d3536] text-white"
-                    : "text-[#386163] hover:bg-[#e8f3f2]"
+                    ? "bg-ink text-card"
+                    : "text-ink-2 hover:bg-tint"
                 }`}
               >
                 <span
-                  className={`h-1.5 w-1.5 border ${i === 1 ? "border-white" : "border-[#1d3536]"}`}
+                  className={`h-1.5 w-1.5 border ${i === 1 ? "border-card" : "border-ink"}`}
                 />
                 {m}
               </div>
@@ -306,17 +309,17 @@ function DashboardPreview() {
               ].map((s) => (
                 <div
                   key={s.k}
-                  className="group bg-white px-4 py-3 hover:bg-[#e8f3f2]"
+                  className="group bg-card px-4 py-3 hover:bg-tint"
                 >
-                  <div className="font-mono text-[9px] uppercase tracking-widest text-[#518985]">
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-ink-3">
                     {s.k}
                   </div>
                   <div className="mt-1 flex items-baseline gap-2">
                     <span className="font-mono text-xl font-semibold tabular-nums">
                       {s.v}
                     </span>
-                    <span className="text-[10px] text-[#518985]">{s.d}</span>
-                    <span className="ml-auto font-mono text-[10px] text-[#1d3536]">
+                    <span className="text-[10px] text-ink-3">{s.d}</span>
+                    <span className="ml-auto font-mono text-[10px] text-ink">
                       {s.delta}
                     </span>
                   </div>
@@ -334,14 +337,14 @@ function DashboardPreview() {
                   <span className="text-[12px] font-semibold">
                     Stock balances
                   </span>
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-[#518985]">
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-ink-3">
                     Live
                   </span>
                 </div>
                 <table className="w-full text-left">
                   <thead>
                     <tr
-                      className={`border-b ${hairline} font-mono text-[9px] uppercase tracking-wider text-[#518985]`}
+                      className={`border-b ${hairline} font-mono text-[9px] uppercase tracking-wider text-ink-3`}
                     >
                       <th className="px-4 py-1.5 font-medium">SKU</th>
                       <th className="px-2 py-1.5 font-medium">Item</th>
@@ -356,13 +359,13 @@ function DashboardPreview() {
                     {stockRows.map((r) => (
                       <tr
                         key={r.sku}
-                        className={`border-b ${hairline} text-[11px] hover:bg-[#e8f3f2]`}
+                        className={`border-b ${hairline} text-[11px] hover:bg-tint`}
                       >
                         <td className="px-4 py-2 font-mono font-semibold">
                           {r.sku}
                         </td>
-                        <td className="px-2 py-2 text-[#386163]">{r.item}</td>
-                        <td className="px-2 py-2 font-mono text-[#518985]">
+                        <td className="px-2 py-2 text-ink-2">{r.item}</td>
+                        <td className="px-2 py-2 font-mono text-ink-3">
                           {r.lot}
                         </td>
                         <td className="px-2 py-2 text-right font-mono tabular-nums">
@@ -390,19 +393,19 @@ function DashboardPreview() {
                 {prodOrders.map((o) => (
                   <div
                     key={o.id}
-                    className={`border-b ${hairline} px-4 py-2.5 hover:bg-[#e8f3f2]`}
+                    className={`border-b ${hairline} px-4 py-2.5 hover:bg-tint`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-[10px] font-semibold">
                         {o.id}
                       </span>
-                      <span className="font-mono text-[9px] text-[#518985]">
+                      <span className="font-mono text-[9px] text-ink-3">
                         {o.stage}
                       </span>
                     </div>
-                    <div className="mt-1.5 flex h-2 border border-[#1d3536] bg-white">
+                    <div className="mt-1.5 flex h-2 border border-ink bg-card">
                       <div
-                        className="h-full bg-[#1d3536]"
+                        className="h-full bg-ink"
                         style={{ width: `${o.progress}%` }}
                       />
                     </div>
@@ -414,15 +417,15 @@ function DashboardPreview() {
                 {events.map((e) => (
                   <div
                     key={e.ref}
-                    className={`border-b ${hairline} px-4 py-2 text-[10px] hover:bg-[#e8f3f2]`}
+                    className={`border-b ${hairline} px-4 py-2 text-[10px] hover:bg-tint`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[#518985]">{e.t}</span>
-                      <span className="border border-[#1d3536] bg-[#e8f3f2] px-1 font-mono font-semibold">
+                      <span className="font-mono text-ink-3">{e.t}</span>
+                      <span className="border border-ink bg-tint px-1 font-mono font-semibold">
                         {e.ref}
                       </span>
                     </div>
-                    <div className="mt-1 text-[#386163]">{e.msg}</div>
+                    <div className="mt-1 text-ink-2">{e.msg}</div>
                   </div>
                 ))}
               </div>
@@ -431,13 +434,13 @@ function DashboardPreview() {
         </div>
 
         <div
-          className={`flex items-center justify-between border-t ${hairline} bg-[#e8f3f2] px-3 py-1.5`}
+          className={`flex items-center justify-between border-t ${hairline} bg-tint px-3 py-1.5`}
         >
-          <span className="font-mono text-[9px] text-[#518985]">
+          <span className="font-mono text-[9px] text-ink-3">
             TENANT: 7c9e · REGION: eu-west · SYNCED 3s ago
           </span>
-          <span className="flex items-center gap-1.5 font-mono text-[9px] text-[#1d3536]">
-            <span className="h-1.5 w-1.5 bg-[#1d3536]" />
+          <span className="flex items-center gap-1.5 font-mono text-[9px] text-ink">
+            <span className="h-1.5 w-1.5 bg-ink" />
             OPERATIONAL
           </span>
         </div>
@@ -455,11 +458,11 @@ const brandPillars = [
 function Hero() {
   const { user } = useSession();
   return (
-    <section className="brand-gradient relative isolate overflow-hidden border-b border-[#1d3536]">
-      <div aria-hidden className="brand-waves absolute inset-0 -z-10 opacity-30!" />
+    <section className="brand-gradient relative isolate overflow-hidden border-b border-ink">
+      <div aria-hidden className="brand-waves absolute inset-0 -z-10" />
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-[radial-gradient(55%_45%_at_50%_42%,rgb(28_26_27/0.85),transparent)]"
+        className="absolute inset-0 -z-10 bg-[radial-gradient(55%_45%_at_50%_42%,var(--hero-vignette),transparent)]"
       />
       <div className={`${container} relative z-10 pt-16 pb-20 sm:pt-24`}>
         <div className="mx-auto max-w-3xl text-center">
@@ -467,9 +470,9 @@ function Hero() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
-            className="inline-flex items-center border border-white/20 bg-white/5 px-3 py-1.5 text-brand-pale"
+            className="inline-flex items-center border border-ink/20 bg-card/60 px-3 py-1.5 text-ink-2"
           >
-            <span className="border-r border-white/20 pr-2 font-mono text-[10px] font-bold uppercase tracking-widest text-brand-green">
+            <span className="border-r border-ink/20 pr-2 font-mono text-[10px] font-bold uppercase tracking-widest text-tagline">
               New
             </span>
             <span className="pl-2 text-[12px]">
@@ -492,17 +495,17 @@ function Hero() {
             transition={{ duration: 0.45, delay: 0.08 }}
             className="mt-8 font-sans text-[2.4rem] font-normal leading-[1.1] tracking-tight sm:text-6xl lg:text-[4.2rem]"
           >
-            <span className="text-brand-green">Streamline Your Success</span>
+            <span className="text-tagline">Streamline Your Success</span>
             <br />
-            <span className="text-brand-green">with</span>{" "}
-            <span className="text-brand-pale">RONA.</span>
+            <span className="text-tagline">with</span>{" "}
+            <span className="text-tagline-strong">RONA.</span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.16 }}
-            className="mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-brand-pale/80"
+            className="mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-ink-2"
           >
             The enterprise-grade platform dedicated to transforming complex
             operations into streamlined success. A complete solution for
@@ -526,21 +529,21 @@ function Hero() {
             </Link>
             <a
               href="#platform"
-              className="group flex items-center gap-2 border border-white/30 px-6 py-3 text-[13px] font-semibold text-white transition-colors hover:bg-white/10"
+              className="group flex items-center gap-2 border border-ink/30 px-6 py-3 text-[13px] font-semibold text-ink transition-colors hover:bg-ink/5"
             >
               Explore platform
               <ArrowRight className="h-4 w-4" />
             </a>
           </motion.div>
-          <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-brand-pale/60">
+          <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-ink-3">
             Free 14-day trial · No card required
           </p>
 
-          <ul className="mt-12 grid grid-cols-1 gap-3 border-t border-white/10 pt-8 sm:grid-cols-3">
+          <ul className="mt-12 grid grid-cols-1 gap-3 border-t border-ink/10 pt-8 sm:grid-cols-3">
             {brandPillars.map((pillar) => (
               <li
                 key={pillar}
-                className="text-sm font-bold tracking-wide text-brand-green"
+                className="text-sm font-bold tracking-wide text-tagline"
               >
                 {pillar}
               </li>
@@ -565,9 +568,9 @@ const stats = [
 
 function StatsStrip() {
   return (
-    <section className={`border-b ${hairline} bg-white`}>
+    <section className={`border-b ${hairline} bg-card`}>
       <div
-        className={`${container} grid grid-cols-2 divide-x divide-[#d6e8e6] lg:grid-cols-4`}
+        className={`${container} grid grid-cols-2 divide-x divide-tint-2 lg:grid-cols-4`}
       >
         {stats.map((s, i) => (
           <motion.div
@@ -578,14 +581,14 @@ function StatsStrip() {
             transition={{ duration: 0.3, delay: i * 0.06 }}
             className={`group ${i < 2 ? "border-b lg:border-b-0" : ""} ${
               i % 2 === 1 ? "border-l lg:border-l" : ""
-            } border-[#d6e8e6] px-6 py-8 hover:bg-[#f2f3fa]`}
+            } border-tint-2 px-6 py-8 hover:bg-background`}
           >
             <div
               className={`font-mono text-3xl font-semibold tabular-nums ${hoverFill} px-1 -mx-1`}
             >
               {s.v}
             </div>
-            <div className="mt-1.5 text-[12px] font-medium uppercase tracking-wider text-[#518985]">
+            <div className="mt-1.5 text-[12px] font-medium uppercase tracking-wider text-ink-3">
               {s.k}
             </div>
           </motion.div>
@@ -638,20 +641,20 @@ function ArchitectureSection() {
   return (
     <section
       id="architecture"
-      className={`border-b ${hairline} bg-white py-20 sm:py-28`}
+      className={`border-b ${hairline} bg-card py-20 sm:py-28`}
     >
       <div className={container}>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_2fr] lg:items-end">
           <div>
             <h2
-              className={`text-3xl font-semibold text-[#1d3536] sm:text-5xl ${serif}`}
+              className={`text-3xl font-semibold text-ink sm:text-5xl ${serif}`}
             >
               Enterprise-grade
               <br />
               performance
             </h2>
           </div>
-          <p className="text-[14px] leading-relaxed text-[#386163] lg:pb-2">
+          <p className="text-[14px] leading-relaxed text-ink-2 lg:pb-2">
             Designed for organizations that need reliable, fast, and auditable
             operations at scale. No redundant data entry, no manual
             reconciliation, no blind spots across your supply chain.
@@ -659,7 +662,7 @@ function ArchitectureSection() {
         </div>
 
         <div
-          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-[#1d3536] sm:grid-cols-2 lg:grid-cols-3`}
+          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-ink sm:grid-cols-2 lg:grid-cols-3`}
         >
           {archFeatures.map((f, i) => (
             <motion.article
@@ -668,21 +671,21 @@ function ArchitectureSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.35, delay: (i % 3) * 0.08 }}
-              className="group relative bg-white p-6 hover:bg-[#f2f3fa]"
+              className="group relative bg-card p-6 hover:bg-background"
             >
               <div className="flex items-start justify-between">
-                <f.icon className="h-5 w-5 text-[#1d3536]" strokeWidth={1.5} />
-                <span className="font-mono text-[10px] tabular-nums text-[#518985] group-hover:text-[#1d3536]">
+                <f.icon className="h-5 w-5 text-ink" strokeWidth={1.5} />
+                <span className="font-mono text-[10px] tabular-nums text-ink-3 group-hover:text-ink">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
-              <h3 className="mt-5 text-[14px] font-semibold text-[#1d3536]">
+              <h3 className="mt-5 text-[14px] font-semibold text-ink">
                 {f.title}
               </h3>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#386163]">
+              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-2">
                 {f.body}
               </p>
-              <div className="mt-5 border-t border-[#d6e8e6] pt-3 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#518985] group-hover:border-[#1d3536] group-hover:text-[#1d3536]">
+              <div className="mt-5 border-t border-tint-2 pt-3 font-mono text-[9px] font-semibold uppercase tracking-widest text-ink-3 group-hover:border-ink group-hover:text-ink">
                 {f.spec}
               </div>
             </motion.article>
@@ -724,18 +727,18 @@ function WorkflowSection() {
   return (
     <section
       id="workflow"
-      className={`border-b ${hairline} bg-[#f2f3fa] py-20 sm:py-28`}
+      className={`border-b ${hairline} bg-background py-20 sm:py-28`}
     >
       <div className={container}>
         <div className="max-w-2xl">
           <h2
-            className={`text-3xl font-semibold text-[#1d3536] sm:text-5xl ${serif}`}
+            className={`text-3xl font-semibold text-ink sm:text-5xl ${serif}`}
           >
             Dock to finished goods,
             <br />
             in four steps
           </h2>
-          <p className="mt-4 text-[14px] leading-relaxed text-[#386163]">
+          <p className="mt-4 text-[14px] leading-relaxed text-ink-2">
             A single, repeatable flow your whole team can trust. Every step
             writes an immutable audit record.
           </p>
@@ -753,7 +756,7 @@ function WorkflowSection() {
               y1="1"
               x2="1200"
               y2="1"
-              stroke="#1d3536"
+              className="stroke-ink"
               strokeWidth="2"
               strokeDasharray="8 6"
               initial={{ pathLength: 0 }}
@@ -773,23 +776,23 @@ function WorkflowSection() {
                 transition={{ ...springSnap, delay: 0.25 + i * 0.35 }}
                 className="group relative"
               >
-                <div className="relative z-10 flex h-14 w-14 items-center justify-center border-2 border-[#1d3536] bg-white text-[#1d3536] shadow-[4px_4px_0_0_#1d3536] group-hover:bg-[#1d3536] group-hover:text-white group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
+                <div className="relative z-10 flex h-14 w-14 items-center justify-center border-2 border-ink bg-card text-ink shadow-[4px_4px_0_0_var(--ink)] group-hover:bg-ink group-hover:text-card group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
                   <step.icon className="h-6 w-6" strokeWidth={1.5} />
                 </div>
                 <div className="mt-6 flex items-baseline gap-3">
-                  <span className="font-mono text-[11px] font-bold tabular-nums text-[#518985]">
+                  <span className="font-mono text-[11px] font-bold tabular-nums text-ink-3">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <h3
-                    className={`text-xl font-semibold text-[#1d3536] ${serif}`}
+                    className={`text-xl font-semibold text-ink ${serif}`}
                   >
                     {step.title}
                   </h3>
                 </div>
-                <p className="mt-2.5 text-[12.5px] leading-relaxed text-[#386163]">
+                <p className="mt-2.5 text-[12.5px] leading-relaxed text-ink-2">
                   {step.body}
                 </p>
-                <div className="mt-4 inline-block border border-[#1d3536] bg-white px-2 py-1 font-mono text-[10px] font-semibold text-[#1d3536] group-hover:bg-[#1d3536] group-hover:text-white">
+                <div className="mt-4 inline-block border border-ink bg-card px-2 py-1 font-mono text-[10px] font-semibold text-ink group-hover:bg-ink group-hover:text-card">
                   {step.detail}
                 </div>
               </motion.div>
@@ -870,21 +873,21 @@ const aiPrompts = [
 function RonaAiIntro() {
   return (
     <div
-      className={`mt-14 border-2 ${hairline} bg-white shadow-[8px_8px_0_0_#1d3536]`}
+      className={`mt-14 border-2 ${hairline} bg-card shadow-[8px_8px_0_0_var(--ink)]`}
     >
       <div
-        className={`flex items-center justify-between border-b-2 ${hairline} bg-[#1d3536] px-5 py-3`}
+        className={`flex items-center justify-between border-b-2 ${hairline} bg-ink px-5 py-3`}
       >
         <div className="flex items-center gap-3">
-          <Sparkles className="h-4 w-4 text-white" strokeWidth={1.5} />
-          <span className={`text-lg font-semibold text-white ${serif}`}>
+          <Sparkles className="h-4 w-4 text-card" strokeWidth={1.5} />
+          <span className={`text-lg font-semibold text-card ${serif}`}>
             Rona AI
           </span>
-          <span className="border border-white px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-white">
+          <span className="border border-card px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-card">
             Built-in
           </span>
         </div>
-        <span className="hidden font-mono text-[9px] uppercase tracking-widest text-[#d6e8e6] sm:block">
+        <span className="hidden font-mono text-[9px] uppercase tracking-widest text-tint-2 sm:block">
           ASSISTANT · EVERY MODULE
         </span>
       </div>
@@ -894,13 +897,13 @@ function RonaAiIntro() {
           className={`border-b ${hairline} p-6 lg:col-span-2 lg:border-b-0 lg:border-r`}
         >
           <h3
-            className={`text-2xl font-semibold leading-tight text-[#1d3536] ${serif}`}
+            className={`text-2xl font-semibold leading-tight text-ink ${serif}`}
           >
             An operations analyst
             <br />
             that never sleeps
           </h3>
-          <p className="mt-4 text-[12.5px] leading-relaxed text-[#386163]">
+          <p className="mt-4 text-[12.5px] leading-relaxed text-ink-2">
             Rona AI lives inside every module with full context of your
             inventory, production, quality, and finance data. Ask it to trace
             lots, draft reports, flag anomalies, or summarize performance — it
@@ -915,9 +918,9 @@ function RonaAiIntro() {
             ].map((t) => (
               <li
                 key={t}
-                className="flex items-start gap-2.5 text-[12.5px] text-[#386163]"
+                className="flex items-start gap-2.5 text-[12.5px] text-ink-2"
               >
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-[#1d3536]" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-ink" />
                 {t}
               </li>
             ))}
@@ -932,33 +935,33 @@ function RonaAiIntro() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ ...springSnap, delay: i * 0.15 }}
-              className={`group border-b ${hairline} p-5 last:border-b-0 hover:bg-[#f2f3fa]`}
+              className={`group border-b ${hairline} p-5 last:border-b-0 hover:bg-background`}
             >
               <div className="flex items-start gap-3">
                 <span
-                  className={`shrink-0 border ${hairline} bg-[#1d3536] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-white`}
+                  className={`shrink-0 border ${hairline} bg-ink px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-card`}
                 >
                   You
                 </span>
-                <p className="text-[13px] font-medium text-[#1d3536]">{m.q}</p>
+                <p className="text-[13px] font-medium text-ink">{m.q}</p>
               </div>
               <div className="mt-3 flex items-start gap-3">
                 <span
-                  className={`shrink-0 border ${hairline} bg-white px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-[#1d3536]`}
+                  className={`shrink-0 border ${hairline} bg-card px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-ink`}
                 >
                   AI
                 </span>
-                <p className="text-[12.5px] leading-relaxed text-[#386163]">
+                <p className="text-[12.5px] leading-relaxed text-ink-2">
                   {m.a}
                 </p>
               </div>
             </motion.div>
           ))}
           <div
-            className={`flex items-center gap-2 border-t-2 ${hairline} bg-[#f2f3fa] px-5 py-3`}
+            className={`flex items-center gap-2 border-t-2 ${hairline} bg-background px-5 py-3`}
           >
-            <span className="h-1.5 w-1.5 animate-pulse bg-[#1d3536]" />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-[#518985]">
+            <span className="h-1.5 w-1.5 animate-pulse bg-ink" />
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink-3">
               Ask anything about your operation
             </span>
           </div>
@@ -972,20 +975,20 @@ function ModulesSection() {
   return (
     <section
       id="modules"
-      className={`border-b ${hairline} bg-white py-20 sm:py-28`}
+      className={`border-b ${hairline} bg-card py-20 sm:py-28`}
     >
       <div className={container}>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_2fr] lg:items-end">
           <div>
             <h2
-              className={`text-3xl font-semibold text-[#1d3536] sm:text-5xl ${serif}`}
+              className={`text-3xl font-semibold text-ink sm:text-5xl ${serif}`}
             >
               One platform,
               <br />
               every module
             </h2>
           </div>
-          <p className="text-[14px] leading-relaxed text-[#386163] lg:pb-2">
+          <p className="text-[14px] leading-relaxed text-ink-2 lg:pb-2">
             Eight operational modules plus Rona AI on a single data core — every
             record cross-linked, every change audited, no third-party glue
             holding your operation together.
@@ -993,7 +996,7 @@ function ModulesSection() {
         </div>
 
         <div
-          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-[#1d3536] sm:grid-cols-2 lg:grid-cols-4`}
+          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-ink sm:grid-cols-2 lg:grid-cols-4`}
         >
           {modules.map((m, i) => (
             <motion.article
@@ -1002,29 +1005,29 @@ function ModulesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.35, delay: (i % 3) * 0.08 }}
-              className="group relative bg-white p-6 hover:bg-[#f2f3fa]"
+              className="group relative bg-card p-6 hover:bg-background"
             >
               <div className="flex items-start justify-between">
                 <span
-                  className={`font-mono text-xl font-bold ${serif} text-[#1d3536]`}
+                  className={`font-mono text-xl font-bold ${serif} text-ink`}
                 >
                   {m.abbr}
                 </span>
-                <span className="font-mono text-[10px] tabular-nums text-[#518985] group-hover:text-[#1d3536]">
+                <span className="font-mono text-[10px] tabular-nums text-ink-3 group-hover:text-ink">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
-              <h3 className="mt-4 text-[14px] font-semibold text-[#1d3536]">
+              <h3 className="mt-4 text-[14px] font-semibold text-ink">
                 {m.name}
               </h3>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#386163]">
+              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-2">
                 {m.body}
               </p>
-              <div className="mt-5 flex flex-wrap gap-1.5 border-t border-[#d6e8e6] pt-3">
+              <div className="mt-5 flex flex-wrap gap-1.5 border-t border-tint-2 pt-3">
                 {m.tags.map((t) => (
                   <span
                     key={t}
-                    className="border border-[#1d3536] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#1d3536] group-hover:bg-[#1d3536] group-hover:text-white"
+                    className="border border-ink px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-ink group-hover:bg-ink group-hover:text-card"
                   >
                     {t}
                   </span>
@@ -1045,14 +1048,14 @@ function CtaSlab() {
 
   return (
     <section className="brand-gradient-teal relative isolate overflow-hidden py-20 sm:py-24">
-      <div aria-hidden className="brand-waves absolute inset-0 -z-10 opacity-25!" />
+      <div aria-hidden className="brand-waves absolute inset-0 -z-10" />
       <div className={`${container} text-center`}>
         <h2
-          className={`text-3xl font-semibold text-white sm:text-5xl ${serif}`}
+          className={`text-3xl font-semibold text-ink sm:text-5xl ${serif}`}
         >
           {user ? "Welcome back." : "Ready to streamline your operations?"}
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-[14px] leading-relaxed text-[#d6e8e6]">
+        <p className="mx-auto mt-4 max-w-xl text-[14px] leading-relaxed text-ink-2">
           {user
             ? "Your workspace is ready — pick up right where you left off."
             : "Launch your workspace and manage inventory, manufacturing, and traceability in one place."}
@@ -1065,7 +1068,7 @@ function CtaSlab() {
           <ArrowRight className="h-4 w-4" />
         </Link>
         {user ? null : (
-          <p className="mt-5 font-mono text-[10px] uppercase tracking-widest text-brand-pale/60">
+          <p className="mt-5 font-mono text-[10px] uppercase tracking-widest text-ink-3">
             Free 14-day trial · No card required
           </p>
         )}
@@ -1111,14 +1114,14 @@ function Footer() {
   ];
 
   return (
-    <footer className={`border-t ${hairline} bg-white`}>
+    <footer className={`border-t ${hairline} bg-card`}>
       <div className={`${container} py-12`}>
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center">
               <Logo variant="dark" lockup className="h-7 w-auto" />
             </Link>
-            <p className="mt-4 max-w-xs text-[12.5px] leading-relaxed text-[#386163]">
+            <p className="mt-4 max-w-xs text-[12.5px] leading-relaxed text-ink-2">
               Streamline Your Success with RONA. Inventory management, financial
               tracking, and employee management — built for organizations that
               demand precision.
@@ -1126,7 +1129,7 @@ function Footer() {
           </div>
           {cols.map((c) => (
             <div key={c.h}>
-              <h4 className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#518985]">
+              <h4 className="font-mono text-[10px] font-bold uppercase tracking-widest text-ink-3">
                 {c.h}
               </h4>
               <ul className="mt-4 space-y-2.5">
@@ -1134,7 +1137,7 @@ function Footer() {
                   <li key={item.l}>
                     <Link
                       href={item.href}
-                      className="text-[12.5px] font-medium text-[#386163] hover:text-[#1d3536] hover:underline hover:underline-offset-4 hover:decoration-[#1d3536]"
+                      className="text-[12.5px] font-medium text-ink-2 hover:text-ink hover:underline hover:underline-offset-4 hover:decoration-ink"
                     >
                       {item.l}
                     </Link>
@@ -1145,12 +1148,12 @@ function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-[#d6e8e6] pt-6 sm:flex-row">
-          <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#386163]">
-            <span className="h-1.5 w-1.5 bg-[#1d3536]" />
+        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-tint-2 pt-6 sm:flex-row">
+          <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-ink-2">
+            <span className="h-1.5 w-1.5 bg-ink" />
             All systems operational
           </span>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-[#518985]">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-ink-3">
             © {new Date().getFullYear()} Rona · Enterprise Business Management Platform
           </span>
         </div>
@@ -1161,7 +1164,7 @@ function Footer() {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-card">
       <Navbar />
       <main>
         <Hero />

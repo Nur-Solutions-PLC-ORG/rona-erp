@@ -37,7 +37,7 @@ export const BTN_PRIMARY =
   "flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 active:bg-primary/80 text-primary-foreground text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none";
 
 export const BTN_SECONDARY =
-  "flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium transition-colors border border-slate-200 disabled:opacity-50 disabled:pointer-events-none";
+  "flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-card hover:bg-slate-50 text-slate-700 text-sm font-medium transition-colors border border-slate-200 disabled:opacity-50 disabled:pointer-events-none";
 
 export const BTN_GHOST =
   "flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-600 text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none";
@@ -46,22 +46,22 @@ export const BTN_DANGER =
   "flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none";
 
 export const INPUT_CLASS =
-  "w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition-colors disabled:opacity-50 disabled:pointer-events-none";
+  "w-full bg-card border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition-colors disabled:opacity-50 disabled:pointer-events-none";
 
 export const LABEL_CLASS =
   "block text-sm font-medium text-slate-700 mb-1.5";
 
 export const SELECT_CLASS =
-  "w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition-colors appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M19%209l-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_0.6rem_center] bg-no-repeat pr-8 disabled:opacity-50 disabled:pointer-events-none";
+  "w-full bg-card border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition-colors appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M19%209l-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_0.6rem_center] bg-no-repeat pr-8 disabled:opacity-50 disabled:pointer-events-none";
 
 export const SELECT_TOOLBAR_CLASS =
-  "appearance-none w-auto whitespace-nowrap max-w-full bg-white border border-slate-300 rounded-md px-3 pr-8 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition-colors bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M19%209l-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_0.6rem_center] bg-no-repeat disabled:opacity-50 disabled:pointer-events-none";
+  "appearance-none w-auto whitespace-nowrap max-w-full bg-card border border-slate-300 rounded-md px-3 pr-8 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition-colors bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M19%209l-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-[right_0.6rem_center] bg-no-repeat disabled:opacity-50 disabled:pointer-events-none";
 
 export const FIELD_TOOLBAR_CLASS =
-  "w-auto bg-white border border-slate-300 rounded-md px-3 py-1.5 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition-colors disabled:opacity-50 disabled:pointer-events-none";
+  "w-auto bg-card border border-slate-300 rounded-md px-3 py-1.5 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition-colors disabled:opacity-50 disabled:pointer-events-none";
 
 const FILTER_TRIGGER_CLASS =
-  "inline-flex w-auto items-center justify-between gap-3 whitespace-nowrap rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus:border-ring focus:ring-2 focus:ring-ring/40";
+  "inline-flex w-auto items-center justify-between gap-3 whitespace-nowrap rounded-md border border-slate-300 bg-card px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 focus:outline-none focus:border-ring focus:ring-2 focus:ring-ring/40";
 
 export function Select({
   className,
@@ -127,7 +127,7 @@ export function FilterSelect({
         id={listId}
         align="start"
         sideOffset={6}
-        className="w-max min-w-(--radix-popover-trigger-width) max-h-72 gap-0.5 rounded-md border border-zinc-200 bg-white p-1 shadow-lg ring-0 overflow-y-auto"
+        className="w-max min-w-(--radix-popover-trigger-width) max-h-72 gap-0.5 rounded-md border border-zinc-200 bg-card p-1 shadow-lg ring-0 overflow-y-auto"
       >
         {menuOptions.map((option) => {
           const selected = value === option.value;
@@ -226,7 +226,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "bg-white rounded-lg border border-slate-200 shadow-[0_1px_2px_0_rgb(15_23_42_/_0.05)] min-w-0",
+        "bg-card rounded-lg border border-slate-200 shadow-[0_1px_2px_0_rgb(15_23_42_/_0.05)] min-w-0",
         className,
       )}
     >
@@ -435,7 +435,7 @@ export function DataTable<T extends { id: string | number }>({
   footer?: ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-lg border border-zinc-200 overflow-hidden">
+    <div className="bg-card rounded-lg border border-zinc-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-[13px]">
           <thead>
@@ -533,7 +533,7 @@ export function EmptyState({
         "text-center",
         compact
           ? "px-6 py-10"
-          : "bg-white rounded-lg border border-slate-200 p-10",
+          : "bg-card rounded-lg border border-slate-200 p-10",
       )}
     >
       <div className="mx-auto text-slate-300">{icon}</div>
@@ -569,7 +569,7 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
-          className="px-2.5 py-1.5 rounded-lg bg-white border border-zinc-200 text-xs font-medium text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300 disabled:opacity-40 disabled:pointer-events-none transition-all"
+          className="px-2.5 py-1.5 rounded-lg bg-card border border-zinc-200 text-xs font-medium text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300 disabled:opacity-40 disabled:pointer-events-none transition-all"
         >
           <HiOutlineChevronLeft className="w-3.5 h-3.5" />
         </button>
@@ -577,7 +577,7 @@ export function Pagination({
           type="button"
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
-          className="px-2.5 py-1.5 rounded-lg bg-white border border-zinc-200 text-xs font-medium text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300 disabled:opacity-40 disabled:pointer-events-none transition-all"
+          className="px-2.5 py-1.5 rounded-lg bg-card border border-zinc-200 text-xs font-medium text-zinc-600 hover:bg-zinc-50 hover:border-zinc-300 disabled:opacity-40 disabled:pointer-events-none transition-all"
         >
           <HiOutlineChevronRight className="w-3.5 h-3.5" />
         </button>
@@ -600,7 +600,7 @@ export function StatCard({
   isLoading?: boolean;
 }) {
   return (
-    <div className="flex h-full flex-col justify-between rounded-lg border border-zinc-200 bg-white p-4">
+    <div className="flex h-full flex-col justify-between rounded-lg border border-zinc-200 bg-card p-4">
       <span className="text-[11px] font-medium text-zinc-500">
         {label}
       </span>

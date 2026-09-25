@@ -242,7 +242,7 @@ Component 4:    Salt         0.005 KG  per loaf`}
         <Card tone="info">
           <div className="flex items-start gap-3">
             <CheckCircle2
-              className="mt-0.5 h-5 w-5 shrink-0 text-[#1d3536]"
+              className="mt-0.5 h-5 w-5 shrink-0 text-ink"
               strokeWidth={1.5}
             />
             <div>

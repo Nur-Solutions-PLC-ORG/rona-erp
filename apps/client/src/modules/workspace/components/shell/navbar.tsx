@@ -1,5 +1,6 @@
 "use client";
 
+import ThemeToggle from "@/components/custom/theme-toggle";
 import Logo from "@/components/custom/logo";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -152,14 +153,14 @@ function CommandPalette() {
           setQuery("");
         }}
         placeholder="Search or press ⌘K…"
-        className="w-56 lg:w-80 pl-8 pr-14 py-1.5 text-xs rounded-md bg-white border border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-colors"
+        className="w-56 lg:w-80 pl-8 pr-14 py-1.5 text-xs rounded-md bg-card border border-zinc-200 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-colors"
       />
       <span className="pointer-events-none absolute right-2.5 top-1/2 inline-flex h-5 -translate-y-1/2 items-center rounded border border-zinc-200 bg-zinc-50 px-1.5 text-[10px] font-medium text-zinc-400">
         ⌘K
       </span>
 
       {open ? (
-        <div className="absolute right-0 top-full z-30 mt-1.5 w-80 overflow-hidden rounded-md border border-zinc-200 bg-white shadow-lg">
+        <div className="absolute right-0 top-full z-30 mt-1.5 w-80 overflow-hidden rounded-md border border-zinc-200 bg-card shadow-lg">
           <ul id="command-palette-results" className="max-h-80 overflow-y-auto py-1">
             {results.length ? (
               results.map((item, index) => (
@@ -239,7 +240,7 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   const primaryRole = membership?.roles?.[0];
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-zinc-200">
+    <header className="sticky top-0 z-50 bg-card border-b border-zinc-200">
       <div className="h-14 px-3 sm:px-6 flex items-center gap-2 sm:gap-3 min-w-0">
         <button
           type="button"
@@ -278,7 +279,7 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
           <button
             type="button"
             onClick={() => setOrgOpen((previous) => !previous)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-white border border-zinc-200 hover:bg-zinc-50 transition overflow-hidden">
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-card border border-zinc-200 hover:bg-zinc-50 transition overflow-hidden">
             <span className="flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden rounded bg-zinc-100 text-zinc-600 sm:hidden">
               <OrgLogo
                 src={organization?.logoUrl}
@@ -303,7 +304,7 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
                 className="fixed inset-0 z-10"
                 onClick={() => setOrgOpen(false)}
               />
-              <div className="absolute left-0 top-full mt-1.5 z-20 w-64 rounded-md bg-white shadow-lg border border-zinc-200 py-1.5">
+              <div className="absolute left-0 top-full mt-1.5 z-20 w-64 rounded-md bg-card shadow-lg border border-zinc-200 py-1.5">
                 <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
                   Organizations
                 </p>
@@ -350,6 +351,8 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
 
         <CommandPalette />
 
+        <ThemeToggle className="border-transparent" />
+
         <div className="relative shrink-0">
           <button
             type="button"
@@ -359,7 +362,7 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
           >
             <HiOutlineBell className="w-4.5 h-4.5" />
             {notificationCount > 0 ? (
-              <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white">
+              <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-card">
                 {notificationCount > 9 ? "9+" : notificationCount}
               </span>
             ) : null}
@@ -371,7 +374,7 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
                 className="fixed inset-0 z-10"
                 onClick={() => setNotifOpen(false)}
               />
-              <div className="absolute right-0 top-full mt-1.5 z-20 w-80 rounded-md bg-white shadow-lg border border-zinc-200 overflow-hidden">
+              <div className="absolute right-0 top-full mt-1.5 z-20 w-80 rounded-md bg-card shadow-lg border border-zinc-200 overflow-hidden">
                 <div className="px-4 py-2.5 border-b border-zinc-100">
                   <p className="text-xs font-bold text-zinc-800">
                     Notifications
@@ -453,7 +456,7 @@ export function Navbar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
                 className="fixed inset-0 z-10"
                 onClick={() => setProfileOpen(false)}
               />
-              <div className="absolute right-0 top-full mt-1.5 z-20 w-64 rounded-md bg-white shadow-lg border border-zinc-200 py-1.5">
+              <div className="absolute right-0 top-full mt-1.5 z-20 w-64 rounded-md bg-card shadow-lg border border-zinc-200 py-1.5">
                 <div className="px-3 py-2 border-b border-zinc-100">
                   <p className="text-xs font-semibold text-zinc-800 truncate">
                     {user?.name ?? "Signed in"}

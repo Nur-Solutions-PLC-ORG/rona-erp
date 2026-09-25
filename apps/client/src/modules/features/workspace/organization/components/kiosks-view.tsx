@@ -71,7 +71,7 @@ function DeviceTokenReveal({ token, onDone }: { token: string; onDone: () => voi
         Store this credential now - it is shown only once and cannot be
         retrieved later. Enter it once on the tablet under {CLIENT_KIOSK_TERMINAL_PAGE}.
       </p>
-      <code className="block w-full break-all rounded-md bg-zinc-900 text-emerald-400 px-3 py-3 text-xs font-mono">
+      <code className="block w-full break-all rounded-md bg-brand-ink text-emerald-400 px-3 py-3 text-xs font-mono">
         {token}
       </code>
       <div className="flex items-center gap-2">

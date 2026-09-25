@@ -193,22 +193,22 @@ export default function InventoryPage() {
           {operations.map((op) => (
             <Card key={op.title}>
               <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center border border-[#1d3536] bg-[#e8f3f2]">
+                <span className="flex h-8 w-8 items-center justify-center border border-ink bg-tint">
                   <op.icon
-                    className="h-4 w-4 text-[#1d3536]"
+                    className="h-4 w-4 text-ink"
                     strokeWidth={1.5}
                   />
                 </span>
                 <H3>{op.title}</H3>
               </div>
-              <p className="mt-3 text-[13px] leading-relaxed text-[#386163]">
+              <p className="mt-3 text-[13px] leading-relaxed text-ink-2">
                 {op.body}
               </p>
-              <div className="mt-4 flex flex-wrap gap-1.5 border-t border-[#d6e8e6] pt-3">
+              <div className="mt-4 flex flex-wrap gap-1.5 border-t border-tint-2 pt-3">
                 {op.tags.map((t) => (
                   <span
                     key={t}
-                    className="border border-[#1d3536] bg-white px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#1d3536]"
+                    className="border border-ink bg-card px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-ink"
                   >
                     {t}
                   </span>
@@ -279,18 +279,18 @@ export default function InventoryPage() {
         <Card tone="info" shadow>
           <H3>Reorder logic</H3>
           <div className="mt-3 space-y-2">
-            <p className="text-[13.5px] text-[#386163]">
+            <p className="text-[13.5px] text-ink-2">
               <strong>Reorder point:</strong> minimum stock level (e.g., 50
               units)
             </p>
-            <p className="text-[13.5px] text-[#386163]">
+            <p className="text-[13.5px] text-ink-2">
               <strong>Reorder quantity:</strong> order size (e.g., 200 units)
             </p>
-            <p className="text-[13.5px] text-[#386163]">
+            <p className="text-[13.5px] text-ink-2">
               <strong>Trigger:</strong> when stock ≤ reorder point, the system
               alerts and suggests an order
             </p>
-            <p className="text-[13.5px] text-[#386163]">
+            <p className="text-[13.5px] text-ink-2">
               <strong>Result:</strong> new total = current stock + reorder
               quantity
             </p>
