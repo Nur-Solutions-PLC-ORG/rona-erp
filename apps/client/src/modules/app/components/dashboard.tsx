@@ -17,7 +17,6 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import UserButton from "@/modules/auth/components/user-button";
-import { useSession } from "@/modules/auth/hooks";
 import { useSidebarStore } from "@/store";
 import { ChevronDown, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
@@ -190,7 +189,6 @@ const NavItemTooltip = ({
 const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
   const { open, setOpen, openGroups, setGroupOpen, collapsed } =
     useSidebarStore();
-  const { isAdmin } = useSession();
   const isIconMode = !sheet && collapsed;
 
   useEffect(() => {
