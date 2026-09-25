@@ -96,8 +96,8 @@ function AdminSidebar({
     cn(
       "relative flex items-center gap-3 mx-2 px-3 py-2 rounded-md text-xs font-medium transition-colors",
       active
-        ? "bg-zinc-900 text-white font-semibold"
-        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
+        ? "bg-sidebar-accent text-white font-semibold before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-sidebar-primary"
+        : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-white",
     );
 
   const renderItem = (label: string, href: string) => {
@@ -124,7 +124,7 @@ function AdminSidebar({
           <span
             className={cn(
               "text-[10px] font-semibold uppercase tracking-widest transition-colors",
-              "text-zinc-400 group-hover:text-zinc-600",
+              "text-sidebar-foreground/45 group-hover:text-sidebar-foreground/80",
             )}
           >
             {label}
@@ -133,7 +133,7 @@ function AdminSidebar({
             className={cn(
               "w-3.5 h-3.5 shrink-0 transition-all",
               expanded ? "rotate-180" : "",
-              "text-zinc-400 group-hover:text-zinc-600",
+              "text-sidebar-foreground/45 group-hover:text-sidebar-foreground/80",
             )}
           />
         </button>
@@ -154,7 +154,7 @@ function AdminSidebar({
 
         <aside
           className={cn(
-            "fixed lg:relative top-0 z-40 h-screen lg:h-full w-14 shrink-0 bg-white border-r border-zinc-200 flex flex-col justify-end p-2.5 transition-all duration-300",
+            "fixed lg:relative top-0 z-40 h-screen lg:h-full w-14 shrink-0 bg-sidebar border-r border-sidebar-border flex flex-col justify-end p-2.5 transition-all duration-300",
             mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
           )}
         >
@@ -163,7 +163,7 @@ function AdminSidebar({
             onClick={onToggleCollapse}
             title="Expand sidebar"
             aria-label="Expand sidebar"
-            className="flex h-9 w-full items-center justify-center rounded-md border border-zinc-200 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+            className="flex h-9 w-full items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-white"
           >
             <HiOutlineChevronDoubleRight className="h-4 w-4" />
           </button>
@@ -184,40 +184,40 @@ function AdminSidebar({
         />
       ) : null}
 
-      <aside className={cn("fixed lg:relative top-0 z-40 h-screen lg:h-full w-64 shrink-0 bg-white border-r border-zinc-200 flex flex-col transition-all duration-300", mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0")}>
-        <div className="px-4 pt-5 pb-4 border-b border-zinc-200 shrink-0">
+      <aside className={cn("fixed lg:relative top-0 z-40 h-screen lg:h-full w-64 shrink-0 bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300", mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0")}>
+        <div className="px-4 pt-5 pb-4 border-b border-sidebar-border shrink-0">
           <button
             type="button"
             title="Platform management"
-            className="group flex w-full items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-zinc-50"
+            className="group flex w-full items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-sidebar-accent/60"
           >
-            <HiOutlineShieldCheck className="h-4 w-4 shrink-0 text-zinc-500" />
+            <HiOutlineShieldCheck className="h-4 w-4 shrink-0 text-sidebar-primary" />
             <span className="min-w-0 flex-1 text-left">
-              <span className="block truncate text-xs font-semibold text-zinc-900">Platform management
+              <span className="block truncate text-xs font-semibold text-white">Platform management
               </span>
-              <span className="block truncate text-[11px] text-zinc-500 font-mono">
+              <span className="block truncate text-[11px] text-sidebar-foreground/55 font-mono">
                 Super admin only
               </span>
             </span>
-            <HiOutlineChevronDown className="h-3.5 w-3.5 shrink-0 text-zinc-400 transition-colors group-hover:text-zinc-600" />
+            <HiOutlineChevronDown className="h-3.5 w-3.5 shrink-0 text-sidebar-foreground/50 transition-colors group-hover:text-sidebar-foreground/80" />
           </button>
         </div>
 
         <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 pb-4">
           {topLevelGroups.map((group) => group.items.map((item) => renderItem(item.label, item.href)))}
 
-          <div className="mx-3 mt-3 h-px bg-zinc-200" />
+          <div className="mx-3 mt-3 h-px bg-sidebar-border" />
 
           {sectionGroups.map((group) => renderSection(group.label, group.items))}
         </nav>
 
-        <div className="p-3 border-t border-zinc-200 shrink-0">
+        <div className="p-3 border-t border-sidebar-border shrink-0">
           <button
             type="button"
             onClick={onToggleCollapse}
             title="Collapse sidebar"
             aria-label="Collapse sidebar"
-            className="flex h-9 w-full items-center justify-center rounded-md border border-zinc-200 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+            className="flex h-9 w-full items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-white"
           >
             <HiOutlineChevronDoubleLeft className="h-4 w-4" />
           </button>
@@ -356,7 +356,7 @@ const AdminWrapper = ({ children }: Props) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen flex-col bg-[#f8fafc]">
+    <div className="flex h-screen flex-col bg-background">
       <AdminNavbar onOpenMobileNav={() => setMobileOpen(true)} />
 
       <div className="flex flex-1 min-h-0">

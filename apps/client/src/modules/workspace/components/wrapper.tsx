@@ -41,7 +41,7 @@ const WorkspaceWrapper = ({ children }: Props) => {
   if (isLoading) return <LoaderPage />;
 
   return (
-    <div className="flex h-screen flex-col bg-zinc-100">
+    <div className="flex h-screen flex-col bg-background">
       <Navbar onOpenMobileNav={() => setMobileOpen(true)} />
 
       <div className="flex flex-1 min-h-0">

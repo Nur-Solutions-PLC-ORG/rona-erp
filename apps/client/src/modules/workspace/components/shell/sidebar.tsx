@@ -207,8 +207,8 @@ export function Sidebar({
     cn(
       "relative mx-2 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
       active
-        ? "bg-zinc-100 font-semibold text-zinc-900 before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-zinc-900"
-        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
+        ? "bg-sidebar-accent font-semibold text-white before:absolute before:inset-y-1.5 before:left-0 before:w-0.5 before:rounded-full before:bg-sidebar-primary"
+        : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-white",
       FOCUS_RING,
     );
 
@@ -229,21 +229,21 @@ export function Sidebar({
           className={cn(
             "relative flex items-center justify-center rounded-lg py-2 transition-colors",
             active
-              ? "bg-zinc-100 text-zinc-900"
-              : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
+              ? "bg-sidebar-accent text-white"
+              : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-white",
             FOCUS_RING,
           )}
         >
           <Icon
             className={cn(
               "h-4 w-4 shrink-0",
-              active ? "text-zinc-900" : "text-zinc-400",
+              active ? "text-sidebar-primary" : "text-sidebar-foreground/50",
             )}
           />
           {badge ? (
             <span
               aria-hidden="true"
-              className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-zinc-400"
+              className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-sidebar-primary"
             />
           ) : null}
         </Link>
@@ -263,12 +263,12 @@ export function Sidebar({
         <Icon
           className={cn(
             "h-4 w-4 shrink-0",
-            active ? "text-zinc-900" : "text-zinc-400",
+            active ? "text-sidebar-primary" : "text-sidebar-foreground/50",
           )}
         />
         <span className="min-w-0 flex-1 truncate">{label}</span>
         {badge ? (
-          <span className="shrink-0 rounded-full bg-zinc-200 px-1.5 text-[10px] font-semibold leading-5 tabular-nums text-zinc-700">
+          <span className="shrink-0 rounded-full bg-sidebar-primary/20 px-1.5 text-[10px] font-semibold leading-5 tabular-nums text-sidebar-primary">
             {badge > 9 ? "9+" : badge}
           </span>
         ) : null}
@@ -288,7 +288,7 @@ export function Sidebar({
   ) => {
     if (rail) {
       return (
-        <div key={label} className="mx-3 mt-3 pt-3 border-t border-zinc-200">
+        <div key={label} className="mx-3 mt-3 pt-3 border-t border-sidebar-border">
           <div className="space-y-1">
             {items.map((item) => renderItem(item.label, item.href, true))}
           </div>
@@ -313,7 +313,7 @@ export function Sidebar({
           <span
             className={cn(
               "text-xs font-semibold uppercase tracking-widest transition-colors",
-              "text-zinc-400 group-hover:text-zinc-600",
+              "text-sidebar-foreground/45 group-hover:text-sidebar-foreground/80",
             )}
           >
             {label}
@@ -322,7 +322,7 @@ export function Sidebar({
             className={cn(
               "w-3.5 h-3.5 shrink-0 transition-all",
               expanded ? "rotate-180" : "",
-              "text-zinc-400 group-hover:text-zinc-600",
+              "text-sidebar-foreground/45 group-hover:text-sidebar-foreground/80",
             )}
           />
         </button>
@@ -347,7 +347,7 @@ export function Sidebar({
         group.items.map((item) => renderItem(item.label, item.href, rail)),
       )}
 
-      {!rail ? <div className="mx-3 mt-3 h-px bg-zinc-200" /> : null}
+      {!rail ? <div className="mx-3 mt-3 h-px bg-sidebar-border" /> : null}
 
       {sectionGroups.map((group) => {
         const visibleItems = group.items.filter((item) => itemVisible(item));
@@ -358,7 +358,7 @@ export function Sidebar({
   );
 
   const renderTenantHeader = (extra?: React.ReactNode) => (
-    <div className="relative px-4 pt-5 pb-4 border-b border-zinc-200 shrink-0">
+    <div className="relative px-4 pt-5 pb-4 border-b border-sidebar-border shrink-0">
       <div className="flex items-center gap-1">
         <button
           type="button"
@@ -367,11 +367,11 @@ export function Sidebar({
           aria-expanded={orgOpen}
           aria-haspopup="menu"
           className={cn(
-            "group flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-zinc-50",
+            "group flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-sidebar-accent/60",
             FOCUS_RING,
           )}
         >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-zinc-600">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-sidebar-accent text-sidebar-foreground">
             <OrgLogo
               src={organization?.logoUrl}
               className="h-8 w-8 bg-white"
@@ -380,10 +380,10 @@ export function Sidebar({
           </span>
           {!collapsed ? (
             <span className="min-w-0 flex-1 text-left">
-              <span className="block truncate text-sm font-semibold text-zinc-900">
+              <span className="block truncate text-sm font-semibold text-white">
                 {organization?.name ?? "No organization"}
               </span>
-              <span className="block truncate text-xs text-zinc-500 font-mono">
+              <span className="block truncate text-xs text-sidebar-foreground/55 font-mono">
                 {organization?.slug ?? "—"}
               </span>
             </span>
@@ -391,7 +391,7 @@ export function Sidebar({
           {!collapsed ? (
             <HiOutlineChevronDown
               className={cn(
-                "h-3.5 w-3.5 shrink-0 text-zinc-400 transition-colors group-hover:text-zinc-600",
+                "h-3.5 w-3.5 shrink-0 text-sidebar-foreground/50 transition-colors group-hover:text-sidebar-foreground/80",
                 orgOpen && "rotate-180",
               )}
             />
@@ -461,7 +461,7 @@ export function Sidebar({
   const renderDesktop = () => (
     <aside
       className={cn(
-        "hidden lg:relative lg:flex h-full shrink-0 bg-white border-r border-zinc-200 flex-col transition-all duration-300",
+        "hidden lg:relative lg:flex h-full shrink-0 bg-sidebar border-r border-sidebar-border flex-col transition-all duration-300",
         collapsed ? "w-14" : "w-64",
       )}
     >
@@ -474,7 +474,7 @@ export function Sidebar({
               title="Expand sidebar"
               aria-label="Expand sidebar"
               className={cn(
-                "flex h-9 w-full items-center justify-center rounded-md border border-zinc-200 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-900",
+                "flex h-9 w-full items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-white",
                 FOCUS_RING,
               )}
             >
@@ -488,14 +488,14 @@ export function Sidebar({
         <>
           {renderTenantHeader()}
           {renderNav(false)}
-          <div className="p-3 border-t border-zinc-200 shrink-0">
+          <div className="p-3 border-t border-sidebar-border shrink-0">
             <button
               type="button"
               onClick={onToggleCollapse}
               title="Collapse sidebar"
               aria-label="Collapse sidebar"
               className={cn(
-                "flex h-9 w-full items-center justify-center rounded-md border border-zinc-200 text-zinc-500 transition-colors hover:bg-zinc-50 hover:text-zinc-900",
+                "flex h-9 w-full items-center justify-center rounded-md border border-sidebar-border text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-white",
                 FOCUS_RING,
               )}
             >
@@ -518,7 +518,7 @@ export function Sidebar({
 
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-screen w-72 max-w-[85vw] bg-white border-r border-zinc-200 flex flex-col transition-transform duration-300 lg:hidden",
+          "fixed top-0 left-0 z-50 h-screen w-72 max-w-[85vw] bg-sidebar border-r border-sidebar-border flex flex-col transition-transform duration-300 lg:hidden",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -529,7 +529,7 @@ export function Sidebar({
             title="Close navigation"
             aria-label="Close navigation"
             className={cn(
-              "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900",
+              "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent hover:text-white",
               FOCUS_RING,
             )}
           >

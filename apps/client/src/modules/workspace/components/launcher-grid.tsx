@@ -48,9 +48,9 @@ const MODULE_STYLES: Record<string, ModuleStyle> = {
     label: "text-blue-700 group-hover:text-blue-900",
   },
   "Rona AI": {
-    tile: "border-violet-200/70 bg-violet-100/70 group-hover:border-violet-300 group-hover:bg-violet-200/80",
-    icon: "text-violet-600 group-hover:text-violet-800",
-    label: "text-violet-700 group-hover:text-violet-900",
+    tile: "border-brand-teal/40 bg-linear-135 from-brand-ink to-brand-deep group-hover:border-brand-aqua/60",
+    icon: "text-brand-aqua group-hover:text-brand-mint",
+    label: "text-brand-teal group-hover:text-brand-deep",
   },
   Inventory: {
     tile: "border-amber-200/70 bg-amber-100/70 group-hover:border-amber-300 group-hover:bg-amber-200/80",
@@ -88,9 +88,9 @@ const MODULE_STYLES: Record<string, ModuleStyle> = {
     label: "text-teal-700 group-hover:text-teal-900",
   },
   Organization: {
-    tile: "border-fuchsia-200/70 bg-fuchsia-100/70 group-hover:border-fuchsia-300 group-hover:bg-fuchsia-200/80",
-    icon: "text-fuchsia-600 group-hover:text-fuchsia-800",
-    label: "text-fuchsia-700 group-hover:text-fuchsia-900",
+    tile: "border-brand-teal/25 bg-brand-teal/10 group-hover:border-brand-teal/40 group-hover:bg-brand-teal/20",
+    icon: "text-brand-teal group-hover:text-brand-deep",
+    label: "text-brand-teal group-hover:text-brand-deep",
   },
 };
 

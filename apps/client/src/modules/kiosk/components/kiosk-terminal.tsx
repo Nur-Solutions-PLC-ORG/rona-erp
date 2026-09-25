@@ -176,7 +176,7 @@ function StepPill({
         done
           ? "border-emerald-200 bg-emerald-50 text-emerald-700"
           : active
-            ? "border-purple-200 bg-purple-50 text-purple-700"
+            ? "border-brand-aqua/50 bg-accent text-primary"
             : "border-slate-200 bg-white text-slate-400",
       )}
     >
@@ -186,7 +186,7 @@ function StepPill({
           done
             ? "border-emerald-500 bg-emerald-500 text-white"
             : active
-              ? "border-purple-400 text-purple-600"
+              ? "border-brand-sea text-primary"
               : "border-slate-300 text-slate-400",
         )}
       >
@@ -539,7 +539,8 @@ export default function KioskTerminal() {
         faceScan === null));
 
   return (
-    <div className="min-h-screen flex flex-col select-none bg-slate-100 text-slate-900">
+    <div className="brand-gradient-teal relative isolate min-h-screen flex flex-col select-none text-slate-900">
+      <div className="brand-waves fixed inset-0 -z-10 opacity-20!" />
       <style>{`
         @keyframes rona-pop { 0% { transform: scale(0.4); opacity: 0; } 60% { transform: scale(1.08); opacity: 1; } 100% { transform: scale(1); } }
         @keyframes rona-shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
@@ -548,17 +549,17 @@ export default function KioskTerminal() {
         .rona-shake { animation: rona-shake .5s ease-in-out; }
         .rona-ring { animation: rona-ring 1.1s ease-out 2; }
       `}</style>
-      <div className="h-1 shrink-0 bg-gradient-to-r from-purple-600 via-violet-500 to-indigo-600" />
+      <div className="h-1 shrink-0 bg-linear-to-r from-brand-teal via-brand-aqua to-brand-green" />
 
-      <header className="flex items-center justify-between gap-4 bg-white border-b border-slate-200 px-6 sm:px-10 py-4 shrink-0">
+      <header className="flex items-center justify-between gap-4 border-b border-white/10 px-6 sm:px-10 py-4 shrink-0">
         <div className="flex items-center gap-4 min-w-0">
-          <Logo variant="dark" className="h-7 w-auto shrink-0" />
+          <Logo className="h-7 w-auto shrink-0" />
           {screen !== "setup" && organizationName ? (
-            <div className="hidden md:flex items-center gap-2.5 pl-5 border-l border-slate-200 min-w-0">
-              <span className="text-sm font-medium text-slate-700 truncate">
+            <div className="hidden md:flex items-center gap-2.5 pl-5 border-l border-white/15 min-w-0">
+              <span className="text-sm font-medium text-white truncate">
                 {organizationName}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-500 shrink-0">
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-white/5 px-2.5 py-1 text-xs font-medium text-brand-pale shrink-0">
                 <HiOutlineDevicePhoneMobile className="h-3.5 w-3.5" />
                 {kioskName}
               </span>
@@ -568,14 +569,14 @@ export default function KioskTerminal() {
         {screen !== "setup" ? (
           <div className="flex items-center gap-6 shrink-0">
             <div className="text-right">
-              <p className="font-mono tabular-nums text-2xl leading-none text-slate-900">
+              <p className="font-mono tabular-nums text-2xl leading-none text-white">
                 {clock.toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                   hour12: false,
                 })}
               </p>
-              <p className="mt-1.5 text-xs font-medium text-slate-400">
+              <p className="mt-1.5 text-xs font-medium text-brand-pale/70">
                 {formatDate(clock)}
               </p>
             </div>
@@ -583,7 +584,7 @@ export default function KioskTerminal() {
               type="button"
               onClick={handleSignOut}
               disabled={busy}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-brand-pale/80 transition-colors hover:bg-white/10 hover:text-white"
             >
               End session
             </button>
@@ -595,7 +596,7 @@ export default function KioskTerminal() {
         {screen === "setup" ? (
           <div className="w-full max-w-md">
             <div className="space-y-6 rounded-2xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/5">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-accent text-primary">
                 <HiOutlineDevicePhoneMobile className="h-7 w-7" />
               </div>
               <div className="space-y-1.5">
@@ -623,7 +624,7 @@ export default function KioskTerminal() {
                 type="button"
                 onClick={handleSetup}
                 disabled={busy || !deviceToken.trim()}
-                className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-purple-600 px-6 py-5 text-xl font-semibold text-white transition-colors hover:bg-purple-700 active:bg-purple-800 disabled:pointer-events-none disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-primary px-6 py-5 text-xl font-semibold text-white transition-colors hover:bg-primary/90 active:bg-primary/80 disabled:pointer-events-none disabled:opacity-50"
               >
                 {busy ? (
                   <>
@@ -709,7 +710,7 @@ export default function KioskTerminal() {
                     disabled={
                       busy || fingerprintScanning || faceScanning
                     }
-                    className="flex w-full items-center justify-center gap-4 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-6 text-left text-white shadow-xl shadow-purple-600/20 transition-colors hover:from-purple-700 hover:to-indigo-700 active:from-purple-800 active:to-indigo-800 disabled:pointer-events-none disabled:opacity-50"
+                    className="flex w-full items-center justify-center gap-4 rounded-2xl bg-linear-to-r from-brand-teal to-brand-deep px-6 py-6 text-left text-white shadow-xl shadow-brand-teal/20 transition-colors hover:from-brand-sea hover:to-brand-teal active:from-brand-deep active:to-brand-ink disabled:pointer-events-none disabled:opacity-50"
                   >
                     {fingerprintScanning ? (
                       <>
@@ -718,7 +719,7 @@ export default function KioskTerminal() {
                           <span className="block text-2xl font-bold tracking-wide">
                             Waiting for fingerprint…
                           </span>
-                          <span className="block text-sm text-purple-100">
+                          <span className="block text-sm text-brand-pale">
                             Touch and hold the fingerprint sensor on this
                             device
                           </span>
@@ -731,7 +732,7 @@ export default function KioskTerminal() {
                           <span className="block text-2xl font-bold tracking-wide">
                             USE FINGERPRINT
                           </span>
-                          <span className="block text-sm text-purple-100">
+                          <span className="block text-sm text-brand-pale">
                             No ID needed — touch the sensor to identify
                             yourself
                           </span>
@@ -891,7 +892,7 @@ export default function KioskTerminal() {
                 </p>
               )}
             </div>
-            <p className="text-center text-xs text-slate-400">
+            <p className="text-center text-xs text-brand-pale/60">
               Rona Workforce — secure attendance terminal
             </p>
           </div>
@@ -902,17 +903,17 @@ export default function KioskTerminal() {
             <div className="rona-pop rona-ring mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
               <HiOutlineCheckCircle className="h-11 w-11" />
             </div>
-            <p className="font-heading text-5xl font-bold tracking-tight text-slate-900">
+            <p className="font-heading text-5xl font-bold tracking-tight text-white">
               {success.employeeName}
             </p>
-            <p className="text-3xl font-semibold text-emerald-600">
+            <p className="text-3xl font-semibold text-brand-green">
               {success.eventLabel}
             </p>
-            <p className="font-mono tabular-nums text-3xl text-slate-500">
+            <p className="font-mono tabular-nums text-3xl text-brand-pale">
               {success.eventTime}
             </p>
             {resetIn !== null ? (
-              <p className="text-xs font-medium text-slate-400">
+              <p className="text-xs font-medium text-brand-pale/60">
                 Returning to home in {Math.max(resetIn, 1)}s…
               </p>
             ) : null}
