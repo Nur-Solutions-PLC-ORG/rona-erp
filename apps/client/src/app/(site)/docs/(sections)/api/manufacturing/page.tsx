@@ -26,7 +26,7 @@ export default function ManufacturingApiPage() {
       <Section title="Base URL">
         <CodeBlock
           label="Base"
-          code={`https://api.rona-erp.com/manufacturing`}
+          code={`https://api.rona.pro.et/manufacturing`}
         />
       </Section>
 

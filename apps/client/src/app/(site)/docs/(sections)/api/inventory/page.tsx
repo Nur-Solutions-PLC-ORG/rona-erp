@@ -25,7 +25,7 @@ export default function InventoryApiPage() {
       />
 
       <Section title="Base URL">
-        <CodeBlock label="Base" code={`https://api.rona-erp.com/stock`} />
+        <CodeBlock label="Base" code={`https://api.rona.pro.et/stock`} />
       </Section>
 
       <Section title="Endpoints">

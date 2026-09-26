@@ -26,7 +26,7 @@ export default function FinanceApiPage() {
       />
 
       <Section title="Base URL">
-        <CodeBlock label="Base" code={`https://api.rona-erp.com/finance`} />
+        <CodeBlock label="Base" code={`https://api.rona.pro.et/finance`} />
       </Section>
 
       <Section title="Endpoints">

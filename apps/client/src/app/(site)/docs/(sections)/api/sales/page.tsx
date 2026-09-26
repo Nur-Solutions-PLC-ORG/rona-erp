@@ -23,7 +23,7 @@ export default function SalesApiPage() {
       />
 
       <Section title="Base URL">
-        <CodeBlock label="Base" code={`https://api.rona-erp.com/sales`} />
+        <CodeBlock label="Base" code={`https://api.rona.pro.et/sales`} />
       </Section>
 
       <Section title="Endpoints">

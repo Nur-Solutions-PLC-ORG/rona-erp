@@ -344,7 +344,7 @@ function DashboardPreview() {
           </div>
           <div className="mx-auto flex items-center gap-1.5 border border-[#581c87] bg-white px-3 py-0.5 font-mono text-[10px] text-[#6c5f8a]">
             <Lock className="h-2.5 w-2.5" />
-            app.rona-erp.com/dashboard
+            https://rona.pro.et
           </div>
           <span className="font-mono text-[10px] text-[#6c5f8a]">v2.6.1</span>
         </div>
