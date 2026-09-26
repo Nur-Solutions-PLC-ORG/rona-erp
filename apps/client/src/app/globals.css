@@ -583,6 +583,119 @@
   color: transparent;
 }
 
+/* ---- Landing hero motion ---------------------------------------------------- */
+/* Compositor-only (transform/opacity) CSS animations: they run without JS,
+   so the hero paints immediately, and they stop under reduced motion. */
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-rise {
+  animation: hero-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+/* Soft brand glows: static radial gradients (no blur filter) that drift. */
+@keyframes hero-drift {
+  from {
+    transform: translate3d(-8%, -6%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(8%, 6%, 0) scale(1.18);
+  }
+}
+
+.hero-glow {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 9999px;
+  will-change: transform;
+  animation: hero-drift var(--duration, 20s) ease-in-out infinite alternate;
+}
+
+@keyframes hero-waves-drift {
+  from {
+    transform: scale(1.06) rotate(-1.5deg);
+  }
+  to {
+    transform: scale(1.14) rotate(1.5deg);
+  }
+}
+
+.hero-waves-drift {
+  animation: hero-waves-drift 45s ease-in-out infinite alternate;
+}
+
+/* Rotating headline word: six rows (the first repeated last) so the loop
+   snaps back invisibly. Each row is 1/6 of the list height. */
+@keyframes hero-words {
+  0%, 14% { transform: translate3d(0, 0, 0); }
+  18%, 31% { transform: translate3d(0, -16.6667%, 0); }
+  35%, 48% { transform: translate3d(0, -33.3333%, 0); }
+  52%, 65% { transform: translate3d(0, -50%, 0); }
+  69%, 82% { transform: translate3d(0, -66.6667%, 0); }
+  86%, 100% { transform: translate3d(0, -83.3333%, 0); }
+}
+
+.hero-words {
+  animation: hero-words 14s cubic-bezier(0.7, 0, 0.3, 1) infinite;
+  animation-delay: 1.2s;
+}
+
+@keyframes hero-ping {
+  from {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.hero-ping {
+  animation: hero-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Product preview settles from a tilt as it scrolls in (native scroll-driven
+   animation where supported; otherwise it simply renders flat). */
+@supports (animation-timeline: view()) {
+  @keyframes hero-tilt {
+    from {
+      transform: perspective(1600px) rotateX(14deg) scale(0.95);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  .hero-preview {
+    transform-origin: 50% 0;
+    animation: hero-tilt linear both;
+    animation-timeline: view();
+    animation-range: entry 10% cover 35%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise,
+  .hero-glow,
+  .hero-waves-drift,
+  .hero-words,
+  .hero-ping,
+  .hero-preview {
+    animation: none !important;
+  }
+}
+
 /* ---- ERP number typography -------------------------------------------------- */
 /* Monospaced tabular figures for ids, quantities and money columns. */
 

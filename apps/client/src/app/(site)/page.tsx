@@ -6,6 +6,9 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
+  Coins,
+  QrCode,
+  Users,
   Boxes,
   ClipboardCheck,
   Cog,
@@ -279,9 +282,7 @@ function DashboardPreview() {
               <div
                 key={m}
                 className={`flex items-center gap-2 border-b ${hairline} px-3 py-2 text-[11px] font-medium ${
-                  i === 1
-                    ? "bg-ink text-card"
-                    : "text-ink-2 hover:bg-tint"
+                  i === 1 ? "bg-ink text-card" : "text-ink-2 hover:bg-tint"
                 }`}
               >
                 <span
@@ -450,109 +451,167 @@ function DashboardPreview() {
 }
 
 const brandPillars = [
-  "Smart QR Integration",
-  "Multi-Currency Finance",
-  "Complete HR Suite",
+  { label: "Smart QR Integration", icon: QrCode },
+  { label: "Multi-Currency Finance", icon: Coins },
+  { label: "Complete HR Suite", icon: Users },
 ];
+
+// First word repeats at the end so the CSS loop snaps back invisibly.
+const heroWords = [
+  "success",
+  "inventory",
+  "production",
+  "finance",
+  "workforce",
+  "success",
+];
+
+const riseDelay = (ms: number) =>
+  ({ "--delay": `${ms}ms` }) as React.CSSProperties;
+
+function HeroBackdrop() {
+  return (
+    <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
+      <div className="brand-waves hero-waves-drift absolute inset-0" />
+      <div
+        className="hero-glow -top-48 -left-40 size-[38rem] bg-[radial-gradient(closest-side,rgb(110_195_199/0.32),transparent)]"
+        style={{ "--duration": "22s" } as React.CSSProperties}
+      />
+      <div
+        className="hero-glow top-8 -right-36 size-[32rem] bg-[radial-gradient(closest-side,rgb(3_175_104/0.2),transparent)]"
+        style={
+          { "--duration": "27s", animationDelay: "-9s" } as React.CSSProperties
+        }
+      />
+      <div
+        className="hero-glow -bottom-56 left-1/4 size-[44rem] bg-[radial-gradient(closest-side,rgb(56_97_99/0.28),transparent)]"
+        style={
+          { "--duration": "32s", animationDelay: "-16s" } as React.CSSProperties
+        }
+      />
+      {/* Fine grid, faded toward the edges. */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--ink)_1px,transparent_1px),linear-gradient(to_bottom,var(--ink)_1px,transparent_1px)] bg-size-[56px_56px] opacity-[0.05] mask-[radial-gradient(ellipse_70%_55%_at_50%_30%,black,transparent)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(50%_40%_at_50%_34%,var(--hero-vignette),transparent)]" />
+    </div>
+  );
+}
+
+function RotatingWord() {
+  return (
+    <span className="relative inline-flex h-[1.2em] items-start overflow-hidden align-bottom">
+      <span className="hero-words flex flex-col">
+        {heroWords.map((word, index) => (
+          <span
+            key={`${word}-${index}`}
+            className="block h-[1.2em] bg-linear-to-r from-tagline to-ink-2 bg-clip-text pb-[0.1em] text-right leading-[1.2em] text-transparent"
+          >
+            {word}
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
 
 function Hero() {
   const { user } = useSession();
   return (
     <section className="brand-gradient relative isolate overflow-hidden border-b border-ink">
-      <div aria-hidden className="brand-waves absolute inset-0 -z-10" />
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 bg-[radial-gradient(55%_45%_at_50%_42%,var(--hero-vignette),transparent)]"
-      />
-      <div className={`${container} relative z-10 pt-16 pb-20 sm:pt-24`}>
-        <div className="mx-auto max-w-3xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
-            className="inline-flex items-center border border-ink/20 bg-card/60 px-3 py-1.5 text-ink-2"
+      <HeroBackdrop />
+
+      <div className={`${container} relative pt-16 pb-20 sm:pt-24`}>
+        <div className="mx-auto max-w-4xl text-center">
+          <a
+            href="#platform"
+            className="hero-rise group inline-flex items-center gap-2.5 border border-ink/20 bg-card/70 py-1.5 pr-3 pl-2.5 text-[12px] text-ink-2 backdrop-blur-sm transition-colors hover:border-ink/40 hover:text-ink"
           >
-            <span className="border-r border-ink/20 pr-2 font-mono text-[10px] font-bold uppercase tracking-widest text-tagline">
+            <span className="relative flex h-2 w-2">
+              <span className="hero-ping absolute inset-0 rounded-full bg-brand-green" />
+              <span className="relative h-2 w-2 rounded-full bg-brand-green" />
+            </span>
+            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-tagline">
               New
             </span>
-            <span className="pl-2 text-[12px]">
-              Rona AI assistant is now built into every module
+            <span>Rona AI assistant is now built into every module</span>
+            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          </a>
+
+          <h1
+            className="hero-rise mt-8 font-sans text-[2.3rem] leading-[1.2] font-normal tracking-tight text-ink sm:text-6xl lg:text-[4.6rem]"
+            style={riseDelay(80)}
+          >
+            <span className="sr-only">Streamline your success with RONA.</span>
+            <span aria-hidden className="block">
+              Streamline your
             </span>
-          </motion.div>
+            <span aria-hidden className="block">
+              <RotatingWord /> with{" "}
+              <span className="font-medium text-tagline-strong">RONA.</span>
+            </span>
+          </h1>
 
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.04 }}
-            className="mt-10 flex justify-center"
+          <p
+            className="hero-rise mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-ink-2 sm:text-base"
+            style={riseDelay(160)}
           >
-            <Logo className="h-16 sm:h-20" />
-          </motion.div>
+            The enterprise-grade platform for retail, manufacturing, services,
+            and distribution — inventory, production, finance, and your
+            workforce in one precise, traceable workspace.
+          </p>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.08 }}
-            className="mt-8 font-sans text-[2.4rem] font-normal leading-[1.1] tracking-tight sm:text-6xl lg:text-[4.2rem]"
-          >
-            <span className="text-tagline">Streamline Your Success</span>
-            <br />
-            <span className="text-tagline">with</span>{" "}
-            <span className="text-tagline-strong">RONA.</span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.16 }}
-            className="mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-ink-2"
-          >
-            The enterprise-grade platform dedicated to transforming complex
-            operations into streamlined success. A complete solution for
-            retail, manufacturing, services, and distribution companies —
-            inventory management, financial tracking, and employee management
-            in one place.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.24 }}
-            className="mt-8 flex flex-wrap items-center justify-center gap-3"
+          <div
+            className="hero-rise mt-9 flex flex-wrap items-center justify-center gap-3"
+            style={riseDelay(240)}
           >
             <Link
               href={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
-              className="group flex items-center gap-2 border border-brand-green bg-brand-green px-6 py-3 text-[13px] font-semibold text-brand-ink transition-colors hover:border-brand-mint hover:bg-brand-mint"
+              className="group flex items-center gap-2 border border-brand-green bg-brand-green px-6 py-3 text-[13px] font-semibold text-brand-ink shadow-[0_8px_30px_-8px_rgb(3_175_104/0.6)] transition-[background-color,border-color,transform] hover:-translate-y-0.5 hover:border-brand-mint hover:bg-brand-mint"
             >
               {user ? "Go to workspace" : "Launch Workspace"}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <a
               href="#platform"
-              className="group flex items-center gap-2 border border-ink/30 px-6 py-3 text-[13px] font-semibold text-ink transition-colors hover:bg-ink/5"
+              className="group flex items-center gap-2 border border-ink/30 bg-card/50 px-6 py-3 text-[13px] font-semibold text-ink backdrop-blur-sm transition-colors hover:border-ink/50 hover:bg-card/80"
             >
               Explore platform
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </a>
-          </motion.div>
-          <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-ink-3">
+          </div>
+          <p
+            className="hero-rise mt-4 font-mono text-[10px] uppercase tracking-widest text-ink-3"
+            style={riseDelay(300)}
+          >
             Free 14-day trial · No card required
           </p>
 
-          <ul className="mt-12 grid grid-cols-1 gap-3 border-t border-ink/10 pt-8 sm:grid-cols-3">
+          <ul
+            className="hero-rise mt-10 flex flex-wrap items-center justify-center gap-2.5"
+            style={riseDelay(360)}
+          >
             {brandPillars.map((pillar) => (
               <li
-                key={pillar}
-                className="text-sm font-bold tracking-wide text-tagline"
+                key={pillar.label}
+                className="inline-flex items-center gap-2 border border-ink/15 bg-card/60 px-3.5 py-2 text-[12.5px] font-semibold text-tagline backdrop-blur-sm"
               >
-                {pillar}
+                <pillar.icon className="h-4 w-4" strokeWidth={1.75} />
+                {pillar.label}
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="mx-auto mt-14 max-w-6xl">
-          <DashboardPreview />
+        <div
+          className="hero-rise relative mx-auto mt-16 max-w-6xl"
+          style={riseDelay(460)}
+        >
+          <div
+            aria-hidden
+            className="absolute -inset-x-16 top-10 -bottom-16 -z-10 bg-[radial-gradient(closest-side,rgb(110_195_199/0.22),transparent)]"
+          />
+          <div className="hero-preview">
+            <DashboardPreview />
+          </div>
         </div>
       </div>
     </section>
@@ -783,9 +842,7 @@ function WorkflowSection() {
                   <span className="font-mono text-[11px] font-bold tabular-nums text-ink-3">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <h3
-                    className={`text-xl font-semibold text-ink ${serif}`}
-                  >
+                  <h3 className={`text-xl font-semibold text-ink ${serif}`}>
                     {step.title}
                   </h3>
                 </div>
@@ -1050,9 +1107,7 @@ function CtaSlab() {
     <section className="brand-gradient-teal relative isolate overflow-hidden py-20 sm:py-24">
       <div aria-hidden className="brand-waves absolute inset-0 -z-10" />
       <div className={`${container} text-center`}>
-        <h2
-          className={`text-3xl font-semibold text-ink sm:text-5xl ${serif}`}
-        >
+        <h2 className={`text-3xl font-semibold text-ink sm:text-5xl ${serif}`}>
           {user ? "Welcome back." : "Ready to streamline your operations?"}
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-[14px] leading-relaxed text-ink-2">
@@ -1154,7 +1209,8 @@ function Footer() {
             All systems operational
           </span>
           <span className="font-mono text-[10px] uppercase tracking-widest text-ink-3">
-            © {new Date().getFullYear()} Rona · Enterprise Business Management Platform
+            © {new Date().getFullYear()} Rona · Enterprise Business Management
+            Platform
           </span>
         </div>
       </div>
