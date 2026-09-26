@@ -47,7 +47,7 @@ export const ListInput = ({
               key={option.value}
               onClick={() => toggleItem(option.value)}
               className={cn(
-                "rounded-lg px-2 bg-white py-0.5 flex gap-2 items-center flex-1 border ",
+                "rounded-lg px-2 bg-card py-0.5 flex gap-2 items-center flex-1 border ",
                 isActive && "text-primary font-semibold",
                 !disabled &&
                   "hover:opacity-90 cursor-pointer hover:bg-black/5 active:scale-105 transition-all",

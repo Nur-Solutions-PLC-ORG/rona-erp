@@ -11,8 +11,9 @@ export const paginationSearchParamsSchema = z.object({
     .number()
     .int()
     .positive()
-    .max(PAGE_LIMIT_MAXIMUM)
-    .min(PAGE_LIMIT_MINIMUM)
+    .transform((value) =>
+      Math.min(Math.max(value, PAGE_LIMIT_MINIMUM), PAGE_LIMIT_MAXIMUM),
+    )
     .optional(),
   searchQuery: z.string().trim().max(SEARCH_QUERY_MAX_LENGTH).optional(),
 });

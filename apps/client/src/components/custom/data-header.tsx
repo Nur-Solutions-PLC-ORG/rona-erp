@@ -4,7 +4,6 @@ import z from "zod";
 import { getSchemaInfo } from "@/lib/zod";
 import Dropdown from "./dropdown";
 import { slugToString } from "@/lib/utils";
-import { Button } from "../ui/button";
 import { useState } from "react";
 import { Search } from "lucide-react";
 
@@ -84,17 +83,17 @@ function DataHeader<TSearchParams>({
   };
 
   return (
-    <div id="data-header" className="flex flex-col py-4 gap-5">
+    <div id="data-header" className="flex flex-col gap-3">
       {head && (
-        <div className="px-5 flex">
+        <div className="flex">
           <span className="mr-auto" />
           {head}
         </div>
       )}
 
-      <div className="px-5 flex flex-col md:flex-row gap-4 md:items-center">
+      <div className="flex flex-col md:flex-row gap-2 md:items-center md:flex-wrap bg-card p-3 sm:p-4 rounded-lg border border-zinc-200">
         {includeSearchQuery && (
-          <div className="flex flex-1 items-center gap-2">
+          <div className="flex flex-1 items-center gap-2 md:max-w-120">
             <SearchInput
               value={searchInput}
               onChange={(e) => handleSearchInput(e.target.value)}
@@ -104,19 +103,18 @@ function DataHeader<TSearchParams>({
                   commitServerSearch();
                 }
               }}
-              className="h-9 bg-white"
+              className="h-8! rounded-md bg-zinc-100! border-transparent! text-xs placeholder:text-zinc-400 focus-visible:bg-card! focus-visible:ring-1! focus-visible:ring-ring!"
               containerClassName="flex-1"
               placeholder="Filter loaded rows… (Enter to search server)"
             />
-            <Button
+            <button
               type="button"
-              variant="outline"
-              className="h-9 shrink-0 gap-2"
               onClick={commitServerSearch}
+              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-card hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition border border-zinc-200 shrink-0 h-8"
             >
-              <Search className="size-4" />
+              <Search className="size-3.5" />
               Search server
-            </Button>
+            </button>
           </div>
         )}
 
@@ -145,6 +143,7 @@ function DataHeader<TSearchParams>({
                     "Select " + (replacement?.label ?? slugToString(key))
                   }
                   value={value}
+                  className="h-8! bg-zinc-50! rounded-md! text-xs min-w-36 focus:ring-1! focus:ring-ring!"
                   onChange={(newValue) => {
                     if (!newValue) {
                       removeParams([key as keyof TSearchParams]);
@@ -162,15 +161,15 @@ function DataHeader<TSearchParams>({
 
           {(!!Object.values(searchParams as object).length ||
             !!searchInput) && (
-            <Button
+            <button
               onClick={() => {
                 handleSearchInput("");
                 clearParams();
               }}
-              variant="outline"
+              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-card hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition border border-zinc-200 disabled:opacity-50 disabled:pointer-events-none h-8"
             >
               Clear
-            </Button>
+            </button>
           )}
         </div>
       </div>

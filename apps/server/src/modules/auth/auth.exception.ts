@@ -11,7 +11,7 @@ export class WaitForResendException extends ApiException {
   constructor() {
     super(
       HttpStatus.TOO_MANY_REQUESTS,
-      'Please wait before requesting a new verification code.',
+      'Please wait before requesting a new code.',
     );
   }
 }
@@ -46,19 +46,23 @@ export class SessionException extends ApiException {
   }
 }
 
-// Thrown when a user is not found by email during forgot-password
 export class UserNotFoundException extends ApiException {
   constructor() {
     super(HttpStatus.NOT_FOUND, 'No account found with this email address.');
   }
 }
 
-// Thrown when a password reset token is invalid or has expired
 export class InvalidResetTokenException extends ApiException {
   constructor() {
     super(
       HttpStatus.BAD_REQUEST,
-      'The password reset token is invalid or expired.',
+      'The password reset code is invalid or expired.',
     );
+  }
+}
+
+export class TooManyAttemptsException extends ApiException {
+  constructor(message = 'Too many attempts. Please try again later.') {
+    super(HttpStatus.TOO_MANY_REQUESTS, message);
   }
 }

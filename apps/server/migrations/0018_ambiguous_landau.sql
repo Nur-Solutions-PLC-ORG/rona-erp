@@ -1,0 +1,1 @@
+ALTER TYPE "public"."modules_list" ADD VALUE 'kiosk';

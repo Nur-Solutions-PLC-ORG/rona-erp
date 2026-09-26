@@ -17,7 +17,6 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import UserButton from "@/modules/auth/components/user-button";
-import { useSession } from "@/modules/auth/hooks";
 import { useSidebarStore } from "@/store";
 import { ChevronDown, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
@@ -39,6 +38,7 @@ export type SidebarOptions = SidebarOption[];
 type Props = {
   children: React.ReactNode;
   options?: SidebarOptions;
+  navExtra?: React.ReactNode;
 };
 
 function findActiveSidebarTitle(
@@ -61,7 +61,7 @@ function isGroupActive(option: SidebarOption, pathname: string) {
   return option.children?.some((child) => child.href === pathname) ?? false;
 }
 
-const DashboardWrapper = ({ children, options }: Props) => {
+const DashboardWrapper = ({ children, options, navExtra }: Props) => {
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const collapsed = useSidebarStore((s) => s.collapsed);
@@ -82,6 +82,7 @@ const DashboardWrapper = ({ children, options }: Props) => {
             options={options}
             pathname={pathname}
             isMobile={isMobile}
+            navExtra={navExtra}
           />
           <div className="flex-1 w-full flex flex-col bg-secondary/50 min-w-0">
             {children}
@@ -98,9 +99,10 @@ type NavProps = {
   isMobile?: boolean;
   options?: SidebarOptions;
   pathname: string;
+  navExtra?: React.ReactNode;
 };
 
-const DashboardNav = ({ isMobile, options, pathname }: NavProps) => {
+const DashboardNav = ({ isMobile, options, pathname, navExtra }: NavProps) => {
   const activeTitle = options
     ? findActiveSidebarTitle(options, pathname)
     : undefined;
@@ -150,6 +152,7 @@ const DashboardNav = ({ isMobile, options, pathname }: NavProps) => {
           </div>
         )}
         <span className="ml-auto" />
+        {navExtra}
         <UserButton />
       </div>
     </nav>
@@ -186,7 +189,6 @@ const NavItemTooltip = ({
 const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
   const { open, setOpen, openGroups, setGroupOpen, collapsed } =
     useSidebarStore();
-  const { isAdmin } = useSession();
   const isIconMode = !sheet && collapsed;
 
   useEffect(() => {
@@ -325,7 +327,7 @@ const DashboardSidebar = ({ options, sheet, pathname }: SidebarProps) => {
           isIconMode ? "px-2 justify-center" : "px-4 justify-center",
         )}
       >
-        <Logo admin={isAdmin && !isIconMode} icon={isIconMode} />
+        <Logo variant={isIconMode ? "mark" : "dark"} className={isIconMode ? "size-9" : "h-7"} />
       </div>
       <span className="mb-4 w-full" />
       <div className="flex flex-col gap-0.5 overflow-y-auto pb-4">

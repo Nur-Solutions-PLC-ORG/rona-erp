@@ -9,15 +9,14 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   signInSchema,
+  changePasswordSchema,
 } from "@rona/validation/auth";
 import z from "zod";
 
-// Roles types
 export type Position = (typeof POSITIONS_LIST)[number];
 export type Module = (typeof MODULE_LIST)[number];
 export type UserStatus = (typeof USER_STATUS_LIST)[number];
 
-// Sessions
 export interface UserRole {
   position: Position;
   modules: Module[];
@@ -36,12 +35,16 @@ export interface Session {
   expires: string;
 }
 
-// Response types
 export interface SignInResponseData {
   tfaEnabled: boolean;
+  mustChangePassword?: boolean;
+  telegramUrl?: string;
 }
 
-// Zod schema types
+export interface ForgotPasswordResponseData {
+  telegramUrl?: string;
+}
+
 export type SignInSchema = z.infer<typeof signInSchema>;
 export type ResendVerificationCodeSchema = z.infer<
   typeof resendVerificationCodeSchema
@@ -49,3 +52,4 @@ export type ResendVerificationCodeSchema = z.infer<
 export type RegisterSchema = z.infer<typeof registerSchema>;
 export type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>;
+export type ChangePasswordSchema = z.infer<typeof changePasswordSchema>;
