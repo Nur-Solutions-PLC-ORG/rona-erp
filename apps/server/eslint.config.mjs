@@ -32,4 +32,17 @@ export default tseslint.config(
       "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
   },
+  {
+    // Test files: mocks legitimately pass unbound methods and use async
+    // mock factories without awaiting. Jest matchers (expect.any,
+    // expect.objectContaining) and jest.fn().mock.calls are intentionally
+    // typed `any`, so the type-unsafe rules add no value in assertions.
+    files: ['**/*.spec.ts', '**/*.spec-harness.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+    },
+  },
 );

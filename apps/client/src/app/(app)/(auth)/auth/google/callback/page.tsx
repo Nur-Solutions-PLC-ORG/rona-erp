@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { CLIENT_APP_DASHBOARD_PAGE } from "@rona/routes/app";
+import { CLIENT_APP_LAUNCHER_PAGE } from "@rona/routes/app";
 
 const getSafeRedirectPath = (redirectPath: string | undefined) => {
   if (
@@ -20,5 +20,5 @@ interface Props {
 export default async function GoogleCallbackPage({ searchParams }: Props) {
   const { redirect: redirectPath } = await searchParams;
 
-  redirect(getSafeRedirectPath(redirectPath) ?? CLIENT_APP_DASHBOARD_PAGE);
+  redirect(getSafeRedirectPath(redirectPath) ?? CLIENT_APP_LAUNCHER_PAGE);
 }

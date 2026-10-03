@@ -17,6 +17,46 @@
     "./admin": {
       "types": "./dist/admin/index.d.ts",
       "default": "./dist/admin/index.js"
+    },
+    "./tenancy": {
+      "types": "./dist/tenancy/index.d.ts",
+      "default": "./dist/tenancy/index.js"
+    },
+    "./inventory": {
+      "types": "./dist/inventory/index.d.ts",
+      "default": "./dist/inventory/index.js"
+    },
+    "./manufacturing": {
+      "types": "./dist/manufacturing/index.d.ts",
+      "default": "./dist/manufacturing/index.js"
+    },
+    "./quality": {
+      "types": "./dist/quality/index.d.ts",
+      "default": "./dist/quality/index.js"
+    },
+    "./traceability": {
+      "types": "./dist/traceability/index.d.ts",
+      "default": "./dist/traceability/index.js"
+    },
+    "./hr": {
+      "types": "./dist/hr/index.d.ts",
+      "default": "./dist/hr/index.js"
+    },
+    "./kiosk": {
+      "types": "./dist/kiosk/index.d.ts",
+      "default": "./dist/kiosk/index.js"
+    },
+    "./sales": {
+      "types": "./dist/sales/index.d.ts",
+      "default": "./dist/sales/index.js"
+    },
+    "./finance": {
+      "types": "./dist/finance/index.d.ts",
+      "default": "./dist/finance/index.js"
+    },
+    "./ai": {
+      "types": "./dist/ai/index.d.ts",
+      "default": "./dist/ai/index.js"
     }
   },
   "scripts": {

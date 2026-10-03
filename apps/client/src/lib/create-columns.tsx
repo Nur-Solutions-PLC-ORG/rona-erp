@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -17,10 +16,8 @@ import { cn, slugToString } from "./utils";
 
 type ExtraColumn<T> = {
   id?: string;
-  // accessorKey is used to access the value from the row object, while accessorFn is a function that takes the row object and returns the value. You can use either one, but not both.
   accessorKey?: string;
   accessorFn?: (row: T) => unknown;
-  //
   header?: string | ((props: unknown) => React.ReactNode);
   cell?: (props: { row: Row<T> }) => React.ReactNode;
   enableSorting?: boolean;
@@ -55,7 +52,7 @@ interface CreateColumnsOptions<T> {
   actionsItems?: ActionItem<T>[];
 }
 
-function highlightSearchMatch(
+export function highlightSearchMatch(
   value: string,
   searchQuery?: string,
 ): React.ReactNode {
@@ -107,9 +104,8 @@ export function createColumns<T>({
 }: CreateColumnsOptions<T>): ColumnDef<T>[] {
   const columns: ColumnDef<T>[] = [];
 
-  const None = <span className="text-muted-foreground">None</span>;
+  const None = <span className="text-xs text-zinc-400">None</span>;
 
-  // including selection
   if (includeSelect) {
     columns.push({
       id: "select",
@@ -135,12 +131,10 @@ export function createColumns<T>({
     });
   }
 
-  // extra columns
   for (const col of extraColumns) {
     const key = col.accessorKey;
 
     const defaultCell = ({ row }: { row: Row<T> }) => {
-      // Resolve value from accessorFn or accessorKey (dot-notation works natively)
       const value = col.accessorFn
         ? col.accessorFn(row.original)
         : key !== undefined
@@ -151,16 +145,15 @@ export function createColumns<T>({
 
       if (col.isRaw) {
         return (
-          <Badge
-            variant={"secondary"}
+          <span
             className={cn(
-              "bg-taupe-900/5 text-sm!",
-              col.isBold && "font-bold!",
+              "text-xs font-medium text-zinc-600",
+              col.isBold && "font-semibold!",
               col.isMono && "font-mono!",
             )}
           >
-            <span>{highlightSearchMatch(String(value), searchQuery)}</span>
-          </Badge>
+            {highlightSearchMatch(String(value), searchQuery)}
+          </span>
         );
       }
 
@@ -170,17 +163,19 @@ export function createColumns<T>({
         }
 
         return (
-          <div className="flex gap-2">
+          <div className="flex gap-1.5">
             {value.slice(0, 2).map((item) => (
               <p
-                className="bg-black/5 rounded-lg text-sm font-semibold h-5 px-2"
+                className="bg-zinc-100 text-zinc-600 rounded-md text-xs font-medium h-5 px-2 flex items-center"
                 key={item}
               >
                 {highlightSearchMatch(String(item), searchQuery)}
               </p>
             ))}
             {value.length > 2 && (
-              <span className="text-xl flex items-center leading-5">. . .</span>
+              <span className="text-xs text-zinc-400 flex items-center leading-5">
+                +{value.length - 2}
+              </span>
             )}
           </div>
         );
@@ -195,27 +190,21 @@ export function createColumns<T>({
       }
 
       if (col.coloring) {
-        const color = col.coloring[String(value)] || "#222";
+        const color = col.coloring[String(value)] || "#52525b";
 
         return (
-          <Badge
-            style={{
-              backgroundColor: color + "15",
-              color: color,
-            }}
-            variant={value ? "default" : "secondary"}
+          <span
+            style={{ color }}
             className={cn(
-              "text-sm capitalize rounded-lg h-5 font-semibold! relative",
+              "text-xs font-semibold uppercase tracking-wide",
               col.isMono && "font-mono!",
             )}
           >
-            <span>
-              {highlightSearchMatch(
-                col.onRender ? slugToString(String(value)) : String(value),
-                searchQuery,
-              )}
-            </span>
-          </Badge>
+            {highlightSearchMatch(
+              col.onRender ? slugToString(String(value)) : String(value),
+              searchQuery,
+            )}
+          </span>
         );
       }
 
@@ -224,24 +213,24 @@ export function createColumns<T>({
           style={style}
           className={cn(
             !col.isBold && !col.coloring && "",
-            col.highlight && "text-blue-800 font-medium underline",
+            col.highlight && "text-zinc-900 font-medium underline",
           )}
         >
           <span className="z-10">
             {col.isDate ? (
-              <span className="flex text-base items-center gap-4">
+              <span className="flex text-xs items-center gap-2">
                 {highlightSearchMatch(
                   format(new Date(value as string), "dd MMM yyyy"),
                   searchQuery,
                 )}{" "}
                 {col.daysLeft &&
                   (isPast(new Date(value as string)) ? (
-                    <Badge variant={"destructive"} className="block rounded-xl">
+                    <span className="text-[11px]! block font-semibold text-red-600">
                       Expired
-                    </Badge>
+                    </span>
                   ) : (
                     <>
-                      <span className="text-sm! block font-medium">
+                      <span className="text-[10px]! block text-zinc-400 font-medium">
                         {formatDistanceToNowStrict(new Date(value as string))}{" "}
                         left
                       </span>
@@ -257,7 +246,7 @@ export function createColumns<T>({
                   ),
                   searchQuery,
                 )}
-                <span className="text-xs! block">
+                <span className="text-[10px]! block text-zinc-400">
                   {highlightSearchMatch(
                     format(new Date(value as string), "dd MMM yyyy"),
                     searchQuery,
@@ -299,7 +288,6 @@ export function createColumns<T>({
     } as ColumnDef<T>);
   }
 
-  // adding actions
   if (includeActions) {
     columns.push({
       id: "actions",

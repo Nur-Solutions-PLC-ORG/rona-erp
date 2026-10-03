@@ -12,6 +12,7 @@ import {
 import { useCreateMutation } from "@/hooks/utils";
 import { CLIENT_AUTH_SIGNIN_PAGE } from "@rona/routes/auth";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { FaUser } from "react-icons/fa6";
 import { FiLogOut } from "react-icons/fi";
 import { toast } from "sonner";
@@ -21,12 +22,13 @@ import { useSession } from "../hooks";
 const UserButton = () => {
   const { user } = useSession();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const signOutMutation = useCreateMutation(
     ApiPostSignOut,
-    () => {
+    async () => {
+      await queryClient.invalidateQueries({ queryKey: ["auth-session"] });
       router.push(CLIENT_AUTH_SIGNIN_PAGE);
-      location.reload();
     },
     (data) => {
       toast.error(data.message);
@@ -37,8 +39,8 @@ const UserButton = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className=" cursor-pointer hover:ring-2  hover:ring-border">
-          <AvatarFallback className="bg-purple-700 shadow-inner relative overflow-hidden">
-            <FaUser className="size-5.5 absolute bottom-0 text-white/50" />
+          <AvatarFallback className="ring-1 ring-zinc-300 bg-transparent relative overflow-hidden">
+            <FaUser className="size-5.5 absolute bottom-0 text-zinc-500" />
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>

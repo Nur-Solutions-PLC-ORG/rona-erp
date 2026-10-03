@@ -1,36 +1,35 @@
 import QueryClientWrapper from "@/components/query-client-wrapper";
+import ThemeProvider from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Poppins, Lato } from "next/font/google";
+import { JetBrains_Mono, Quicksand } from "next/font/google";
 import "./globals.css";
 
-const fontHeading = Poppins({
+// Brand primary typeface. Body copy uses the Helvetica stack from globals.css.
+const fontHeading = Quicksand({
   subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-heading",
 });
 
-const font = Lato({
+const fontMono = JetBrains_Mono({
   subsets: ["latin"],
-  weight: ["100", "300", "400", "700", "900"],
-  variable: "--font-sans",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Rona ERP - Effective & Efficient Management",
-    template: "%s | Rona ERP",
+    default: "Rona — Enterprise Business Management Platform",
+    template: "%s | Rona",
   },
   description:
-    "An ERP system designed to help organizations effectively and efficiently manage their workforce, inventory and production, and tracking sales and finance digitally.",
-  icons: [
-    {
-      url: "/rona-icon.png",
-      href: "/rona-icon.png",
-      rel: "icon",
-    },
-  ],
+    "Streamline your success with Rona, the enterprise-grade platform for retail, manufacturing, services and distribution: inventory management, financial tracking and employee management in one place.",
+  openGraph: {
+    title: "Rona — Enterprise Business Management Platform",
+    description: "Streamline Your Success with RONA.",
+    siteName: "Rona",
+  },
 };
 
 export default function RootLayout({
@@ -41,16 +40,19 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
         "h-full",
         "antialiased",
         "font-sans",
-        font.variable,
         fontHeading.variable,
+        fontMono.variable,
       )}
     >
-      <body className="min-h-full flex flex-col">
-        <QueryClientWrapper>{children}</QueryClientWrapper>
+      <body className="app-canvas min-h-full flex flex-col">
+        <ThemeProvider>
+          <QueryClientWrapper>{children}</QueryClientWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

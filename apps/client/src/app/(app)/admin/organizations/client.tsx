@@ -1,11 +1,9 @@
 "use client";
 
 import DataHeader from "@/components/custom/data-header";
-import CustomButton from "@/components/custom/custom-button";
 import { DataTable } from "@/components/custom/data-table";
 import { useAccumulatedList } from "@/hooks/use-accumulated-list";
 import { useListPage } from "@/hooks/list-page";
-import { BADGE_COLORS } from "@/lib/colors";
 import { createColumns } from "@/lib/create-columns";
 import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
@@ -15,7 +13,17 @@ import {
 } from "@rona/types/admin";
 import { organizationListSearchParamsSchema } from "@rona/validation/admin";
 import { useCallback, useState } from "react";
-import { FiPlus } from "react-icons/fi";
+import {
+  HiOutlineBuildingOffice2,
+  HiOutlinePlus,
+} from "react-icons/hi2";
+import {
+  BTN_PRIMARY,
+  PageHeader,
+  StatusBadge,
+} from "@/modules/workspace/components/ui";
+import OrgLogo from "@/components/custom/org-logo";
+import { highlightSearchMatch } from "@/lib/create-columns";
 
 const Client = () => {
   const {
@@ -57,7 +65,26 @@ const Client = () => {
     includeActions: true,
     searchQuery: localSearch || searchParams.searchQuery,
     extraColumns: [
-      { accessorKey: "name", header: "Organization", isBold: true },
+      {
+        accessorKey: "name",
+        header: "Organization",
+        isBold: true,
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2">
+            <OrgLogo
+              src={(row.original as OrganizationDto).logoUrl}
+              className="h-6 w-6"
+              iconClassName="h-3 w-3"
+            />
+            <span className="text-xs font-semibold text-zinc-800">
+              {highlightSearchMatch(
+                row.original.name,
+                localSearch || searchParams.searchQuery,
+              )}
+            </span>
+          </div>
+        ),
+      },
       { accessorKey: "slug", header: "Slug", highlight: true },
       { accessorKey: "email", header: "Email" },
       { accessorKey: "phone", header: "Phone" },
@@ -65,7 +92,9 @@ const Client = () => {
       {
         accessorKey: "status",
         header: "Status",
-        coloring: { active: BADGE_COLORS.green, inactive: BADGE_COLORS.red },
+        cell: ({ row }) => (
+          <StatusBadge status={row.getValue("status") as string} />
+        ),
       },
     ],
     actionsItems: [
@@ -105,20 +134,27 @@ const Client = () => {
   });
 
   return (
-    <>
-      <DataHeader<OrganizationListSearchParamsSchema>
-        searchParamsSchema={organizationListSearchParamsSchema}
-        head={
-          <CustomButton
-            primary
+    <div className="space-y-4">
+      <PageHeader
+        icon={<HiOutlineBuildingOffice2 className="w-5 h-5" />}
+        title="Organizations"
+        description="Manage all organizations on the platform"
+        actions={
+          <button
+            type="button"
+            className={BTN_PRIMARY}
             onClick={() =>
               useModalStore.getState().openModal("admin-organization")
             }
-            icon={FiPlus}
           >
+            <HiOutlinePlus className="w-4 h-4" />
             Add Organization
-          </CustomButton>
+          </button>
         }
+      />
+      <DataHeader<OrganizationListSearchParamsSchema>
+        searchParamsSchema={organizationListSearchParamsSchema}
+        head={null}
         searchParams={searchParams}
         updateParams={updateParams}
         clearParams={() => {
@@ -148,7 +184,7 @@ const Client = () => {
           isFilteringLocally: list.isFilteringLocally,
         }}
       />
-    </>
+    </div>
   );
 };
 

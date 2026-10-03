@@ -25,7 +25,6 @@ export const userDto = z.object({
 
 export const userCredentialsDto = z.object({
   email: z.email(),
-  password: z.string(),
 });
 
 export const organizationDto = z.object({
@@ -35,6 +34,7 @@ export const organizationDto = z.object({
   email: z.string(),
   phone: z.string(),
   country: z.string(),
+  logoUrl: z.string().nullable(),
   status: z.enum(ORGANIZATION_STATUS_LIST),
   createdAt: z.date(),
 });

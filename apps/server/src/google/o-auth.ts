@@ -2,13 +2,11 @@ import { OAuth2Client } from 'google-auth-library';
 import { DEFAULT_API_URL } from '@rona/config/server';
 import { API_AUTH_GOOGLE_CALLBACK_URL } from '@rona/routes/auth';
 
-// The call back redirect function
 const getRedirectUri = () => {
   const apiUrl = process.env.API_URL || DEFAULT_API_URL;
   return `${apiUrl}${API_AUTH_GOOGLE_CALLBACK_URL}`;
 };
 
-// O-Auth Client
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -28,10 +26,16 @@ export const getGoogleAuthUrl = (state?: string) => {
 };
 
 export const getGoogleUserProfile = async (code: string) => {
-  const { tokens } = await client.getToken(code);
-  client.setCredentials(tokens);
+  const requestClient = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    getRedirectUri(),
+  );
 
-  const res = await client.request({
+  const { tokens } = await requestClient.getToken(code);
+  requestClient.setCredentials(tokens);
+
+  const res = await requestClient.request({
     url: 'https://www.googleapis.com/oauth2/v2/userinfo',
   });
 

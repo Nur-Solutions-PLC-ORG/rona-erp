@@ -1,0 +1,3 @@
+ALTER TYPE "public"."permission_list" ADD VALUE 'hr.webauthn.enroll' BEFORE 'kiosk.read';--> statement-breakpoint
+INSERT INTO "permissions" ("key", "description") VALUES ('hr.webauthn.enroll', 'Enroll employees for fingerprint (WebAuthn) access') ON CONFLICT ("key") DO NOTHING;--> statement-breakpoint
+INSERT INTO "role_permissions" ("role_id", "permission_key") SELECT r."id", 'hr.webauthn.enroll' FROM "roles" r WHERE r."key" IN ('OWNER', 'ADMIN', 'HR_MANAGER') ON CONFLICT DO NOTHING;

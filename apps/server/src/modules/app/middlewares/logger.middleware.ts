@@ -14,7 +14,7 @@ export class LoggerMiddleware implements NestMiddleware {
       const { method, originalUrl } = req;
       const { statusCode } = res;
 
-      let statusColor = '\x1b[32m'; // Green
+      let statusColor = '\x1b[32m';
 
       if (statusCode >= 500) statusColor = '\x1b[31m';
       else if (statusCode >= 400) statusColor = '\x1b[33m';
