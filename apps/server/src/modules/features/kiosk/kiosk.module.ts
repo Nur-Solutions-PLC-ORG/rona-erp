@@ -8,6 +8,16 @@ import { KiosksController } from './kiosks.controller';
 import { KioskTerminalController } from './kiosk-terminal.controller';
 import { KioskFaceController } from './kiosk-face.controller';
 import { KioskWebAuthnController } from './kiosk-webauthn.controller';
+import { KioskDeviceController } from './kiosk-device.controller';
+import { KioskDeviceService } from './kiosk-device.service';
+import { KioskDeviceStore } from './kiosk-device.store';
+import {
+  KioskDeviceGuard,
+  KioskDeviceSignatureGuard,
+  KioskSignatureVerifier,
+} from './kiosk-device.guard';
+import { KioskCredentialsRepository } from './kiosk-credentials.repository';
+import { KioskCredentialsService } from './kiosk-credentials.service';
 import { KioskWebAuthnService } from './kiosk-webauthn.service';
 import { KiosksRepository } from './kiosks.repository';
 import { KioskService } from './kiosk.service';
@@ -29,6 +39,7 @@ import { WebAuthnService } from './webauthn.service';
     KioskTerminalController,
     KioskFaceController,
     KioskWebAuthnController,
+    KioskDeviceController,
   ],
   providers: [
     KiosksRepository,
@@ -38,7 +49,19 @@ import { WebAuthnService } from './webauthn.service';
     WebAuthnChallengeStore,
     WebAuthnCredentialRepository,
     WebAuthnService,
+    KioskDeviceService,
+    KioskDeviceStore,
+    KioskDeviceGuard,
+    KioskDeviceSignatureGuard,
+    KioskSignatureVerifier,
+    KioskCredentialsRepository,
+    KioskCredentialsService,
   ],
-  exports: [KiosksRepository, KioskService, WebAuthnService],
+  exports: [
+    KiosksRepository,
+    KioskService,
+    WebAuthnService,
+    KioskCredentialsService,
+  ],
 })
 export class KioskModule {}

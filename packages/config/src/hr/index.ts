@@ -7,5 +7,7 @@ export const ATTENDANCE_EVENT_TYPE_LIST = [
   "BREAK_END",
 ] as const;
 
+export const ATTENDANCE_SOURCE_LIST = ["MANUAL", "SELF", "KIOSK"] as const;
+
 export const HR_DEFAULT_PAGE = 1;
 export const HR_DEFAULT_PAGE_SIZE = 25;

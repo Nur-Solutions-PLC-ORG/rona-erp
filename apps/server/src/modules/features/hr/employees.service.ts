@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { pooledDb } from '@/db';
 import { AuditService } from '@/modules/audit/audit.service';
 import { TenantContextService } from '@/modules/tenancy/tenant-context.service';
@@ -187,6 +188,39 @@ export class EmployeesService {
     });
 
     return this.employeesRepository.findById(employeeId);
+  }
+
+  /** Sets or clears (null) the web-kiosk fallback passcode. */
+  async setPasscode(
+    employeeId: string,
+    passcode: string | null,
+  ): Promise<{ hasPasscode: boolean }> {
+    const employee = await this.employeesRepository.findById(employeeId);
+    if (!employee) throw new EmployeeNotFoundException();
+    if (employee.archivedAt) throw new EmployeeArchivedException();
+
+    const passcodeHash =
+      passcode === null ? null : await bcrypt.hash(passcode, 10);
+
+    await pooledDb.transaction(async (tx) => {
+      await this.employeesRepository.updatePasscodeHash(
+        employeeId,
+        passcodeHash,
+        tx,
+      );
+      await this.auditService.record(
+        {
+          organizationId: this.tenantContext.organizationId,
+          action: 'hr.employee.passcode',
+          entityType: 'employee',
+          entityId: employeeId,
+          after: { passcodeSet: passcodeHash !== null },
+        },
+        tx,
+      );
+    });
+
+    return { hasPasscode: passcodeHash !== null };
   }
 
   async archiveEmployee(employeeId: string) {

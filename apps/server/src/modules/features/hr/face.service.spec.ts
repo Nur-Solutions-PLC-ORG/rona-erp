@@ -332,7 +332,10 @@ describe('FaceService', () => {
         EMPLOYEE_ID,
       );
       expect(empFindByUserId).not.toHaveBeenCalled();
-      expect(punchKiosk).toHaveBeenCalledWith(EMPLOYEE_ID, 'CLOCK_IN');
+      expect(punchKiosk).toHaveBeenCalledWith(EMPLOYEE_ID, 'CLOCK_IN', {
+        kioskId: KIOSK_ID,
+        methods: ['FACE'],
+      });
       expect(repoMarkUsed).toHaveBeenCalledWith(ORG_A, FACE_ID);
       expect(result).toEqual({
         employeeName: EMPLOYEE.fullName,

@@ -10,6 +10,7 @@ import { AttendanceController } from './attendance.controller';
 import { ShiftsController } from './shifts.controller';
 import { EmployeeFacesController } from './employee-faces.controller';
 import { EmployeeWebAuthnController } from './employee-webauthn.controller';
+import { EmployeeCredentialsController } from './employee-credentials.controller';
 import { EmployeesRepository } from './employees.repository';
 import { DepartmentsRepository } from './departments.repository';
 import { AttendanceRepository } from './attendance.repository';
@@ -38,6 +39,7 @@ import { EmployeeWebAuthnService } from './employee-webauthn.service';
     ShiftsController,
     EmployeeFacesController,
     EmployeeWebAuthnController,
+    EmployeeCredentialsController,
   ],
   providers: [
     EmployeesRepository,

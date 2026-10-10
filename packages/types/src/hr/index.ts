@@ -27,6 +27,7 @@ import type {
   shiftListSearchParamsSchema,
   shiftUpdateSchema,
   webauthnRegistrationVerifySchema,
+  employeePasscodeUpdateSchema,
 } from "@rona/validation/hr";
 
 export type AttendanceEventType = z.infer<
@@ -52,6 +53,11 @@ export type EmergencyContactCreateInput = z.infer<
 >;
 export type EmergencyContactUpdateInput = z.infer<
   typeof emergencyContactUpdateSchema
+>;
+
+export type AttendanceSource = NonNullable<AttendanceEvent["source"]>;
+export type EmployeePasscodeUpdateInput = z.infer<
+  typeof employeePasscodeUpdateSchema
 >;
 
 export type AttendanceSelfInput = z.infer<typeof attendanceSelfSchema>;

@@ -261,6 +261,109 @@ export const API_KIOSK_WEBAUTHN_AUTH_OPTIONS_URL =
 export const API_KIOSK_WEBAUTHN_AUTH_VERIFY_URL =
   "/api/kiosk/webauthn/auth/verify";
 
+/**
+ * POST — admin: one-time code an HR user types on a terminal to open
+ * supervisor (enrollment) mode. Permission: hr.credential.enroll.
+ * Response: KioskEnrollCodeResult (@rona/types/kiosk)
+ */
+export const API_KIOSK_ENROLL_CODES_URL = "/api/kiosks/enroll-codes";
+
+/**
+ * POST — admin: forget the paired terminal key so the kiosk must re-pair
+ * (replaced / reset terminal). Permission: kiosk.create. Response: Kiosk
+ */
+export const API_KIOSK_UNPAIR_URL = "/api/kiosks/:id/unpair";
+
+// Native kiosk terminal API (Rona Kiosk app). Except for `register`, every
+// request carries `Authorization: Bearer <sessionToken>` (not for `session`)
+// and the ECDSA signature headers KIOSK_SIGNATURE_HEADER / KIOSK_TIMESTAMP_HEADER
+// (@rona/config/kiosk). Enrollment writes also need KIOSK_ENROLL_TOKEN_HEADER.
+
+/**
+ * POST — pair a terminal using the admin-issued device token.
+ * Body: KioskDeviceRegisterInput. Response: KioskDeviceSession
+ */
+export const API_KIOSK_DEVICE_REGISTER_URL = "/api/kiosk/device/register";
+
+/**
+ * POST — renew the session with a signed request (no bearer needed).
+ * Header: KIOSK_KIOSK_ID_HEADER. Body: KioskDeviceSessionInput.
+ * Response: KioskDeviceSession
+ */
+export const API_KIOSK_DEVICE_SESSION_URL = "/api/kiosk/device/session";
+
+/** GET ?since — Response: KioskRosterResult */
+export const API_KIOSK_DEVICE_ROSTER_URL = "/api/kiosk/device/roster";
+
+/**
+ * GET ?since — delta of templates (revoked ones have template: null).
+ * Response: KioskTemplateSyncResult
+ * POST — enroll a template (enroll token). Body: KioskTemplateEnrollInput.
+ * Response: KioskTemplateEnrollResult
+ */
+export const API_KIOSK_DEVICE_TEMPLATES_URL = "/api/kiosk/device/templates";
+
+/** DELETE — revoke a template (enroll token). Response: KioskTemplateEnrollResult */
+export const API_KIOSK_DEVICE_TEMPLATE_DETAILS_URL =
+  "/api/kiosk/device/templates/:id";
+
+/**
+ * GET ?since — Response: KioskCardSyncResult
+ * POST — bind a card (enroll token). Body: KioskCardBindInput.
+ * Response: KioskCardBindResult
+ */
+export const API_KIOSK_DEVICE_CARDS_URL = "/api/kiosk/device/cards";
+
+/** GET — Response: KioskEmployeeStatus */
+export const API_KIOSK_DEVICE_EMPLOYEE_STATUS_URL =
+  "/api/kiosk/device/employees/:employeeId/status";
+
+/**
+ * POST — record a punch verified on the terminal. Idempotent on clientEventId.
+ * Body: KioskDevicePunchInput. Response: KioskDevicePunchResult
+ */
+export const API_KIOSK_DEVICE_PUNCH_URL = "/api/kiosk/device/punch";
+
+/**
+ * POST — upload punches queued while offline (event time = deviceEventAt).
+ * Body: KioskDevicePunchBatchInput. Response: KioskDevicePunchBatchResult
+ */
+export const API_KIOSK_DEVICE_PUNCH_BATCH_URL = "/api/kiosk/device/punch/batch";
+
+/**
+ * POST — exchange a supervisor enroll code for an enroll token.
+ * Body: KioskEnrollAuthorizeInput. Response: KioskEnrollAuthorizeResult
+ */
+export const API_KIOSK_DEVICE_ENROLL_AUTHORIZE_URL =
+  "/api/kiosk/device/enroll/authorize";
+
+/** POST — Body: KioskHeartbeatInput. Response: KioskHeartbeatResult */
+export const API_KIOSK_DEVICE_HEARTBEAT_URL = "/api/kiosk/device/heartbeat";
+
+/** POST — Body: KioskAdminPinVerifyInput. Response: KioskAdminPinVerifyResult (401 when wrong) */
+export const API_KIOSK_DEVICE_ADMIN_PIN_URL =
+  "/api/kiosk/device/admin/verify-pin";
+
+/**
+ * GET — Permission: hr.credential.read. Response: EmployeeCredentialsResult
+ */
+export const API_HR_EMPLOYEE_CREDENTIALS_URL =
+  "/api/hr/employees/:id/credentials";
+
+/** DELETE — Permission: hr.credential.revoke. Response: EmployeeBiometricTemplate */
+export const API_HR_EMPLOYEE_TEMPLATE_DETAILS_URL =
+  "/api/hr/employees/:id/credentials/templates/:templateId";
+
+/** DELETE — Permission: hr.credential.revoke. Response: EmployeeCard */
+export const API_HR_EMPLOYEE_CARD_DETAILS_URL =
+  "/api/hr/employees/:id/credentials/cards/:cardId";
+
+/**
+ * PATCH — set/clear the web-kiosk passcode. Permission: hr.employee.update.
+ * Body: EmployeePasscodeUpdateInput (@rona/types/hr). Response: { hasPasscode: boolean }
+ */
+export const API_HR_EMPLOYEE_PASSCODE_URL = "/api/hr/employees/:id/passcode";
+
 export const API_SALES_CUSTOMERS_URL = "/api/sales/customers";
 
 export const API_SALES_CUSTOMER_DETAILS_URL = "/api/sales/customers/:id";

@@ -7,6 +7,7 @@ import {
   EID_LENGTH,
   GENDER_LIST,
 } from "@rona/config/admin";
+import { KIOSK_PASSCODE_LENGTH } from "@rona/config/kiosk";
 import { paginationSearchParamsSchema } from "../global/api.js";
 
 export const isoDateSchema = z
@@ -77,6 +78,18 @@ export const emergencyContactCreateSchema = z.object({
 
 export const emergencyContactUpdateSchema =
   emergencyContactCreateSchema.partial();
+
+// Web kiosk fallback passcode (EID + passcode). null removes it.
+export const employeePasscodeUpdateSchema = z.object({
+  passcode: z
+    .string()
+    .trim()
+    .regex(
+      new RegExp(`^\\d{${KIOSK_PASSCODE_LENGTH}}$`),
+      `Passcode must be exactly ${KIOSK_PASSCODE_LENGTH} digits`,
+    )
+    .nullable(),
+});
 
 export const attendanceSelfSchema = z.object({
   eventType: z.enum(ATTENDANCE_EVENT_TYPE_LIST),

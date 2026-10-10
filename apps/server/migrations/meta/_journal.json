@@ -169,6 +169,20 @@
       "when": 1789820677730,
       "tag": "0023_employee_webauthn_enroll_permission",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1791618150606,
+      "tag": "0024_native_kiosk_terminals",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1791618164219,
+      "tag": "0025_native_kiosk_permissions",
+      "breakpoints": true
     }
   ]
 }

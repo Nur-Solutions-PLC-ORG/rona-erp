@@ -3,6 +3,7 @@ import { employees, organizations } from '../admin';
 import { kiosks } from './kiosk';
 import { employeeFaces } from './face';
 import { employeeWebAuthnCredentials } from './webauthn';
+import { employeeBiometricTemplates, employeeCards } from './credentials';
 
 export const kiosksRelations = relations(kiosks, ({ one }) => ({
   organization: one(organizations, {
@@ -38,3 +39,35 @@ export const employeeWebAuthnCredentialsRelations = relations(
     }),
   }),
 );
+
+export const employeeBiometricTemplatesRelations = relations(
+  employeeBiometricTemplates,
+  ({ one }) => ({
+    organization: one(organizations, {
+      fields: [employeeBiometricTemplates.organizationId],
+      references: [organizations.id],
+    }),
+    employee: one(employees, {
+      fields: [
+        employeeBiometricTemplates.employeeId,
+        employeeBiometricTemplates.organizationId,
+      ],
+      references: [employees.id, employees.organizationId],
+    }),
+    enrolledByKiosk: one(kiosks, {
+      fields: [employeeBiometricTemplates.enrolledByKioskId],
+      references: [kiosks.id],
+    }),
+  }),
+);
+
+export const employeeCardsRelations = relations(employeeCards, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [employeeCards.organizationId],
+    references: [organizations.id],
+  }),
+  employee: one(employees, {
+    fields: [employeeCards.employeeId, employeeCards.organizationId],
+    references: [employees.id, employees.organizationId],
+  }),
+}));

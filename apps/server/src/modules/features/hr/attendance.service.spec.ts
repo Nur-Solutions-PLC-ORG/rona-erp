@@ -82,6 +82,7 @@ describe('AttendanceService', () => {
             employeeId: EMPLOYEE_ID,
             eventType: 'CLOCK_IN',
             eventAt: CLOCK_IN_AT.toISOString(),
+            source: 'MANUAL',
           },
         }),
         mockTx,

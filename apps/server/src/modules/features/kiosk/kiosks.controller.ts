@@ -14,6 +14,7 @@ import { ApiResponse } from '@rona/types/api';
 import type {
   Kiosk,
   KioskCreateInput,
+  KioskEnrollCodeResult,
   KioskListSearchParams,
   KioskRegistrationResult,
   KioskUpdateInput,
@@ -29,12 +30,32 @@ import { ZodValidationPipe } from '@/modules/app/pipes/zod-validation.pipe';
 import { TenantGuard } from '@/modules/tenancy/tenant.guard';
 import { PermissionGuard } from '@/modules/rbac/permission.guard';
 import { RequirePermissions } from '@/modules/rbac/require-permissions.decorator';
+import { TenantContextService } from '@/modules/tenancy/tenant-context.service';
 import { KioskService } from './kiosk.service';
+import { KioskDeviceService } from './kiosk-device.service';
 
 @Controller('kiosks')
 @UseGuards(AuthGuard, TenantGuard, PermissionGuard)
 export class KiosksController {
-  constructor(private readonly kioskService: KioskService) {}
+  constructor(
+    private readonly kioskService: KioskService,
+    private readonly kioskDeviceService: KioskDeviceService,
+    private readonly tenantContext: TenantContextService,
+  ) {}
+
+  @Post('enroll-codes')
+  @RequirePermissions('hr.credential.enroll')
+  async createEnrollCode(): Promise<ApiResponse<KioskEnrollCodeResult>> {
+    return {
+      success: true,
+      statusCode: HttpStatus.CREATED,
+      message: 'Enrollment code created. It can be used once on any kiosk.',
+      data: await this.kioskDeviceService.createEnrollCode(
+        this.tenantContext.organizationId,
+        this.tenantContext.userId,
+      ),
+    };
+  }
 
   @Post()
   @RequirePermissions('kiosk.create')
@@ -91,6 +112,19 @@ export class KiosksController {
       statusCode: HttpStatus.OK,
       message: 'Kiosk updated successfully.',
       data: await this.kioskService.updateKiosk(id, body),
+    };
+  }
+
+  @Post(':id/unpair')
+  @RequirePermissions('kiosk.create')
+  async unpairKiosk(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ApiResponse<Kiosk>> {
+    return {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: 'Kiosk terminal unpaired. Pair the terminal again to use it.',
+      data: await this.kioskService.unpairKiosk(id),
     };
   }
 

@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { QRCodeSVG } from "qrcode.react";
 import {
   HiOutlineArrowDownTray,
   HiOutlineDevicePhoneMobile,
+  HiOutlineFingerPrint,
+  HiOutlineLinkSlash,
   HiOutlinePencilSquare,
   HiOutlinePlus,
 } from "react-icons/hi2";
@@ -14,22 +17,64 @@ import {
   Card,
   Column,
   DataTable,
+  DotBadge,
   EmptyState,
   PageHeader,
   RowActionsMenu,
   StatusBadge,
 } from "@/modules/workspace/components/ui";
-import { FormModal, LabeledInput, ModalActions } from "@/modules/workspace/components/form";
+import {
+  FormModal,
+  LabeledInput,
+  LabeledSelect,
+  ModalActions,
+} from "@/modules/workspace/components/form";
 import { usePermissions } from "@/modules/workspace/hooks";
-import type { Kiosk } from "@rona/types/kiosk";
+import type {
+  Kiosk,
+  KioskAttestationStatus,
+  KioskEnrollCodeResult,
+  KioskVerificationPolicy,
+} from "@rona/types/kiosk";
+import { DEFAULT_API_URL } from "@rona/config/server";
+import {
+  KIOSK_ADMIN_PIN_LENGTH,
+  KIOSK_VERIFICATION_POLICY_LIST,
+} from "@rona/config/kiosk";
 import { CLIENT_KIOSK_TERMINAL_PAGE } from "@rona/routes/workspace";
 import {
   useActivateKiosk,
+  useCreateKioskEnrollCode,
   useDeactivateKiosk,
   useKiosks,
   useRegisterKiosk,
+  useUnpairKiosk,
   useUpdateKiosk,
 } from "../kiosk-hooks";
+
+export const KIOSK_POLICY_LABELS: Record<KioskVerificationPolicy, string> = {
+  FACE_ONLY: "Face only",
+  FACE_OR_FINGER: "Face or fingerprint",
+  FACE_AND_FINGER: "Face and fingerprint",
+  CARD_AND_FACE: "Card and face",
+  CARD_AND_FINGER: "Card and fingerprint",
+};
+
+const ATTESTATION_BADGES: Record<
+  KioskAttestationStatus,
+  { label: string; tone: "emerald" | "amber" | "zinc" }
+> = {
+  CHAIN_VALID: { label: "Attested", tone: "emerald" },
+  UNVERIFIED: { label: "Unverified", tone: "amber" },
+  NONE: { label: "No attestation", tone: "zinc" },
+};
+
+// Origin of the API the Rona Kiosk app talks to (route constants already
+// include the /api prefix).
+function kioskPairingApiUrl(): string {
+  const base = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL;
+  return base.replace(/\/+$/, "").replace(/\/api$/, "");
+}
 
 function formatLastSeen(date: Date | string | null): string {
   if (!date) return "Never";
@@ -69,8 +114,17 @@ function DeviceTokenReveal({ token, onDone }: { token: string; onDone: () => voi
     <div className="space-y-4">
       <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
         Store this credential now - it is shown only once and cannot be
-        retrieved later. Enter it once on the tablet under {CLIENT_KIOSK_TERMINAL_PAGE}.
+        retrieved later. Scan the QR code on a Rona Kiosk terminal, or enter
+        the credential once on a tablet under {CLIENT_KIOSK_TERMINAL_PAGE}.
       </p>
+      <div className="flex flex-col items-center gap-2 rounded-md border border-slate-200 bg-white p-4">
+        <QRCodeSVG
+          value={JSON.stringify({ v: 1, api: kioskPairingApiUrl(), token })}
+          size={196}
+          marginSize={2}
+        />
+        <p className="text-xs text-slate-500">Scan with the Rona Kiosk app</p>
+      </div>
       <code className="block w-full break-all rounded-md bg-zinc-900 text-emerald-400 px-3 py-3 text-xs font-mono">
         {token}
       </code>
@@ -90,12 +144,103 @@ function DeviceTokenReveal({ token, onDone }: { token: string; onDone: () => voi
   );
 }
 
+function useSecondsLeft(expiresAt: string | null): number {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!expiresAt) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [expiresAt]);
+
+  if (!expiresAt) return 0;
+  return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - now) / 1000));
+}
+
+function EnrollCodeReveal({
+  result,
+  onRenew,
+  isRenewing,
+  onDone,
+}: {
+  result: KioskEnrollCodeResult;
+  onRenew: () => void;
+  isRenewing: boolean;
+  onDone: () => void;
+}) {
+  const secondsLeft = useSecondsLeft(result.expiresAt);
+  const expired = secondsLeft === 0;
+  const minutes = Math.floor(secondsLeft / 60);
+  const seconds = String(secondsLeft % 60).padStart(2, "0");
+
+  return (
+    <div className="space-y-4 text-center">
+      <p className="text-sm text-slate-600">
+        On the terminal open Supervisor mode and enter this code.
+      </p>
+      <p
+        className={`font-mono text-5xl font-semibold tracking-[0.3em] ${
+          expired ? "text-slate-300 line-through" : "text-slate-900"
+        }`}
+      >
+        {result.code}
+      </p>
+      <p className={`text-xs ${expired ? "text-rose-600" : "text-slate-500"}`}>
+        {expired ? "This code has expired." : `Expires in ${minutes}:${seconds}`}
+      </p>
+      <p className="text-xs text-slate-400">
+        The code works once, on any active terminal of this organization, and
+        enrolls credentials on your behalf.
+      </p>
+      <div className="flex items-center justify-center gap-2">
+        <button
+          type="button"
+          className={BTN_SECONDARY}
+          onClick={onRenew}
+          disabled={isRenewing}
+        >
+          {isRenewing ? "Working..." : "New code"}
+        </button>
+        <button type="button" className={BTN_PRIMARY} onClick={onDone}>
+          Done
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TerminalCell({ kiosk }: { kiosk: Kiosk }) {
+  if (!kiosk.pairedAt) {
+    return <span className="text-xs text-slate-400">Not paired</span>;
+  }
+  const attestation = ATTESTATION_BADGES[kiosk.attestationStatus];
+  const info = kiosk.deviceInfo;
+  return (
+    <div className="space-y-1">
+      <p className="text-xs font-medium text-slate-700">
+        {info ? `${info.manufacturer} ${info.model}` : "Paired terminal"}
+      </p>
+      <div className="flex flex-wrap items-center gap-1">
+        <DotBadge tone={attestation.tone} label={attestation.label} />
+        {info?.engine === "SIM" ? (
+          <DotBadge tone="amber" label="Simulated" />
+        ) : null}
+      </div>
+      <p className="text-[11px] text-slate-400">
+        {kiosk.appVersion ? `App ${kiosk.appVersion}` : null}
+        {info ? ` · Android ${info.androidVersion}` : null}
+      </p>
+    </div>
+  );
+}
+
 export default function KiosksView() {
   const { hasPermission } = usePermissions();
   const canRead = hasPermission("kiosk.read");
   const canCreate = hasPermission("kiosk.create");
   const canActivate = hasPermission("kiosk.activate");
   const canDeactivate = hasPermission("kiosk.deactivate");
+  const canEnroll = hasPermission("hr.credential.enroll");
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editing, setEditing] = useState<Kiosk | null>(null);
@@ -103,12 +248,40 @@ export default function KiosksView() {
   const [deviceToken, setDeviceToken] = useState("");
   const [revealToken, setRevealToken] = useState<string | null>(null);
   const [revealHeading, setRevealHeading] = useState("Kiosk registered");
+  const [policy, setPolicy] = useState<KioskVerificationPolicy>(
+    "FACE_OR_FINGER",
+  );
+  const [adminPin, setAdminPin] = useState("");
+  const [enrollCode, setEnrollCode] = useState<KioskEnrollCodeResult | null>(
+    null,
+  );
 
   const { kiosks, isLoading } = useKiosks();
   const registerKiosk = useRegisterKiosk();
   const updateKiosk = useUpdateKiosk();
   const activateKiosk = useActivateKiosk();
   const deactivateKiosk = useDeactivateKiosk();
+  const unpairKiosk = useUnpairKiosk();
+  const createEnrollCode = useCreateKioskEnrollCode();
+
+  const requestEnrollCode = async () => {
+    const result = await createEnrollCode.mutateAsync();
+    if (result.success && result.data) setEnrollCode(result.data);
+  };
+
+  const closeEdit = () => {
+    setEditing(null);
+    setName("");
+    setDeviceToken("");
+    setAdminPin("");
+  };
+
+  const submitClearPin = async () => {
+    if (!editing) return;
+    await updateKiosk.mutateAsync({ id: editing.id, adminPin: null });
+    toast.success("Admin PIN removed.");
+    closeEdit();
+  };
 
   const openCreate = () => {
     setRevealToken(null);
@@ -137,18 +310,26 @@ export default function KiosksView() {
 
   const submitUpdate = async () => {
     if (!editing) return;
-    if (!name.trim() && !deviceToken.trim()) {
-      toast.error("Enter a new name or a new credential.");
+    const pin = adminPin.trim();
+    if (pin && !new RegExp(`^\\d{${KIOSK_ADMIN_PIN_LENGTH}}$`).test(pin)) {
+      toast.error(`Admin PIN must be exactly ${KIOSK_ADMIN_PIN_LENGTH} digits.`);
+      return;
+    }
+    const nameChanged = name.trim() && name.trim() !== editing.name;
+    const policyChanged = policy !== editing.verificationPolicy;
+    if (!nameChanged && !deviceToken.trim() && !policyChanged && !pin) {
+      toast.error("Nothing to update.");
       return;
     }
     const result = await updateKiosk.mutateAsync({
       id: editing.id,
-      ...(name.trim() ? { name: name.trim() } : {}),
+      ...(nameChanged ? { name: name.trim() } : {}),
       ...(deviceToken.trim() ? { deviceToken: deviceToken.trim() } : {}),
+      ...(policyChanged ? { verificationPolicy: policy } : {}),
+      ...(pin ? { adminPin: pin } : {}),
     });
-    setEditing(null);
-    setName("");
-    setDeviceToken("");
+    if (!result.success) return;
+    closeEdit();
     if (result.data?.deviceToken) {
       setRevealHeading("Credential rotated");
       setRevealToken(result.data.deviceToken);
@@ -172,6 +353,20 @@ export default function KiosksView() {
       render: (row) => <StatusBadge status={row.status} />,
     },
     {
+      key: "terminal",
+      header: "Terminal",
+      render: (row) => <TerminalCell kiosk={row} />,
+    },
+    {
+      key: "verificationPolicy",
+      header: "Policy",
+      render: (row) => (
+        <span className="text-xs text-slate-600">
+          {KIOSK_POLICY_LABELS[row.verificationPolicy] ?? row.verificationPolicy}
+        </span>
+      ),
+    },
+    {
       key: "registeredAt",
       header: "Registered",
       render: (row) => (
@@ -186,6 +381,15 @@ export default function KiosksView() {
       render: (row) => (
         <span className="text-xs text-slate-500">
           {formatLastSeen(row.lastSeenAt)}
+        </span>
+      ),
+    },
+    {
+      key: "lastHeartbeatAt",
+      header: "Heartbeat",
+      render: (row) => (
+        <span className="text-xs text-slate-500">
+          {row.pairedAt ? formatLastSeen(row.lastHeartbeatAt) : "\u2014"}
         </span>
       ),
     },
@@ -205,6 +409,26 @@ export default function KiosksView() {
                       setEditing(row);
                       setName(row.name);
                       setDeviceToken("");
+                      setPolicy(row.verificationPolicy);
+                      setAdminPin("");
+                    },
+                  },
+                ]
+              : []),
+            ...(row.pairedAt && canCreate
+              ? [
+                  {
+                    label: "Unpair terminal",
+                    icon: <HiOutlineLinkSlash className="h-4 w-4" />,
+                    destructive: true,
+                    onClick: () => {
+                      if (
+                        window.confirm(
+                          `Unpair the terminal from "${row.name}"? It stops working until it is paired again with a device credential.`,
+                        )
+                      ) {
+                        void unpairKiosk.mutateAsync(row.id);
+                      }
                     },
                   },
                 ]
@@ -248,28 +472,46 @@ export default function KiosksView() {
         title="Kiosks"
         description="Tablet time-tracking terminals for employee attendance."
         actions={
-          canCreate ? (
-            <button
-              type="button"
-              className={BTN_PRIMARY}
-              onClick={() => {
-                setRevealToken(null);
-                setName("");
-                setDeviceToken("");
-                setIsCreateOpen(true);
-              }}
-            >
-              <HiOutlinePlus className="h-4 w-4" />
-              Register kiosk
-            </button>
+          canCreate || canEnroll ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {canEnroll ? (
+                <button
+                  type="button"
+                  className={BTN_SECONDARY}
+                  onClick={() => void requestEnrollCode()}
+                  disabled={createEnrollCode.isPending}
+                >
+                  <HiOutlineFingerPrint className="h-4 w-4" />
+                  Enrollment code
+                </button>
+              ) : null}
+              {canCreate ? (
+                <button
+                  type="button"
+                  className={BTN_PRIMARY}
+                  onClick={() => {
+                    setRevealToken(null);
+                    setName("");
+                    setDeviceToken("");
+                    setIsCreateOpen(true);
+                  }}
+                >
+                  <HiOutlinePlus className="h-4 w-4" />
+                  Register kiosk
+                </button>
+              ) : null}
+            </div>
           ) : null
         }
       />
 
       <Card className="p-4 text-xs text-slate-500">
-        Employees clock in at <code className="font-mono">{CLIENT_KIOSK_TERMINAL_PAGE}</code>{" "}
-        with their employee ID and passcode. A device only becomes a kiosk
-        after entering the credential issued here.
+        Rona Kiosk terminals pair by scanning the QR code issued here and
+        verify employees on the device (face, fingerprint, card). Browsers
+        without a terminal can still use{" "}
+        <code className="font-mono">{CLIENT_KIOSK_TERMINAL_PAGE}</code> with an
+        employee ID and passcode. Biometrics and cards are enrolled on a
+        terminal in Supervisor mode, unlocked with an enrollment code.
       </Card>
 
       <DataTable
@@ -342,11 +584,7 @@ export default function KiosksView() {
 
       <FormModal
         open={editing !== null && revealToken === null}
-        onClose={() => {
-          setEditing(null);
-          setName("");
-          setDeviceToken("");
-        }}
+        onClose={closeEdit}
         title="Edit kiosk"
       >
         <LabeledInput
@@ -355,6 +593,51 @@ export default function KiosksView() {
           value={name}
           onChange={(event) => setName(event.target.value)}
         />
+        <LabeledSelect
+          id="kiosk-policy-edit"
+          label="Verification policy"
+          value={policy}
+          onChange={(event) =>
+            setPolicy(event.target.value as KioskVerificationPolicy)
+          }
+        >
+          {KIOSK_VERIFICATION_POLICY_LIST.map((value) => (
+            <option key={value} value={value}>
+              {KIOSK_POLICY_LABELS[value]}
+            </option>
+          ))}
+        </LabeledSelect>
+        <p className="-mt-2 text-[11px] text-slate-400">
+          How a terminal verifies an employee before recording a punch. A card
+          is never accepted on its own.
+        </p>
+        <LabeledInput
+          id="kiosk-admin-pin-edit"
+          label={
+            editing?.hasAdminPin
+              ? "New terminal admin PIN (optional)"
+              : "Terminal admin PIN (not set)"
+          }
+          value={adminPin}
+          onChange={(event) =>
+            setAdminPin(
+              event.target.value.replace(/\D/g, "").slice(0, KIOSK_ADMIN_PIN_LENGTH),
+            )
+          }
+          placeholder={`${KIOSK_ADMIN_PIN_LENGTH} digits — unlocks the terminal's admin menu`}
+          inputMode="numeric"
+          autoComplete="off"
+        />
+        {editing?.hasAdminPin ? (
+          <button
+            type="button"
+            className="-mt-2 text-xs text-rose-600 hover:underline disabled:opacity-50"
+            onClick={() => void submitClearPin()}
+            disabled={updateKiosk.isPending}
+          >
+            Remove admin PIN
+          </button>
+        ) : null}
         <LabeledInput
           id="kiosk-token-edit"
           label="New device credential (optional)"
@@ -367,12 +650,23 @@ export default function KiosksView() {
           onSubmit={submitUpdate}
           submitLabel="Save"
           isPending={updateKiosk.isPending}
-          onCancel={() => {
-            setEditing(null);
-            setName("");
-            setDeviceToken("");
-          }}
+          onCancel={closeEdit}
         />
+      </FormModal>
+
+      <FormModal
+        open={enrollCode !== null}
+        onClose={() => setEnrollCode(null)}
+        title="Enrollment code"
+      >
+        {enrollCode ? (
+          <EnrollCodeReveal
+            result={enrollCode}
+            onRenew={() => void requestEnrollCode()}
+            isRenewing={createEnrollCode.isPending}
+            onDone={() => setEnrollCode(null)}
+          />
+        ) : null}
       </FormModal>
 
       <FormModal

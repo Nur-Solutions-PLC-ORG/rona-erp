@@ -150,12 +150,22 @@ export class KioskService {
       }
     }
 
+    let adminPinHash: string | null | undefined;
+    if (input.adminPin !== undefined) {
+      adminPinHash =
+        input.adminPin === null ? null : await bcrypt.hash(input.adminPin, 10);
+    }
+
     const updated = await pooledDb.transaction(async (tx) => {
       const row = await this.kiosksRepository.update(
         kioskId,
         {
           ...(input.name !== undefined ? { name: input.name } : {}),
           ...(tokenHash !== undefined ? { tokenHash } : {}),
+          ...(input.verificationPolicy !== undefined
+            ? { verificationPolicy: input.verificationPolicy }
+            : {}),
+          ...(adminPinHash !== undefined ? { adminPinHash } : {}),
         },
         tx,
       );
@@ -165,10 +175,17 @@ export class KioskService {
           action: 'kiosk.update',
           entityType: 'kiosk',
           entityId: kioskId,
-          before: { name: existing.name },
+          before: {
+            name: existing.name,
+            verificationPolicy: existing.verificationPolicy,
+          },
           after: {
             name: row.name,
+            verificationPolicy: row.verificationPolicy,
             ...(tokenHash !== undefined ? { credentialRotated: true } : {}),
+            ...(adminPinHash !== undefined
+              ? { adminPinChanged: true, adminPinSet: adminPinHash !== null }
+              : {}),
           },
         },
         tx,
@@ -180,6 +197,39 @@ export class KioskService {
       kiosk: this.toDto(updated),
       ...(deviceToken ? { deviceToken } : {}),
     };
+  }
+
+  /** Forgets the paired terminal key; the terminal must pair again. */
+  async unpairKiosk(kioskId: string): Promise<Kiosk> {
+    const existing = await this.kiosksRepository.findById(kioskId);
+    if (!existing) throw new KioskNotFoundException();
+
+    const updated = await pooledDb.transaction(async (tx) => {
+      const row = await this.kiosksRepository.update(
+        kioskId,
+        {
+          publicKey: null,
+          pairedAt: null,
+          attestationStatus: 'NONE',
+          attestationChain: null,
+        },
+        tx,
+      );
+      await this.auditService.record(
+        {
+          organizationId: row.organizationId,
+          action: 'kiosk.unpair',
+          entityType: 'kiosk',
+          entityId: kioskId,
+          before: { paired: existing.publicKey != null },
+          after: { paired: false },
+        },
+        tx,
+      );
+      return row;
+    });
+
+    return this.toDto(updated);
   }
 
   async activateKiosk(kioskId: string): Promise<Kiosk> {
@@ -314,6 +364,19 @@ export class KioskService {
     };
   }
 
+  /** Session JWT for a kiosk (web cookie or native bearer). */
+  issueSessionToken(kiosk: {
+    id: string;
+    deviceId: string;
+    organizationId: string;
+  }): { sessionToken: string; expiresAt: string } {
+    const expires = new Date(Date.now() + KIOSK_SESSION_DURATION);
+    return {
+      sessionToken: this.createSessionToken(kiosk, expires),
+      expiresAt: expires.toISOString(),
+    };
+  }
+
   async touchLastSeen(kioskId: string, organizationId: string) {
     await this.kiosksRepository.touchLastSeen(kioskId, organizationId);
   }
@@ -375,7 +438,10 @@ export class KioskService {
     }
 
     const event = await this.withKioskTenant(organizationId, () =>
-      this.attendanceService.punchKiosk(employee.id, input.eventType),
+      this.attendanceService.punchKiosk(employee.id, input.eventType, {
+        kioskId: context.kioskId,
+        methods: ['PASSCODE'],
+      }),
     );
 
     return {
@@ -466,23 +532,28 @@ export class KioskService {
     }
   }
 
-  private toDto(row: {
-    id: string;
-    organizationId: string;
-    deviceId: string;
-    name: string;
-    status: 'ACTIVE' | 'INACTIVE';
-    registeredAt: Date;
-    lastSeenAt: Date | null;
-  }): Kiosk {
-    return {
-      id: row.id,
-      organizationId: row.organizationId,
-      deviceId: row.deviceId,
-      name: row.name,
-      status: row.status,
-      registeredAt: row.registeredAt,
-      lastSeenAt: row.lastSeenAt,
-    };
+  private toDto(row: typeof kiosks.$inferSelect): Kiosk {
+    return toKioskDto(row);
   }
+}
+
+/** Public Kiosk DTO; never exposes token/PIN hashes or the device key. */
+export function toKioskDto(row: typeof kiosks.$inferSelect): Kiosk {
+  return {
+    id: row.id,
+    organizationId: row.organizationId,
+    deviceId: row.deviceId,
+    name: row.name,
+    status: row.status,
+    registeredAt: row.registeredAt,
+    lastSeenAt: row.lastSeenAt,
+    verificationPolicy: row.verificationPolicy,
+    pairedAt: row.publicKey ? row.pairedAt : null,
+    attestationStatus: row.attestationStatus,
+    appVersion: row.appVersion,
+    deviceInfo: row.deviceInfo ?? null,
+    lastHeartbeat: row.lastHeartbeat ?? null,
+    lastHeartbeatAt: row.lastHeartbeatAt,
+    hasAdminPin: row.adminPinHash != null,
+  };
 }

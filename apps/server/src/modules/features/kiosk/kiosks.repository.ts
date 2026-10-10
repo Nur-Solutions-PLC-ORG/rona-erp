@@ -42,12 +42,9 @@ export class KiosksRepository extends TenantScopedRepository {
 
   async update(
     kioskId: string,
-    data: {
-      name?: string;
-      status?: 'ACTIVE' | 'INACTIVE';
-      lastSeenAt?: Date;
-      tokenHash?: string;
-    },
+    data: Partial<
+      Omit<typeof kiosks.$inferInsert, 'id' | 'organizationId' | 'deviceId'>
+    >,
     tx?: Executor,
   ) {
     const executor = tx ?? pooledDb;
@@ -89,6 +86,16 @@ export class KiosksRepository extends TenantScopedRepository {
       .select()
       .from(kiosks)
       .where(eq(kiosks.tokenHash, tokenHash))
+      .limit(1);
+    return row;
+  }
+
+  /** Unscoped lookup used by native terminal guards (no tenant context yet). */
+  async findDeviceById(kioskId: string) {
+    const [row] = await db
+      .select()
+      .from(kiosks)
+      .where(eq(kiosks.id, kioskId))
       .limit(1);
     return row;
   }

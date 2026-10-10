@@ -8,7 +8,10 @@ import type { ApiResponse, ResponseMeta } from "@rona/types/api";
 import type { Permission } from "@rona/types/tenancy";
 import type { AttendanceEvent, AttendanceEventType } from "@rona/types/hr";
 import {
+  ApiDeleteEmployeeCard,
+  ApiDeleteEmployeeTemplate,
   ApiGetAttendanceEvents,
+  ApiGetEmployeeCredentials,
   ApiGetAttendanceSelfStatus,
   ApiGetDepartments,
   ApiGetEmployees,
@@ -17,6 +20,7 @@ import {
   ApiPatchEmployeeArchive,
   ApiPatchEmployeeRestore,
   ApiPatchEmployee,
+  ApiPatchEmployeePasscode,
   ApiPatchPositionArchive,
   ApiPatchPositionRestore,
   ApiPatchShift,
@@ -426,3 +430,68 @@ export const useUpdateShift = () => {
     (error) => toast.error(error.message),
   );
 };
+
+const employeeCredentialsKey = (employeeId: string) => [
+  "hr-employee-credentials",
+  employeeId,
+];
+
+export const useEmployeeCredentials = (employeeId: string | null) => {
+  const { hasPermission } = usePermissions();
+
+  const query = useQuery({
+    queryKey: employeeCredentialsKey(employeeId ?? ""),
+    queryFn: TryCatchNullWrap(() =>
+      ApiGetEmployeeCredentials({ slugReplacement: { id: employeeId! } }),
+    ),
+    enabled: Boolean(employeeId) && hasPermission("hr.credential.read"),
+  });
+
+  return {
+    templates: query.data?.data?.templates ?? [],
+    cards: query.data?.data?.cards ?? [],
+    isLoading: query.isLoading,
+  };
+};
+
+export const useRevokeEmployeeTemplate = (employeeId: string) => {
+  const queryClient = useQueryClient();
+
+  return useCreateMutation<unknown, string>(
+    (templateId) =>
+      ApiDeleteEmployeeTemplate({
+        slugReplacement: { id: employeeId, templateId },
+      }),
+    (data) => {
+      toast.success(data.message);
+      void queryClient.invalidateQueries({
+        queryKey: employeeCredentialsKey(employeeId),
+      });
+    },
+    (error) => toast.error(error.message),
+  );
+};
+
+export const useRevokeEmployeeCard = (employeeId: string) => {
+  const queryClient = useQueryClient();
+
+  return useCreateMutation<unknown, string>(
+    (cardId) =>
+      ApiDeleteEmployeeCard({ slugReplacement: { id: employeeId, cardId } }),
+    (data) => {
+      toast.success(data.message);
+      void queryClient.invalidateQueries({
+        queryKey: employeeCredentialsKey(employeeId),
+      });
+    },
+    (error) => toast.error(error.message),
+  );
+};
+
+export const useUpdateEmployeePasscode = () =>
+  useCreateMutation<{ hasPasscode: boolean }, { id: string; passcode: string | null }>(
+    ({ id, passcode }) =>
+      ApiPatchEmployeePasscode({ slugReplacement: { id }, body: { passcode } }),
+    (data) => toast.success(data.message),
+    (error) => toast.error(error.message),
+  );

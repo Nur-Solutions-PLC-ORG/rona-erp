@@ -1,4 +1,4 @@
-import { Monitor, ScanFace, ShieldCheck } from "lucide-react";
+import { Fingerprint, Monitor, ScanFace, ShieldCheck } from "lucide-react";
 import {
   Callout,
   Card,
@@ -164,6 +164,43 @@ export default function KioskPage() {
         </Callout>
       </Section>
 
+      <Section title="Native terminals (Rona Kiosk app)">
+        <P>
+          For dedicated hardware, install the Rona Kiosk app on a ZKTeco
+          Android attendance terminal. Faces and fingerprints are enrolled and
+          matched on the terminal by the device&apos;s biometric engine, so
+          employees simply look at the camera or place a finger — no employee
+          ID is typed. The server receives only who punched, the action, the
+          verification methods used and the time.
+        </P>
+        <Steps
+          items={[
+            {
+              title: "Pair by QR code",
+              body: "Register a kiosk in the workspace and scan the QR code shown with the device credential from the terminal. The terminal creates a hardware-backed key and signs every request with it.",
+            },
+            {
+              title: "Choose a verification policy",
+              body: "Per kiosk: face only, face or fingerprint, face and fingerprint, card and face, or card and fingerprint. A card (RFID/NFC) is only ever a second factor and is never accepted on its own.",
+            },
+            {
+              title: "Enroll in Supervisor mode",
+              body: "An HR user creates a one-time enrollment code on the Kiosks page and enters it on the terminal to enroll faces, fingerprints and cards. Templates are stored encrypted and synced to every terminal of the organization.",
+            },
+            {
+              title: "Works offline",
+              body: "If the connection drops, punches are queued on the terminal and uploaded with their original time once it reconnects (up to 72 hours old). Each punch carries a unique ID, so retries are never recorded twice.",
+            },
+          ]}
+        />
+        <Callout tone="info" title="Kiosk credentials per employee" icon={Fingerprint}>
+          Open Employees → Kiosk credentials to see enrolled templates and cards
+          and to revoke them. Terminals delete revoked credentials on their next
+          sync. Attendance shows the source kiosk and verification methods for
+          each punch.
+        </Callout>
+      </Section>
+
       <Section title="Device credentials">
         <FieldTable
           label="Device data"
@@ -219,6 +256,18 @@ export default function KioskPage() {
             { field: "kiosk.create", description: "Register new kiosk devices" },
             { field: "kiosk.activate", description: "Activate kiosk devices" },
             { field: "kiosk.deactivate", description: "Deactivate kiosk devices" },
+            {
+              field: "hr.credential.read",
+              description: "View employee biometric templates and cards",
+            },
+            {
+              field: "hr.credential.enroll",
+              description: "Create enrollment codes for terminal Supervisor mode",
+            },
+            {
+              field: "hr.credential.revoke",
+              description: "Revoke employee biometric templates and cards",
+            },
           ]}
         />
       </Section>

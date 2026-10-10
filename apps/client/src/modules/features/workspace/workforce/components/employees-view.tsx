@@ -6,11 +6,16 @@ import {
   HiOutlineArchiveBox,
   HiOutlineArrowPath,
   HiOutlineFingerPrint,
+  HiOutlineIdentification,
+  HiOutlineKey,
   HiOutlinePencilSquare,
   HiOutlineUserPlus,
   HiOutlineUsers,
 } from "react-icons/hi2";
 import EmployeeWebAuthnEnrollModal from "./employee-webauthn-enroll-modal";
+import EmployeeKioskCredentialsModal, {
+  EmployeePasscodeModal,
+} from "./employee-kiosk-credentials-modal";
 import { EMPLOYEE_STATUS_LIST, GENDER_LIST } from "@rona/config/admin";
 import {
   employeeCreateSchema,
@@ -73,6 +78,7 @@ export default function EmployeesView() {
   const canUpdate = hasPermission("hr.employee.update");
   const canArchive = hasPermission("hr.employee.archive");
   const canEnrollWebAuthn = hasPermission("hr.webauthn.enroll");
+  const canReadCredentials = hasPermission("hr.credential.read");
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -81,6 +87,8 @@ export default function EmployeesView() {
   const [includeArchived, setIncludeArchived] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
+  const [viewingCredentials, setViewingCredentials] = useState<Employee | null>(null);
+  const [settingPasscode, setSettingPasscode] = useState<Employee | null>(null);
   const [enrollingFingerprint, setEnrollingFingerprint] = useState<Employee | null>(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
 
@@ -270,6 +278,24 @@ export default function EmployeesView() {
                     label: "Edit",
                     icon: <HiOutlinePencilSquare className="h-3.5 w-3.5" />,
                     onClick: () => openEdit(row),
+                  },
+                ]
+              : []),
+            ...(canReadCredentials
+              ? [
+                  {
+                    label: "Kiosk credentials",
+                    icon: <HiOutlineIdentification className="h-3.5 w-3.5" />,
+                    onClick: () => setViewingCredentials(row),
+                  },
+                ]
+              : []),
+            ...(!row.archivedAt && canUpdate
+              ? [
+                  {
+                    label: "Set kiosk passcode",
+                    icon: <HiOutlineKey className="h-3.5 w-3.5" />,
+                    onClick: () => setSettingPasscode(row),
                   },
                 ]
               : []),
@@ -562,6 +588,28 @@ export default function EmployeesView() {
             eid: enrollingFingerprint.eId,
           }}
           onClose={() => setEnrollingFingerprint(null)}
+        />
+      ) : null}
+
+      {viewingCredentials ? (
+        <EmployeeKioskCredentialsModal
+          employee={{
+            id: viewingCredentials.id,
+            fullName: viewingCredentials.fullName,
+            eid: viewingCredentials.eId,
+          }}
+          onClose={() => setViewingCredentials(null)}
+        />
+      ) : null}
+
+      {settingPasscode ? (
+        <EmployeePasscodeModal
+          employee={{
+            id: settingPasscode.id,
+            fullName: settingPasscode.fullName,
+            eid: settingPasscode.eId,
+          }}
+          onClose={() => setSettingPasscode(null)}
         />
       ) : null}
     </div>

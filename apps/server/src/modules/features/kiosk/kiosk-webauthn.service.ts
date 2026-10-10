@@ -106,7 +106,10 @@ export class KioskWebAuthnService {
     }
 
     const event = await this.withKioskTenant(device.organizationId, () =>
-      this.attendanceService.punchKiosk(employee.id, input.eventType),
+      this.attendanceService.punchKiosk(employee.id, input.eventType, {
+        kioskId: device.kioskId,
+        methods: ['FINGER'],
+      }),
     );
 
     return {

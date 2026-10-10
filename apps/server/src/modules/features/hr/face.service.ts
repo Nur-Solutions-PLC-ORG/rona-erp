@@ -220,6 +220,7 @@ export class FaceService {
       const event = await this.attendanceService.punchKiosk(
         match.employeeId,
         parsed.data.eventType,
+        { kioskId: device.kioskId, methods: ['FACE'] },
       );
       await this.faceRepository.markUsed(device.organizationId, match.id);
 

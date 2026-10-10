@@ -7,6 +7,7 @@ import {
   ilike,
   inArray,
   lte,
+  getTableColumns,
   or,
   type SQL,
 } from 'drizzle-orm';
@@ -15,8 +16,14 @@ import { db, pooledDb } from '@/db';
 import type { Executor } from '@/db/executor';
 import { employees } from '@/db/schemas/admin';
 import { attendanceEvents } from '@/db/schemas/hr/attendance';
+import { kiosks } from '@/db/schemas/kiosk/kiosk';
 import { TenantScopedRepository } from '@/modules/tenancy/tenant-scoped.repository';
-import type { AttendanceEventType, AttendanceListParams } from '@rona/types/hr';
+import type {
+  AttendanceEventType,
+  AttendanceListParams,
+  AttendanceSource,
+} from '@rona/types/hr';
+import type { KioskVerificationMethod } from '@rona/types/kiosk';
 
 @Injectable()
 export class AttendanceRepository extends TenantScopedRepository {
@@ -27,6 +34,12 @@ export class AttendanceRepository extends TenantScopedRepository {
       eventAt: Date;
       recordedBy: string | null;
       notes?: string;
+      source?: AttendanceSource | null;
+      kioskId?: string | null;
+      methods?: KioskVerificationMethod[] | null;
+      matchScore?: number | null;
+      clientEventId?: string | null;
+      deviceEventAt?: Date | null;
     },
     tx?: Executor,
   ) {
@@ -35,6 +48,20 @@ export class AttendanceRepository extends TenantScopedRepository {
       .insert(attendanceEvents)
       .values({ ...data, organizationId: this.organizationId })
       .returning();
+    return row;
+  }
+
+  async findByClientEventId(clientEventId: string) {
+    const [row] = await db
+      .select()
+      .from(attendanceEvents)
+      .where(
+        this.tenantScope(
+          attendanceEvents,
+          eq(attendanceEvents.clientEventId, clientEventId),
+        ),
+      )
+      .limit(1);
     return row;
   }
 
@@ -94,8 +121,12 @@ export class AttendanceRepository extends TenantScopedRepository {
     const offset = (params.page - 1) * params.limit;
 
     const rows = await db
-      .select()
+      .select({
+        ...getTableColumns(attendanceEvents),
+        kioskName: kiosks.name,
+      })
       .from(attendanceEvents)
+      .leftJoin(kiosks, eq(kiosks.id, attendanceEvents.kioskId))
       .where(where)
       .orderBy(asc(attendanceEvents.eventAt), asc(attendanceEvents.createdAt))
       .limit(params.limit)

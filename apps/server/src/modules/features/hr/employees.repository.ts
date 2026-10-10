@@ -1,4 +1,14 @@
-import { and, asc, count, eq, ilike, isNull, or, type SQL } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  eq,
+  gt,
+  ilike,
+  isNull,
+  or,
+  type SQL,
+} from 'drizzle-orm';
 import { Injectable } from '@nestjs/common';
 import { db, pooledDb } from '@/db';
 import type { Executor } from '@/db/executor';
@@ -74,6 +84,37 @@ export class EmployeesRepository extends TenantScopedRepository {
       .from(employees)
       .where(this.tenantScope(employees, eq(employees.eid, eid)))
       .limit(1);
+    return row;
+  }
+
+  /** Native kiosk roster: everyone, or only rows changed after `since`. */
+  async listForKioskRoster(since?: Date) {
+    const conditions: SQL[] = since ? [gt(employees.updatedAt, since)] : [];
+    return db
+      .select({
+        id: employees.id,
+        eid: employees.eid,
+        fullName: employees.fullName,
+        status: employees.status,
+        archivedAt: employees.archivedAt,
+        updatedAt: employees.updatedAt,
+      })
+      .from(employees)
+      .where(this.tenantScope(employees, ...conditions))
+      .orderBy(asc(employees.fullName));
+  }
+
+  async updatePasscodeHash(
+    employeeId: string,
+    passcodeHash: string | null,
+    tx?: Executor,
+  ) {
+    const executor = tx ?? pooledDb;
+    const [row] = await executor
+      .update(employees)
+      .set({ passcodeHash })
+      .where(this.tenantScope(employees, eq(employees.id, employeeId)))
+      .returning({ id: employees.id, passcodeHash: employees.passcodeHash });
     return row;
   }
 

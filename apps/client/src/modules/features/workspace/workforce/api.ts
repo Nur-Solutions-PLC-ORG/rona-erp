@@ -5,7 +5,11 @@ import {
   API_HR_ATTENDANCE_URL,
   API_HR_DEPARTMENTS_URL,
   API_HR_EMPLOYEE_ARCHIVE_URL,
+  API_HR_EMPLOYEE_CARD_DETAILS_URL,
+  API_HR_EMPLOYEE_CREDENTIALS_URL,
   API_HR_EMPLOYEE_DETAILS_URL,
+  API_HR_EMPLOYEE_PASSCODE_URL,
+  API_HR_EMPLOYEE_TEMPLATE_DETAILS_URL,
   API_HR_EMPLOYEE_RESTORE_URL,
   API_HR_EMPLOYEE_WEBAUTHN_REGISTER_OPTIONS_URL,
   API_HR_EMPLOYEE_WEBAUTHN_REGISTER_VERIFY_URL,
@@ -26,6 +30,7 @@ import type {
   DepartmentCreateInput,
   Employee,
   EmployeeCreateInput,
+  EmployeePasscodeUpdateInput,
   EmployeeUpdateInput,
   Position,
   PositionCreateInput,
@@ -34,6 +39,11 @@ import type {
   ShiftUpdateInput,
   WebAuthnRegistrationVerifyInput,
 } from "@rona/types/hr";
+import type {
+  EmployeeBiometricTemplate,
+  EmployeeCard,
+  EmployeeCredentialsResult,
+} from "@rona/types/kiosk";
 
 export const ApiGetEmployees = Request<Employee[]>("get", API_HR_EMPLOYEES_URL);
 
@@ -146,3 +156,23 @@ export const ApiPostEmployeeWebAuthnRegisterVerify = Request<
   EmployeeWebAuthnRegisteredCredential,
   WebAuthnRegistrationVerifyInput
 >("post", API_HR_EMPLOYEE_WEBAUTHN_REGISTER_VERIFY_URL);
+
+export const ApiGetEmployeeCredentials = Request<EmployeeCredentialsResult>(
+  "get",
+  API_HR_EMPLOYEE_CREDENTIALS_URL,
+);
+
+export const ApiDeleteEmployeeTemplate = Request<EmployeeBiometricTemplate>(
+  "delete",
+  API_HR_EMPLOYEE_TEMPLATE_DETAILS_URL,
+);
+
+export const ApiDeleteEmployeeCard = Request<EmployeeCard>(
+  "delete",
+  API_HR_EMPLOYEE_CARD_DETAILS_URL,
+);
+
+export const ApiPatchEmployeePasscode = Request<
+  { hasPasscode: boolean },
+  EmployeePasscodeUpdateInput
+>("patch", API_HR_EMPLOYEE_PASSCODE_URL);

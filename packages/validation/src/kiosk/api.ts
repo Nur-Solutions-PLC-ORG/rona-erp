@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { KIOSK_PASSCODE_LENGTH, KIOSK_STATUS_LIST } from "@rona/config/kiosk";
+import {
+  KIOSK_ADMIN_PIN_LENGTH,
+  KIOSK_PASSCODE_LENGTH,
+  KIOSK_STATUS_LIST,
+  KIOSK_VERIFICATION_POLICY_LIST,
+} from "@rona/config/kiosk";
 import { ATTENDANCE_EVENT_TYPE_LIST } from "@rona/config/hr";
 import { paginationSearchParamsSchema } from "../global/api.js";
 
@@ -18,9 +23,20 @@ export const kioskCreateSchema = z.object({
   deviceToken: deviceTokenSchema.optional(),
 });
 
+const kioskAdminPinSchema = z
+  .string()
+  .trim()
+  .regex(
+    new RegExp(`^\\d{${KIOSK_ADMIN_PIN_LENGTH}}$`),
+    `Admin PIN must be exactly ${KIOSK_ADMIN_PIN_LENGTH} digits`,
+  );
+
 export const kioskUpdateSchema = z.object({
   name: z.string().trim().min(1, "Kiosk name is required").max(200).optional(),
   deviceToken: deviceTokenSchema.optional(),
+  verificationPolicy: z.enum(KIOSK_VERIFICATION_POLICY_LIST).optional(),
+  // null clears the PIN (the terminal's admin menu is then locked).
+  adminPin: kioskAdminPinSchema.nullable().optional(),
 });
 
 export const kioskListSearchParamsSchema =

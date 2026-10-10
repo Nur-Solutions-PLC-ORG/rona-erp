@@ -10,7 +10,9 @@ import SearchInput from "@/components/custom/search-input";
 import type {
   AttendanceEvent,
   AttendanceEventType,
+  AttendanceSource,
 } from "@rona/types/hr";
+import type { KioskVerificationMethod } from "@rona/types/kiosk";
 import { usePermissions } from "@/modules/workspace/hooks";
 import {
   BTN_PRIMARY,
@@ -46,6 +48,53 @@ const NEXT_EVENTS: Record<AttendanceEventType | "none", AttendanceEventType[]> =
   BREAK_END: ["BREAK_START", "CLOCK_OUT"],
   CLOCK_OUT: ["CLOCK_IN"],
 };
+
+// The attendance list joins the kiosk name for kiosk-recorded events.
+type AttendanceRow = AttendanceEvent & { kioskName?: string | null };
+
+const SOURCE_BADGES: Record<AttendanceSource, { label: string; className: string }> = {
+  KIOSK: { label: "Kiosk", className: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+  SELF: { label: "Self", className: "bg-sky-50 text-sky-700 border-sky-200" },
+  MANUAL: { label: "Manual", className: "bg-zinc-100 text-zinc-600 border-zinc-200" },
+};
+
+const METHOD_LABELS: Record<KioskVerificationMethod, string> = {
+  FACE: "Face",
+  FINGER: "Fingerprint",
+  CARD: "Card",
+  PASSCODE: "Passcode",
+};
+
+function SourceCell({ row }: { row: AttendanceRow }) {
+  if (!row.source) return <span className="text-zinc-400">—</span>;
+  const badge = SOURCE_BADGES[row.source];
+  return (
+    <div className="space-y-1">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span
+          className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${badge.className}`}
+        >
+          {badge.label}
+        </span>
+        {row.kioskName ? (
+          <span className="text-xs text-zinc-500">{row.kioskName}</span>
+        ) : null}
+      </div>
+      {row.methods?.length ? (
+        <div className="flex flex-wrap gap-1">
+          {row.methods.map((method) => (
+            <span
+              key={method}
+              className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-600"
+            >
+              {METHOD_LABELS[method] ?? method}
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 const EVENT_LABELS: Record<AttendanceEventType, string> = {
   CLOCK_IN: "Clock In",
@@ -152,6 +201,11 @@ export default function AttendanceView() {
       render: (row) => (
         <span className="font-mono text-zinc-600">{formatTimestamp(row.eventAt)}</span>
       ),
+    },
+    {
+      key: "source",
+      header: "Source",
+      render: (row) => <SourceCell row={row} />,
     },
     {
       key: "recordedBy",

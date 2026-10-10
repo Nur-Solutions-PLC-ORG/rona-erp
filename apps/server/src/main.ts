@@ -18,6 +18,8 @@ const env = loadEnv();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: new NestPinoLogger(),
+    // Native kiosk terminals sign the exact request body (KioskDeviceGuard).
+    rawBody: true,
   });
 
   app.enableCors({

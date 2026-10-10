@@ -9,8 +9,10 @@ import type {
   AttendanceListSearchParams,
   AttendanceManageInput,
   AttendanceSelfInput,
+  AttendanceSource,
   PaginatedResult,
 } from '@rona/types/hr';
+import type { KioskVerificationMethod } from '@rona/types/kiosk';
 import {
   AttendanceFutureEventException,
   AttendanceManagePermissionException,
@@ -32,6 +34,36 @@ const ATTENDANCE_TRANSITIONS: Record<
   CLOCK_OUT: ['CLOCK_IN'],
 };
 
+/** Events that may follow the current state ('none' = no events yet). */
+export function allowedNextAttendanceEvents(
+  current: AttendanceEventType | 'none',
+): AttendanceEventType[] {
+  return current === 'none'
+    ? ['CLOCK_IN']
+    : [...ATTENDANCE_TRANSITIONS[current]];
+}
+
+/** Where an attendance event came from and how the employee was verified. */
+export interface AttendanceProvenance {
+  source: AttendanceSource;
+  kioskId?: string | null;
+  methods?: KioskVerificationMethod[] | null;
+  matchScore?: number | null;
+  clientEventId?: string | null;
+  deviceEventAt?: Date | null;
+}
+
+export interface AttendanceDevicePunch {
+  employeeId: string;
+  eventType: AttendanceEventType;
+  eventAt: Date;
+  kioskId: string;
+  methods: KioskVerificationMethod[];
+  matchScore?: number | null;
+  clientEventId: string;
+  deviceEventAt: Date;
+}
+
 @Injectable()
 export class AttendanceService {
   constructor(
@@ -46,7 +78,9 @@ export class AttendanceService {
       this.tenantContext.userId,
     );
     if (!employee) throw new EmployeeSelfNotFoundException();
-    return this.punch(employee.id, input.eventType, new Date(), input.notes);
+    return this.punch(employee.id, input.eventType, new Date(), input.notes, {
+      source: 'SELF',
+    });
   }
 
   async punchManaged(input: AttendanceManageInput) {
@@ -58,7 +92,9 @@ export class AttendanceService {
     if (eventAt.getTime() > Date.now()) {
       throw new AttendanceFutureEventException();
     }
-    return this.punch(input.employeeId, input.eventType, eventAt, input.notes);
+    return this.punch(input.employeeId, input.eventType, eventAt, input.notes, {
+      source: 'MANUAL',
+    });
   }
 
   async listEvents(
@@ -95,15 +131,50 @@ export class AttendanceService {
     return this.statusFor(employeeId);
   }
 
-  async punchKiosk(employeeId: string, eventType: AttendanceEventType) {
-    return this.punch(employeeId, eventType, new Date(), 'Kiosk');
+  async punchKiosk(
+    employeeId: string,
+    eventType: AttendanceEventType,
+    kiosk?: { kioskId: string; methods: KioskVerificationMethod[] },
+  ) {
+    return this.punch(employeeId, eventType, new Date(), 'Kiosk', {
+      source: 'KIOSK',
+      kioskId: kiosk?.kioskId ?? null,
+      methods: kiosk?.methods ?? null,
+    });
+  }
+
+  /** Punch verified on a native terminal (Rona Kiosk app). */
+  async punchDevice(input: AttendanceDevicePunch) {
+    return this.punch(
+      input.employeeId,
+      input.eventType,
+      input.eventAt,
+      'Kiosk',
+      {
+        source: 'KIOSK',
+        kioskId: input.kioskId,
+        methods: input.methods,
+        matchScore: input.matchScore ?? null,
+        clientEventId: input.clientEventId,
+        deviceEventAt: input.deviceEventAt,
+      },
+    );
+  }
+
+  async findByClientEventId(clientEventId: string) {
+    return this.attendanceRepository.findByClientEventId(clientEventId);
+  }
+
+  async getCurrentState(employeeId: string) {
+    return this.statusFor(employeeId);
   }
 
   private async punch(
     employeeId: string,
     eventType: AttendanceEventType,
     eventAt: Date,
-    notes?: string,
+    notes: string | undefined,
+    provenance: AttendanceProvenance,
   ) {
     return pooledDb.transaction(async (tx) => {
       const employee = await this.employeesRepository.findByIdForUpdate(
@@ -134,6 +205,12 @@ export class AttendanceService {
           eventAt,
           recordedBy: this.tenantContext.userIdOrNull,
           notes,
+          source: provenance.source,
+          kioskId: provenance.kioskId ?? null,
+          methods: provenance.methods ?? null,
+          matchScore: provenance.matchScore ?? null,
+          clientEventId: provenance.clientEventId ?? null,
+          deviceEventAt: provenance.deviceEventAt ?? null,
         },
         tx,
       );
@@ -148,6 +225,9 @@ export class AttendanceService {
             employeeId,
             eventType,
             eventAt: eventAt.toISOString(),
+            source: provenance.source,
+            ...(provenance.kioskId ? { kioskId: provenance.kioskId } : {}),
+            ...(provenance.methods ? { methods: provenance.methods } : {}),
           },
         },
         tx,
@@ -179,9 +259,12 @@ export class AttendanceService {
     const events =
       await this.attendanceRepository.listEventsForEmployee(employeeId);
     const lastEvent = events.length > 0 ? events[events.length - 1] : null;
+    const currentState: AttendanceEventType | 'none' = lastEvent
+      ? lastEvent.eventType
+      : 'none';
     return {
       employeeId,
-      currentState: lastEvent ? lastEvent.eventType : 'none',
+      currentState,
       lastEvent,
     };
   }

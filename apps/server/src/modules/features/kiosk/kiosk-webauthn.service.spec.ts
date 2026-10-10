@@ -69,7 +69,10 @@ describe('KioskWebAuthnService', () => {
         response: VERIFY_INPUT.response,
       });
       expect(employeeFindById).toHaveBeenCalledWith(EMPLOYEE_ID);
-      expect(punchKiosk).toHaveBeenCalledWith(EMPLOYEE_ID, 'CLOCK_IN');
+      expect(punchKiosk).toHaveBeenCalledWith(EMPLOYEE_ID, 'CLOCK_IN', {
+        kioskId: KIOSK_ID,
+        methods: ['FINGER'],
+      });
       expect(result).toEqual({
         employeeId: EMPLOYEE_ID,
         employeeName: EMPLOYEE_NAME,
@@ -90,7 +93,10 @@ describe('KioskWebAuthnService', () => {
 
         const result = await service.verifyAuthAndPunch(DEVICE, input);
 
-        expect(punchKiosk).toHaveBeenCalledWith(EMPLOYEE_ID, eventType);
+        expect(punchKiosk).toHaveBeenCalledWith(EMPLOYEE_ID, eventType, {
+          kioskId: KIOSK_ID,
+          methods: ['FINGER'],
+        });
         expect(result.eventType).toBe(eventType);
         expect(result.eventAt).toBe(EVENT_AT.toISOString());
       },

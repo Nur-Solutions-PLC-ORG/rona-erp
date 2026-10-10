@@ -5,7 +5,9 @@ import { usePermissions } from "@/modules/workspace/hooks";
 import { useCreateMutation } from "@/hooks/utils";
 import type {
   Kiosk,
+  KioskEnrollCodeResult,
   KioskRegistrationResult,
+  KioskUpdateInput,
   KioskUpdateResult,
 } from "@rona/types/kiosk";
 import {
@@ -14,6 +16,8 @@ import {
   ApiPostKiosk,
   ApiPostKioskActivate,
   ApiPostKioskDeactivate,
+  ApiPostKioskEnrollCode,
+  ApiPostKioskUnpair,
 } from "./kiosk-api";
 
 const KIOSKS_QUERY_KEY = ["organization-kiosks"];
@@ -51,10 +55,8 @@ export const useRegisterKiosk = () => {
   );
 };
 
-export interface KioskUpdateInputWithId {
+export interface KioskUpdateInputWithId extends KioskUpdateInput {
   id: string;
-  name?: string;
-  deviceToken?: string;
 }
 
 export const useUpdateKiosk = () => {
@@ -95,3 +97,23 @@ export const useDeactivateKiosk = () => {
     (error) => toast.error(error.message),
   );
 };
+
+export const useUnpairKiosk = () => {
+  const queryClient = useQueryClient();
+
+  return useCreateMutation<Kiosk, string>(
+    (id) => ApiPostKioskUnpair({ slugReplacement: { id } }),
+    (data) => {
+      toast.success(data.message);
+      void queryClient.invalidateQueries({ queryKey: KIOSKS_QUERY_KEY });
+    },
+    (error) => toast.error(error.message),
+  );
+};
+
+export const useCreateKioskEnrollCode = () =>
+  useCreateMutation<KioskEnrollCodeResult>(
+    () => ApiPostKioskEnrollCode(),
+    undefined,
+    (error) => toast.error(error.message),
+  );

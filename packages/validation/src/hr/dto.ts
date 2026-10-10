@@ -1,7 +1,9 @@
 import z from "zod";
 import {
   ATTENDANCE_EVENT_TYPE_LIST,
+  ATTENDANCE_SOURCE_LIST,
 } from "@rona/config/hr";
+import { KIOSK_VERIFICATION_METHOD_LIST } from "@rona/config/kiosk";
 import {
   EMPLOYEE_STATUS_LIST,
   GENDER_LIST,
@@ -71,6 +73,12 @@ export const attendanceEventDto = z.object({
   eventAt: z.date(),
   recordedBy: z.string().nullable(),
   notes: z.string().nullable(),
+  source: z.enum(ATTENDANCE_SOURCE_LIST).nullable(),
+  kioskId: z.string().nullable(),
+  methods: z.array(z.enum(KIOSK_VERIFICATION_METHOD_LIST)).nullable(),
+  matchScore: z.number().nullable(),
+  clientEventId: z.string().nullable(),
+  deviceEventAt: z.date().nullable(),
   createdAt: z.date(),
 });
 
