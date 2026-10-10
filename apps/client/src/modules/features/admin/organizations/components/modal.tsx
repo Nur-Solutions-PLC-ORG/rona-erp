@@ -54,6 +54,7 @@ const OrganizationModal = () => {
   const queryClient = useQueryClient();
   const concludeMutation = () => {
     queryClient.invalidateQueries({ queryKey: ["admin-organizations"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-organization-settings"] });
     form.reset();
     closeModal();
   };

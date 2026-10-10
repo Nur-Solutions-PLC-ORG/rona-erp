@@ -43,7 +43,7 @@ export default function FinancePage() {
           ]}
         />
         <Card tone="warn">
-          <p className="text-[13.5px] leading-relaxed text-[#5c4d77]">
+          <p className="text-[13.5px] leading-relaxed text-ink-2">
             <strong>Issuing and voiding are both POST requests.</strong> They
             are state transitions, not partial updates, so they do not use
             PATCH. Each one is permissioned separately, which keeps invoice

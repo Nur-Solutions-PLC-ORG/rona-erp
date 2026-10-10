@@ -125,7 +125,7 @@ function DeviceTokenReveal({ token, onDone }: { token: string; onDone: () => voi
         />
         <p className="text-xs text-slate-500">Scan with the Rona Kiosk app</p>
       </div>
-      <code className="block w-full break-all rounded-md bg-zinc-900 text-emerald-400 px-3 py-3 text-xs font-mono">
+      <code className="block w-full break-all rounded-md bg-brand-ink text-emerald-400 px-3 py-3 text-xs font-mono">
         {token}
       </code>
       <div className="flex items-center gap-2">

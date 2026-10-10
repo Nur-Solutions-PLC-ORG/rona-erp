@@ -18,6 +18,7 @@ import {
   type Column,
 } from "@/modules/workspace/components/ui";
 import {
+  CHART_COLORS,
   BarList,
   ChartCard,
   ChartStatStrip,
@@ -371,7 +372,7 @@ export default function SalesCommissionsPage() {
     {
       key: "commission-value",
       label: "Commission value",
-      color: "#18181b",
+      color: CHART_COLORS.primary,
     },
   );
 

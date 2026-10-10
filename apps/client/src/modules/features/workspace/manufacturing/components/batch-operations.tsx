@@ -62,7 +62,7 @@ export function BatchOperationsModal({
               onClick={() => setTab(entry.key)}
               className={`px-3 py-1 rounded-md text-xs font-semibold transition ${
                 tab === entry.key
-                  ? "bg-white text-zinc-900 shadow-xs"
+                  ? "bg-card text-zinc-900 shadow-xs"
                   : "text-zinc-500 hover:text-zinc-700"
               }`}
             >
@@ -250,7 +250,7 @@ function ConsumeForm({ batchId }: { batchId: string }) {
           type="checkbox"
           checked={isScrap}
           onChange={(event) => setIsScrap(event.target.checked)}
-          className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-500"
+          className="rounded border-zinc-300 text-zinc-900 focus:ring-ring"
         />
         Mark as scrap
       </label>

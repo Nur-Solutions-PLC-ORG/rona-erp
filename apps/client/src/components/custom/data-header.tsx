@@ -4,8 +4,8 @@ import z from "zod";
 import { getSchemaInfo } from "@/lib/zod";
 import Dropdown from "./dropdown";
 import { slugToString } from "@/lib/utils";
-import { Button } from "../ui/button";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { Search } from "lucide-react";
 
 type FilterOption = { label: string; value: string };
 
@@ -18,7 +18,12 @@ type Props<TSearchParams> = {
   head?: React.ReactNode;
   searchParamsSchema?: z.ZodObject;
   replacements?: Record<string, FilterReplacement>;
-} & UseCustomSearchParamsReturn<TSearchParams>;
+  /** Controlled local search (filters already-loaded rows). */
+  localSearch?: string;
+  onLocalSearchChange?: (value: string) => void;
+  /** Commit search to the server (refetch from backend). */
+  onSearchServer?: (value: string) => void;
+} & Omit<UseCustomSearchParamsReturn<TSearchParams>, "requestSearchParams">;
 
 function DataHeader<TSearchParams>({
   head,
@@ -28,22 +33,53 @@ function DataHeader<TSearchParams>({
   updateParams,
   clearParams,
   removeParams,
+  localSearch,
+  onLocalSearchChange,
+  onSearchServer,
 }: Props<TSearchParams>) {
   const schemaInfo = getSchemaInfo(searchParamsSchema ?? z.object({}));
   const SEARCH_QUERY_KEY = "searchQuery";
   const includeSearchQuery = schemaInfo.hasKey(SEARCH_QUERY_KEY);
-  const searchQuery = (searchParams[SEARCH_QUERY_KEY as keyof TSearchParams] ||
-    "") as string;
-  const [searchQueryInput, setSearchQueryInput] = useState(searchQuery);
-  const searchQueryTimeout = useRef<number | undefined>(undefined);
 
-  useEffect(() => {
-    return () => window.clearTimeout(searchQueryTimeout.current);
-  }, []);
+  const externalSearchValue =
+    (searchParams[SEARCH_QUERY_KEY as keyof TSearchParams] || "") as string;
 
-  const handleClearParams = () => {
-    setSearchQueryInput("");
-    clearParams();
+  const isLocallyControlled = localSearch !== undefined;
+  const [draftSearch, setDraftSearch] = useState(
+    () => localSearch ?? externalSearchValue,
+  );
+  const [prevExternalSearch, setPrevExternalSearch] =
+    useState(externalSearchValue);
+
+  // Sync draft from URL when the input is not controlled by localSearch.
+  if (!isLocallyControlled && externalSearchValue !== prevExternalSearch) {
+    setPrevExternalSearch(externalSearchValue);
+    setDraftSearch(externalSearchValue);
+  }
+
+  const searchInput = isLocallyControlled ? localSearch : draftSearch;
+
+  const handleSearchInput = (value: string) => {
+    if (!isLocallyControlled) {
+      setDraftSearch(value);
+    }
+    onLocalSearchChange?.(value);
+  };
+
+  const commitServerSearch = () => {
+    const value = searchInput.trim();
+    if (onSearchServer) {
+      onSearchServer(value);
+      return;
+    }
+
+    if (value) {
+      updateParams({
+        [SEARCH_QUERY_KEY as keyof TSearchParams]: value,
+      } as Partial<TSearchParams>);
+    } else {
+      removeParams([SEARCH_QUERY_KEY as keyof TSearchParams]);
+    }
   };
 
   return (
@@ -55,30 +91,31 @@ function DataHeader<TSearchParams>({
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row gap-2 md:items-center md:flex-wrap bg-white p-3 sm:p-4 rounded-lg border border-zinc-200">
+      <div className="flex flex-col md:flex-row gap-2 md:items-center md:flex-wrap bg-card p-3 sm:p-4 rounded-lg border border-zinc-200">
         {includeSearchQuery && (
-          <SearchInput
-            value={searchQueryInput}
-            onChange={(e) => {
-              const value = e.target.value;
-              setSearchQueryInput(value);
-              window.clearTimeout(searchQueryTimeout.current);
-
-              if (!value) {
-                removeParams([SEARCH_QUERY_KEY as keyof TSearchParams]);
-                return;
-              }
-
-              searchQueryTimeout.current = window.setTimeout(() => {
-                updateParams({
-                  [SEARCH_QUERY_KEY as keyof TSearchParams]: value,
-                } as Partial<TSearchParams>);
-              }, 600);
-            }}
-            className="h-8! rounded-md bg-zinc-100! border-transparent! text-xs placeholder:text-zinc-400 focus-visible:bg-white! focus-visible:ring-1! focus-visible:ring-zinc-500!"
-            containerClassName="flex-1 md:max-w-80"
-            placeholder="Search anything..."
-          />
+          <div className="flex flex-1 items-center gap-2 md:max-w-120">
+            <SearchInput
+              value={searchInput}
+              onChange={(e) => handleSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  commitServerSearch();
+                }
+              }}
+              className="h-8! rounded-md bg-zinc-100! border-transparent! text-xs placeholder:text-zinc-400 focus-visible:bg-card! focus-visible:ring-1! focus-visible:ring-ring!"
+              containerClassName="flex-1"
+              placeholder="Filter loaded rows… (Enter to search server)"
+            />
+            <button
+              type="button"
+              onClick={commitServerSearch}
+              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-card hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition border border-zinc-200 shrink-0 h-8"
+            >
+              <Search className="size-3.5" />
+              Search server
+            </button>
+          </div>
         )}
 
         <div className="flex items-center gap-4">
@@ -106,7 +143,7 @@ function DataHeader<TSearchParams>({
                     "Select " + (replacement?.label ?? slugToString(key))
                   }
                   value={value}
-                  className="h-8! bg-zinc-50! rounded-md! text-xs min-w-36 focus:ring-1! focus:ring-zinc-500!"
+                  className="h-8! bg-zinc-50! rounded-md! text-xs min-w-36 focus:ring-1! focus:ring-ring!"
                   onChange={(newValue) => {
                     if (!newValue) {
                       removeParams([key as keyof TSearchParams]);
@@ -122,10 +159,14 @@ function DataHeader<TSearchParams>({
             );
           })}
 
-          {!!Object.values(searchParams as object).length && (
+          {(!!Object.values(searchParams as object).length ||
+            !!searchInput) && (
             <button
-              onClick={handleClearParams}
-              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition border border-zinc-200 disabled:opacity-50 disabled:pointer-events-none h-8"
+              onClick={() => {
+                handleSearchInput("");
+                clearParams();
+              }}
+              className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md bg-card hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition border border-zinc-200 disabled:opacity-50 disabled:pointer-events-none h-8"
             >
               Clear
             </button>

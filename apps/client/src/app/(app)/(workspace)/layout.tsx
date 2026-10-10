@@ -5,7 +5,7 @@ interface Props {
   children?: React.ReactNode;
 }
 
-export const metadata: Metadata = { title: "Workspace | Rona ERP" };
+export const metadata: Metadata = { title: "Workspace" };
 
 const Layout = ({ children }: Props) => (
   <WorkspaceWrapper>{children}</WorkspaceWrapper>

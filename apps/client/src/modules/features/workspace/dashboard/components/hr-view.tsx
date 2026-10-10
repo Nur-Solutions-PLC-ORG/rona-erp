@@ -14,6 +14,7 @@ import {
 } from "@rona/routes/workspace";
 import { useHrDashboardData } from "../role-hooks";
 import {
+  CHART_COLORS,
   BarChart,
   BarList,
   ChartCard,
@@ -40,7 +41,7 @@ export default function HrDashboardView() {
         14,
         (event) => event.eventAt,
         (event) => (event.eventType === "CLOCK_IN" ? 1 : 0),
-        { key: "clock-ins", label: "Clock-ins", color: "#4f46e5" },
+        { key: "clock-ins", label: "Clock-ins", color: CHART_COLORS.primary },
       ),
     [data.attendanceHistory],
   );

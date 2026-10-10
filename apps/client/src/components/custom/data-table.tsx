@@ -19,6 +19,7 @@ import {
 import { useState } from "react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { HiOutlineTableCells } from "react-icons/hi2";
+import { RiLoader5Fill } from "react-icons/ri";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Dropdown from "./dropdown";
 import { Skeleton } from "./skeleton";
@@ -33,6 +34,14 @@ interface DataTableProps<TData, TValue> {
 
   pagination?: Pagination;
   responseMeta?: ResponseMeta;
+
+  /** Accumulated list mode: show Load more instead of page arrows */
+  loadMore?: {
+    hasMore: boolean;
+    onLoadMore: () => void;
+    cachedCount: number;
+    isFilteringLocally?: boolean;
+  };
 }
 
 export function DataTable<TData, TValue>({
@@ -41,14 +50,17 @@ export function DataTable<TData, TValue>({
   loading,
   responseMeta,
   pagination,
+  loadMore,
 }: DataTableProps<TData, TValue>) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const hasNextPage =
     responseMeta &&
     pagination &&
-    responseMeta.totalPages &&
+    responseMeta.totalPages > 0 &&
     pagination.page < responseMeta.totalPages;
+
+  const totalItems = responseMeta?.totalItems ?? 0;
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -75,7 +87,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="flex-1 flex">
-      <div className="flex flex-1 bg-white rounded-lg border border-zinc-200 overflow-hidden flex-col">
+      <div className="flex flex-1 bg-card rounded-lg border border-zinc-200 overflow-hidden flex-col">
         <div className="flex w-full flex-col">
           <ScrollArea className="w-full">
             <Table>
@@ -105,7 +117,7 @@ export function DataTable<TData, TValue>({
                 ))}
               </TableHeader>
               <TableBody>
-                {loading ? (
+                {loading && data.length === 0 ? (
                   Array.from({ length: 5 }).map((_, index) => (
                     <TableRow key={`skeleton-${index}`} className="border-zinc-100">
                       <TableCell
@@ -165,24 +177,49 @@ export function DataTable<TData, TValue>({
               <div className="flex items-center gap-2">
                 <p className="text-xs text-zinc-500">Show</p>
                 <Dropdown
-                  className="min-w-0 w-20! max-w-20! h-7! bg-white!"
+                  className="min-w-0 w-20! max-w-20! h-7! bg-card!"
                   options={PAGE_SIZE_OPTIONS}
                   placeholder="Size"
                   value={pagination.limit?.toString() || ""}
                   onChange={(e) => pagination.setLimit(Number(e))}
                 />
                 <p className="text-xs text-zinc-500">
-                  of{" "}
+                  {loadMore ? (
+                    <>
+                      {loadMore.isFilteringLocally
+                        ? `${data.length} match${data.length === 1 ? "" : "es"} in `
+                        : ""}
+                      <span className="font-medium text-zinc-700">
+                        {loadMore.cachedCount}
+                      </span>{" "}
+                      loaded of{" "}
+                    </>
+                  ) : (
+                    "of "
+                  )}
                   <span className="font-medium text-zinc-700">
-                    {responseMeta?.totalItems ?? 0}
+                    {totalItems}
                   </span>{" "}
-                  item{(responseMeta?.totalItems || 0) > 1 ? "s" : ""}
+                  item{totalItems > 1 ? "s" : ""}
                 </p>
               </div>
 
+              {loadMore ? (
+                <button
+                  type="button"
+                  disabled={!loadMore.hasMore || loading}
+                  onClick={loadMore.onLoadMore}
+                  className="ml-auto flex items-center justify-center gap-1.5 px-3 rounded-md bg-card hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition border border-zinc-200 disabled:opacity-50 disabled:pointer-events-none h-7"
+                >
+                  {loading ? (
+                    <RiLoader5Fill className="size-3.5 animate-spin" />
+                  ) : null}
+                  {loadMore.hasMore ? "Load more" : "All loaded"}
+                </button>
+              ) : (
               <div className="flex items-center gap-2 ml-auto">
                 <p className="text-xs text-zinc-500">Page</p>
-                <div className="flex rounded-lg border border-zinc-200 bg-white overflow-hidden h-7">
+                <div className="flex rounded-lg border border-zinc-200 bg-card overflow-hidden h-7">
                   <button
                     type="button"
                     aria-label="Previous page"
@@ -226,6 +263,7 @@ export function DataTable<TData, TValue>({
                   </button>
                 </div>
               </div>
+              )}
             </div>
           </div>
         )}

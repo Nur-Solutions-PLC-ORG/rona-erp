@@ -54,21 +54,21 @@ export default function ManufacturingPage() {
           ]}
         />
         <Card tone="info">
-          <p className="text-[13.5px] leading-relaxed text-[#5c4d77]">
+          <p className="text-[13.5px] leading-relaxed text-ink-2">
             These routes are at the top level:{" "}
-            <code className="font-mono text-[12.5px] text-[#581c87]">
+            <code className="font-mono text-[12.5px] text-ink">
               /api/boms
             </code>
             ,{" "}
-            <code className="font-mono text-[12.5px] text-[#581c87]">
+            <code className="font-mono text-[12.5px] text-ink">
               /api/production-orders
             </code>
             , and{" "}
-            <code className="font-mono text-[12.5px] text-[#581c87]">
+            <code className="font-mono text-[12.5px] text-ink">
               /api/batches
             </code>
             . There is no{" "}
-            <code className="font-mono text-[12.5px] text-[#581c87]">
+            <code className="font-mono text-[12.5px] text-ink">
               /api/manufacturing
             </code>{" "}
             prefix.

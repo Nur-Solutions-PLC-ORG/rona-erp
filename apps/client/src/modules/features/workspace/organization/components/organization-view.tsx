@@ -157,7 +157,7 @@ export default function OrganizationView() {
               <div className="flex items-center gap-2">
                 <OrgLogo
                   src={organization.logoUrl}
-                  className="h-7 w-7 bg-white"
+                  className="h-7 w-7 bg-card"
                   iconClassName="h-3.5 w-3.5"
                 />
                 <h2 className="text-sm font-semibold text-zinc-800">Profile</h2>

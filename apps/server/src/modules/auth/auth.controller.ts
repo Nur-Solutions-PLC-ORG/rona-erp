@@ -94,7 +94,8 @@ export class AuthController {
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
+      // TODO: revert to 'strict' after the vercel.app demo.
+      sameSite: isProduction ? 'none' : 'lax',
       maxAge: SESSION_DURATION,
     });
 
@@ -137,7 +138,14 @@ export class AuthController {
   @Post('sign-out')
   @UseGuards(AuthGuard)
   signOut(@Res({ passthrough: true }) res: Response): ApiResponse<never> {
-    res.clearCookie(COOKIE_NAME);
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // TODO: revert to a plain clearCookie after the vercel.app demo.
+    res.clearCookie(COOKIE_NAME, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+    });
 
     return {
       success: true,
@@ -183,7 +191,8 @@ export class AuthController {
       res.cookie(COOKIE_NAME, token, {
         httpOnly: true,
         secure: isProduction,
-        sameSite: isProduction ? 'strict' : 'lax',
+        // TODO: revert to 'strict' after the vercel.app demo.
+        sameSite: isProduction ? 'none' : 'lax',
         maxAge: SESSION_DURATION,
       });
 

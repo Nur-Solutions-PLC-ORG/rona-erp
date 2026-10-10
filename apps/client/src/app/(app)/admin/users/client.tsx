@@ -2,8 +2,8 @@
 
 import DataHeader from "@/components/custom/data-header";
 import { DataTable } from "@/components/custom/data-table";
-import { usePagination } from "@/hooks/pagination";
-import { useCustomSearchParams } from "@/hooks/search-params";
+import { useAccumulatedList } from "@/hooks/use-accumulated-list";
+import { useListPage } from "@/hooks/list-page";
 import { createColumns } from "@/lib/create-columns";
 import { slugToString } from "@/lib/utils";
 import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
@@ -11,6 +11,7 @@ import { useAdminUsers } from "@/modules/features/admin/users/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
 import { UserListSearchParamsSchema, UserDto } from "@rona/types/admin";
 import { userListSearchParamsSchema } from "@rona/validation/admin";
+import { useCallback, useState } from "react";
 import { HiOutlinePlus, HiOutlineUserGroup } from "react-icons/hi2";
 import {
   BTN_PRIMARY,
@@ -19,17 +20,52 @@ import {
 } from "@/modules/workspace/components/ui";
 
 const Client = () => {
-  const customSearchParams =
-    useCustomSearchParams<UserListSearchParamsSchema>();
-  const { paginationData, pagination } = usePagination();
+  const {
+    pagination,
+    paginationData,
+    searchParams,
+    requestSearchParams,
+    updateParams,
+    clearParams,
+    removeParams,
+  } = useListPage<UserListSearchParamsSchema>();
+  const [localSearch, setLocalSearch] = useState("");
+
   const { users, deleteMutation, resetPasswordMutation, isLoading, meta } =
-    useAdminUsers(customSearchParams.requestSearchParams, paginationData);
+    useAdminUsers(requestSearchParams, paginationData);
+
   const { organizationsNameLookup, organizationsFilter } =
     useAdminOrganizations();
 
+  const getSearchableText = useCallback(
+    (user: UserDto) =>
+      [
+        user.fullName,
+        user.email,
+        user.status,
+        user.role.position,
+        user.role.modules.join(" "),
+        organizationsNameLookup[user.organizationId || ""] || "",
+      ].join(" "),
+    [organizationsNameLookup],
+  );
+
+  const list = useAccumulatedList({
+    items: users,
+    meta,
+    pagination,
+    serverFilterKey: JSON.stringify({
+      ...requestSearchParams,
+      limit: paginationData.limit,
+    }),
+    localSearch,
+    getSearchableText,
+    isLoading,
+  });
+
   const columns = createColumns<UserDto>({
     includeActions: true,
-    searchQuery: customSearchParams.searchParams.searchQuery,
+    searchQuery: localSearch || searchParams.searchQuery,
     extraColumns: [
       {
         accessorKey: "fullName",
@@ -145,15 +181,38 @@ const Client = () => {
       <DataHeader<UserListSearchParamsSchema>
         searchParamsSchema={userListSearchParamsSchema}
         head={null}
-        {...customSearchParams}
+        searchParams={searchParams}
+        updateParams={updateParams}
+        clearParams={() => {
+          setLocalSearch("");
+          clearParams();
+        }}
+        removeParams={removeParams}
+        localSearch={localSearch}
+        onLocalSearchChange={setLocalSearch}
+        onSearchServer={(value) => {
+          setLocalSearch(value);
+          if (value) {
+            updateParams({ searchQuery: value });
+          } else {
+            removeParams(["searchQuery"]);
+          }
+          pagination.setPage(1);
+        }}
         replacements={{ orgId: organizationsFilter }}
       />
       <DataTable
         columns={columns}
-        data={users}
+        data={list.items}
         loading={isLoading}
         pagination={pagination}
         responseMeta={meta}
+        loadMore={{
+          hasMore: list.hasMore,
+          onLoadMore: list.loadMore,
+          cachedCount: list.cachedCount,
+          isFilteringLocally: list.isFilteringLocally,
+        }}
       />
     </div>
   );

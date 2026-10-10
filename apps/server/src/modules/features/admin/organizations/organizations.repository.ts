@@ -1,6 +1,7 @@
 import { db, pooledDb } from '@/db';
 import { organizationSettings, organizations } from '@/db/schemas/admin';
 import { Injectable } from '@nestjs/common';
+import { DEFAULT_ORGANIZATION_CURRENCY } from '@rona/config/admin';
 import { and, count, desc, eq, ilike, ne, type SQL } from 'drizzle-orm';
 import type { Executor } from '@/db/executor';
 import type { OrganizationListSearchParamsSchema } from '@rona/types/admin';
@@ -57,9 +58,10 @@ export class OrganizationsRepository {
         .returning();
       const organization = records[0];
 
-      await innerTx
-        .insert(organizationSettings)
-        .values({ organizationId: organization.id });
+      await innerTx.insert(organizationSettings).values({
+        organizationId: organization.id,
+        currency: DEFAULT_ORGANIZATION_CURRENCY,
+      });
 
       return organization;
     });

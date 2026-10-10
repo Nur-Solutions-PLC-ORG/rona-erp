@@ -43,7 +43,7 @@ const StatCard = ({
 }: Props) => {
   if (loading) {
     return (
-      <div className="flex h-24 items-center justify-center rounded-xl bg-white border border-zinc-100 p-4 shadow-xs">
+      <div className="flex h-24 items-center justify-center rounded-xl bg-card border border-zinc-100 p-4 shadow-xs">
         <Spinner className="h-5 w-5 text-zinc-500" />
       </div>
     );
@@ -52,7 +52,7 @@ const StatCard = ({
   return (
     <div
       className={cn(
-        "flex flex-col h-fit bg-white rounded-xl border border-zinc-100 shadow-xs",
+        "flex flex-col h-fit bg-card rounded-xl border border-zinc-100 shadow-xs",
         className,
       )}
     >
@@ -101,14 +101,14 @@ type InfoCardProps = {
 const InfoCard = ({ title, items, loading, action }: InfoCardProps) => {
   if (loading) {
     return (
-      <div className="flex h-24 items-center justify-center rounded-xl bg-white border border-zinc-100 p-4 shadow-xs">
+      <div className="flex h-24 items-center justify-center rounded-xl bg-card border border-zinc-100 p-4 shadow-xs">
         <Spinner className="h-5 w-5 text-zinc-500" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-fit bg-white rounded-xl border border-zinc-100 shadow-xs">
+    <div className="flex flex-col h-fit bg-card rounded-xl border border-zinc-100 shadow-xs">
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
         <p className="text-sm font-bold text-zinc-900">{title}</p>
         {action}

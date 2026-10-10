@@ -14,6 +14,7 @@ import {
   type Column,
 } from "@/modules/workspace/components/ui";
 import {
+  CHART_COLORS,
   AreaChart,
   BarList,
   ChartCard,
@@ -161,7 +162,7 @@ export default function FinanceInvoicesPage() {
     {
       key: "invoiced",
       label: "Invoiced amount",
-      color: "#18181b",
+      color: CHART_COLORS.primary,
     },
   );
 

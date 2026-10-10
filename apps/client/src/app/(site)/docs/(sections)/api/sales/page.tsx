@@ -43,7 +43,7 @@ export default function SalesPage() {
           ]}
         />
         <Card tone="warn">
-          <p className="text-[13.5px] leading-relaxed text-[#5c4d77]">
+          <p className="text-[13.5px] leading-relaxed text-ink-2">
             There is no generic status update endpoint. Confirm, fulfil, and
             cancel are separate POST actions, each with its own permission, so
             an order can never be moved to an arbitrary state.
@@ -220,7 +220,7 @@ POST /api/sales/orders/:id/fulfill`}
         />
         <P>
           Confirming reserves the stock; fulfilling issues it. Use{" "}
-          <code className="font-mono text-[12.5px] text-[#581c87]">cancel</code>{" "}
+          <code className="font-mono text-[12.5px] text-ink">cancel</code>{" "}
           instead of fulfilling if the order cannot be supplied — cancelling
           releases the reservation.
         </P>

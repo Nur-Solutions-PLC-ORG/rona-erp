@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 interface SearchInputProps {
   value: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   placeholder?: string;
   className?: string;
   containerClassName?: string;
@@ -14,8 +15,9 @@ interface SearchInputProps {
 export default function SearchInput({
   value,
   onChange,
-  placeholder = "Search…",
-  className = "h-9 rounded-md bg-white border border-zinc-200 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 transition-colors",
+  onKeyDown,
+  placeholder ="Search…",
+  className = "h-9 rounded-md bg-card border border-zinc-200 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring transition-colors",
   containerClassName = "",
 }: SearchInputProps) {
   return (
@@ -25,6 +27,7 @@ export default function SearchInput({
         type="search"
         value={value}
         onChange={onChange}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
         className={cn(
           "w-full pl-8 pr-3 [&::-webkit-search-cancel-button]:hidden",

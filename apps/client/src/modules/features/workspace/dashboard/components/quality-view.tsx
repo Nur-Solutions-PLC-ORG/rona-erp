@@ -13,6 +13,7 @@ import {
   CLIENT_LOTS_PAGE,
 } from "@rona/routes/workspace";
 import {
+  CHART_COLORS,
   AreaChart,
   ChartCard,
   DonutChart,
@@ -43,7 +44,7 @@ export default function QualityDashboardView() {
         6,
         (inspection) => inspection.createdAt,
         () => 1,
-        { key: "inspections", label: "Inspections", color: "#0ea5e9" },
+        { key: "inspections", label: "Inspections", color: CHART_COLORS.secondary },
       ),
     [data.inspections],
   );

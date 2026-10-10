@@ -174,7 +174,7 @@ export default function LotsView() {
                   setStatusForm({ qualityStatus: row.qualityStatus });
                   setStatusFor(row);
                 }}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-card px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900"
               >
                 <HiOutlinePencilSquare className="h-3.5 w-3.5" />
                 Status
@@ -272,7 +272,7 @@ export default function LotsView() {
           canCreate ? (
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-zinc-800"
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90"
               onClick={() => setIsCreateOpen(true)}
             >
               <HiOutlinePlus className="h-4 w-4" />

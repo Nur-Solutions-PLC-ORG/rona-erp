@@ -27,7 +27,7 @@ const faqs = [
 
 export function FaqAccordion() {
   return (
-    <div className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 bg-white">
+    <div className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 bg-card">
       {faqs.map((item) => (
         <FaqItem
           key={item.question}

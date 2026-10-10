@@ -1,4 +1,5 @@
 import { RequestSearchParams } from "@/api";
+import { buildListQueryKey } from "@/hooks/list-query";
 import { PaginationData } from "@/hooks/pagination";
 import { useQuery } from "@tanstack/react-query";
 import { ApiGetPlatformConfigs } from "./api";
@@ -8,11 +9,11 @@ export const useAdminPlatformConfigs = (
   pagination?: PaginationData,
 ) => {
   const { data, isLoading } = useQuery({
-    queryKey: [
+    queryKey: buildListQueryKey(
       "admin-platform-configs",
-      JSON.stringify(searchParams),
+      searchParams,
       pagination,
-    ],
+    ),
     queryFn: () =>
       ApiGetPlatformConfigs({
         searchParams: {
@@ -26,7 +27,7 @@ export const useAdminPlatformConfigs = (
 
   return {
     platformConfigs: items,
-    isLoading,
     meta: data?.meta,
+    isLoading,
   };
 };

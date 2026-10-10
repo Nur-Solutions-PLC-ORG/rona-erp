@@ -1,11 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
+import ThemeToggle from "@/components/custom/theme-toggle";
+import Logo from "@/components/custom/logo";
 import Link from "next/link";
-import Image from "next/image";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
+  Coins,
+  QrCode,
+  Users,
   Boxes,
   ClipboardCheck,
   Cog,
@@ -26,9 +29,9 @@ import { CLIENT_APP_LAUNCHER_PAGE } from "@rona/routes/app";
 import { MobileMenu } from "./mobile-menu";
 
 const container = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
-const hairline = "border-[#581c87]";
+const hairline = "border-ink";
 
-const serif = "[font-family:var(--font-serif-display)] tracking-[-0.02em]";
+const serif = "font-heading tracking-[-0.01em]";
 
 const springSnap = {
   type: "spring",
@@ -38,7 +41,7 @@ const springSnap = {
 } as const;
 
 const hoverFill =
-  "transition-none group-hover:bg-[#581c87] group-hover:text-white group-hover:border-[#581c87]";
+  "transition-none group-hover:bg-ink group-hover:text-card group-hover:border-ink";
 
 const navLinks = [
   { label: "Platform", href: "#platform" },
@@ -52,17 +55,10 @@ function Navbar() {
   const { user } = useSession();
 
   return (
-    <header className={`sticky top-0 z-50 border-b ${hairline} bg-white`}>
+    <header className={`sticky top-0 z-50 border-b ${hairline} bg-card`}>
       <nav className={`${container} flex h-14 items-center justify-between`}>
         <Link href="/" className="flex items-center shrink-0">
-          <Image
-            src="/rona-logo.png"
-            alt="Rona ERP"
-            width={500}
-            height={179}
-            className="h-6 w-auto"
-            priority
-          />
+          <Logo variant="dark" className="h-6 w-auto" />
         </Link>
 
         <div className="hidden md:flex items-center h-full">
@@ -70,7 +66,7 @@ function Navbar() {
             <a
               key={link.label}
               href={link.href}
-              className="flex h-full items-center border-l border-[#e9e2f2] px-5 text-[13px] font-medium text-[#5c4d77] hover:bg-[#f3eefb] hover:text-[#581c87]"
+              className="flex h-full items-center border-l border-tint-2 px-5 text-[13px] font-medium text-ink-2 hover:bg-tint hover:text-ink"
             >
               {link.label}
             </a>
@@ -81,9 +77,9 @@ function Navbar() {
           {user ? (
             <Link
               href={CLIENT_APP_LAUNCHER_PAGE}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-[#5c4d77] hover:text-[#581c87]"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-ink-2 hover:text-ink"
             >
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#581c87] text-[10px] font-bold uppercase text-white">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ink text-[10px] font-bold uppercase text-card">
                 {user.name?.slice(0, 1) ?? "U"}
               </span>
               My account
@@ -91,18 +87,20 @@ function Navbar() {
           ) : (
             <Link
               href="/sign-in"
-              className="hidden sm:flex items-center px-4 py-2 text-[13px] font-medium text-[#5c4d77] hover:text-[#581c87]"
+              className="hidden sm:flex items-center px-4 py-2 text-[13px] font-medium text-ink-2 hover:text-ink"
             >
               Sign in
             </Link>
           )}
           <Link
             href={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
-            className="group hidden items-center gap-2 border border-[#581c87] bg-[#581c87] px-4 py-2 text-[13px] font-semibold text-white hover:bg-white hover:text-[#581c87] sm:flex"
+            className="group hidden items-center gap-2 border border-ink bg-ink px-4 py-2 text-[13px] font-semibold text-card hover:bg-card hover:text-ink sm:flex"
           >
             {user ? "Go to workspace" : "Launch Workspace"}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
+
+          <ThemeToggle className="ml-2 rounded-none border-ink/30 text-ink-2" />
 
           <MobileMenu
             links={navLinks}
@@ -112,93 +110,6 @@ function Navbar() {
         </div>
       </nav>
     </header>
-  );
-}
-
-function HeroBackdrop() {
-  const { scrollY } = useScroll();
-  const gridY = useTransform(scrollY, [0, 600], [0, 48]);
-
-  const gridLines = useMemo(() => {
-    const v: number[] = [];
-    const h: number[] = [];
-    for (let x = 0; x <= 1440; x += 48) v.push(x);
-    for (let y = 0; y <= 900; y += 48) h.push(y);
-    return { v, h };
-  }, []);
-
-  return (
-    <div
-      aria-hidden
-      className="absolute inset-0 overflow-hidden pointer-events-none"
-    >
-      <motion.svg
-        style={{ y: gridY }}
-        className="absolute inset-x-0 -top-24 h-[140%] w-full"
-        viewBox="0 0 1440 900"
-        preserveAspectRatio="xMidYMin slice"
-      >
-        {gridLines.v.map((x) => (
-          <line
-            key={`v${x}`}
-            x1={x}
-            y1={0}
-            x2={x}
-            y2={900}
-            stroke="#e9e2f2"
-            strokeWidth="1"
-          />
-        ))}
-        {gridLines.h.map((y) => (
-          <line
-            key={`h${y}`}
-            x1={0}
-            y1={y}
-            x2={1440}
-            y2={y}
-            stroke="#e9e2f2"
-            strokeWidth="1"
-          />
-        ))}
-        {Array.from({ length: 14 }, (_, i) => i).map((i) => {
-          const cx = 144 + i * 96;
-          const cy = 144 + ((i * 7) % 4) * 96;
-          return (
-            <g key={`c${i}`} stroke="#a893c9" strokeWidth="1">
-              <line x1={cx - 4} y1={cy} x2={cx + 4} y2={cy} />
-              <line x1={cx} y1={cy - 4} x2={cx} y2={cy + 4} />
-            </g>
-          );
-        })}
-      </motion.svg>
-
-      <motion.svg
-        animate={{ rotate: 360 }}
-        transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-        className="absolute -right-20 top-10 w-[420px] h-[420px] opacity-70"
-        viewBox="0 0 200 200"
-      >
-        <g stroke="#cfc2ea" strokeWidth="0.75" fill="none">
-          <rect x="55" y="55" width="90" height="90" />
-          <rect x="75" y="35" width="90" height="90" />
-          <path d="M55 55 L75 35 M145 55 L165 35 M55 145 L75 125 M145 145 L165 125" />
-        </g>
-      </motion.svg>
-
-      <motion.svg
-        animate={{ rotate: -360 }}
-        transition={{ duration: 160, repeat: Infinity, ease: "linear" }}
-        className="absolute -left-24 bottom-16 w-[360px] h-[360px] opacity-60"
-        viewBox="0 0 200 200"
-      >
-        <g stroke="#cfc2ea" strokeWidth="0.75" fill="none">
-          <circle cx="100" cy="100" r="70" />
-          <circle cx="100" cy="100" r="45" />
-          <circle cx="100" cy="100" r="20" />
-          <path d="M100 30 L100 170 M30 100 L170 100 M50 50 L150 150 M150 50 L50 150" />
-        </g>
-      </motion.svg>
-    </div>
   );
 }
 
@@ -218,31 +129,31 @@ function SnapBadge({
   delay?: number;
 }) {
   const tones = {
-    ok: "text-[#581c87]",
-    warn: "text-[#581c87]",
-    neutral: "text-[#581c87]",
+    ok: "text-ink",
+    warn: "text-ink",
+    neutral: "text-ink",
   };
   return (
     <motion.div
       initial={{ opacity: 0, x: -14, scale: 0.94 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
       transition={{ ...springSnap, delay }}
-      className={`absolute z-20 hidden lg:flex items-center gap-2.5 border ${hairline} bg-white px-3 py-2.5 shadow-[4px_4px_0_0_#581c87] ${className ?? ""}`}
+      className={`absolute z-20 hidden lg:flex items-center gap-2.5 border ${hairline} bg-card px-3 py-2.5 shadow-[4px_4px_0_0_var(--ink)] ${className ?? ""}`}
     >
       <span
         className={`flex h-7 w-7 items-center justify-center border ${hairline} ${
           tone === "ok"
-            ? "bg-[#e8f5e9]"
+            ? "bg-emerald-50"
             : tone === "warn"
-              ? "bg-[#fdeeca]"
-              : "bg-[#f3eefb]"
+              ? "bg-warn-soft"
+              : "bg-tint"
         }`}
       >
         {icon}
       </span>
       <div className={tones[tone]}>
         <div className="text-[11px] font-semibold leading-tight">{title}</div>
-        <div className="text-[10px] font-mono text-[#6c5f8a] leading-tight">
+        <div className="text-[10px] font-mono text-ink-3 leading-tight">
           {meta}
         </div>
       </div>
@@ -259,7 +170,7 @@ function DashboardPreview() {
       qty: "450.00 KG",
       pct: 82,
       status: "OK",
-      st: "bg-[#581c87] text-white",
+      st: "bg-ink text-card",
     },
     {
       sku: "VC-012",
@@ -268,7 +179,7 @@ function DashboardPreview() {
       qty: "12.00 EA",
       pct: 12,
       status: "LOW",
-      st: "bg-[#fdeeca] text-[#581c87] border border-[#581c87]",
+      st: "bg-warn-soft text-ink border border-ink",
     },
     {
       sku: "BR-100",
@@ -277,7 +188,7 @@ function DashboardPreview() {
       qty: "230.00 EA",
       pct: 64,
       status: "OK",
-      st: "bg-[#581c87] text-white",
+      st: "bg-ink text-card",
     },
     {
       sku: "DR-045",
@@ -286,7 +197,7 @@ function DashboardPreview() {
       qty: "0.00 EA",
       pct: 0,
       status: "OUT",
-      st: "bg-[#581c87] text-white",
+      st: "bg-ink text-card",
     },
   ];
 
@@ -332,26 +243,26 @@ function DashboardPreview() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        className={`relative border-2 ${hairline} bg-white shadow-[8px_8px_0_0_#581c87]`}
+        className={`relative border-2 ${hairline} bg-card shadow-[8px_8px_0_0_var(--ink)]`}
       >
         <div
-          className={`flex h-9 items-center border-b ${hairline} bg-[#f3eefb] px-3`}
+          className={`flex h-9 items-center border-b ${hairline} bg-tint px-3`}
         >
           <div className="flex gap-1.5">
-            <span className="h-2.5 w-2.5 border border-[#581c87] bg-white" />
-            <span className="h-2.5 w-2.5 border border-[#581c87] bg-white" />
-            <span className="h-2.5 w-2.5 border border-[#581c87] bg-[#581c87]" />
+            <span className="h-2.5 w-2.5 border border-ink bg-card" />
+            <span className="h-2.5 w-2.5 border border-ink bg-card" />
+            <span className="h-2.5 w-2.5 border border-ink bg-ink" />
           </div>
-          <div className="mx-auto flex items-center gap-1.5 border border-[#581c87] bg-white px-3 py-0.5 font-mono text-[10px] text-[#6c5f8a]">
+          <div className="mx-auto flex items-center gap-1.5 border border-ink bg-card px-3 py-0.5 font-mono text-[10px] text-ink-3">
             <Lock className="h-2.5 w-2.5" />
             https://rona.pro.et
           </div>
-          <span className="font-mono text-[10px] text-[#6c5f8a]">v2.6.1</span>
+          <span className="font-mono text-[10px] text-ink-3">v2.6.1</span>
         </div>
 
         <div className="grid grid-cols-12">
           <div
-            className={`col-span-2 hidden border-r ${hairline} bg-white md:block`}
+            className={`col-span-2 hidden border-r ${hairline} bg-card md:block`}
           >
             <div
               className={`border-b ${hairline} px-3 py-2.5 font-mono text-[10px] font-semibold uppercase tracking-wider`}
@@ -371,13 +282,11 @@ function DashboardPreview() {
               <div
                 key={m}
                 className={`flex items-center gap-2 border-b ${hairline} px-3 py-2 text-[11px] font-medium ${
-                  i === 1
-                    ? "bg-[#581c87] text-white"
-                    : "text-[#5c4d77] hover:bg-[#f3eefb]"
+                  i === 1 ? "bg-ink text-card" : "text-ink-2 hover:bg-tint"
                 }`}
               >
                 <span
-                  className={`h-1.5 w-1.5 border ${i === 1 ? "border-white" : "border-[#581c87]"}`}
+                  className={`h-1.5 w-1.5 border ${i === 1 ? "border-card" : "border-ink"}`}
                 />
                 {m}
               </div>
@@ -401,17 +310,17 @@ function DashboardPreview() {
               ].map((s) => (
                 <div
                   key={s.k}
-                  className="group bg-white px-4 py-3 hover:bg-[#f3eefb]"
+                  className="group bg-card px-4 py-3 hover:bg-tint"
                 >
-                  <div className="font-mono text-[9px] uppercase tracking-widest text-[#7c6f96]">
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-ink-3">
                     {s.k}
                   </div>
                   <div className="mt-1 flex items-baseline gap-2">
                     <span className="font-mono text-xl font-semibold tabular-nums">
                       {s.v}
                     </span>
-                    <span className="text-[10px] text-[#7c6f96]">{s.d}</span>
-                    <span className="ml-auto font-mono text-[10px] text-[#581c87]">
+                    <span className="text-[10px] text-ink-3">{s.d}</span>
+                    <span className="ml-auto font-mono text-[10px] text-ink">
                       {s.delta}
                     </span>
                   </div>
@@ -429,14 +338,14 @@ function DashboardPreview() {
                   <span className="text-[12px] font-semibold">
                     Stock balances
                   </span>
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-[#7c6f96]">
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-ink-3">
                     Live
                   </span>
                 </div>
                 <table className="w-full text-left">
                   <thead>
                     <tr
-                      className={`border-b ${hairline} font-mono text-[9px] uppercase tracking-wider text-[#7c6f96]`}
+                      className={`border-b ${hairline} font-mono text-[9px] uppercase tracking-wider text-ink-3`}
                     >
                       <th className="px-4 py-1.5 font-medium">SKU</th>
                       <th className="px-2 py-1.5 font-medium">Item</th>
@@ -451,13 +360,13 @@ function DashboardPreview() {
                     {stockRows.map((r) => (
                       <tr
                         key={r.sku}
-                        className={`border-b ${hairline} text-[11px] hover:bg-[#f3eefb]`}
+                        className={`border-b ${hairline} text-[11px] hover:bg-tint`}
                       >
                         <td className="px-4 py-2 font-mono font-semibold">
                           {r.sku}
                         </td>
-                        <td className="px-2 py-2 text-[#4a3a68]">{r.item}</td>
-                        <td className="px-2 py-2 font-mono text-[#6c5f8a]">
+                        <td className="px-2 py-2 text-ink-2">{r.item}</td>
+                        <td className="px-2 py-2 font-mono text-ink-3">
                           {r.lot}
                         </td>
                         <td className="px-2 py-2 text-right font-mono tabular-nums">
@@ -485,19 +394,19 @@ function DashboardPreview() {
                 {prodOrders.map((o) => (
                   <div
                     key={o.id}
-                    className={`border-b ${hairline} px-4 py-2.5 hover:bg-[#f3eefb]`}
+                    className={`border-b ${hairline} px-4 py-2.5 hover:bg-tint`}
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-[10px] font-semibold">
                         {o.id}
                       </span>
-                      <span className="font-mono text-[9px] text-[#7c6f96]">
+                      <span className="font-mono text-[9px] text-ink-3">
                         {o.stage}
                       </span>
                     </div>
-                    <div className="mt-1.5 flex h-2 border border-[#581c87] bg-white">
+                    <div className="mt-1.5 flex h-2 border border-ink bg-card">
                       <div
-                        className="h-full bg-[#581c87]"
+                        className="h-full bg-ink"
                         style={{ width: `${o.progress}%` }}
                       />
                     </div>
@@ -509,15 +418,15 @@ function DashboardPreview() {
                 {events.map((e) => (
                   <div
                     key={e.ref}
-                    className={`border-b ${hairline} px-4 py-2 text-[10px] hover:bg-[#f3eefb]`}
+                    className={`border-b ${hairline} px-4 py-2 text-[10px] hover:bg-tint`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[#7c6f96]">{e.t}</span>
-                      <span className="border border-[#581c87] bg-[#f3eefb] px-1 font-mono font-semibold">
+                      <span className="font-mono text-ink-3">{e.t}</span>
+                      <span className="border border-ink bg-tint px-1 font-mono font-semibold">
                         {e.ref}
                       </span>
                     </div>
-                    <div className="mt-1 text-[#4a3a68]">{e.msg}</div>
+                    <div className="mt-1 text-ink-2">{e.msg}</div>
                   </div>
                 ))}
               </div>
@@ -526,13 +435,13 @@ function DashboardPreview() {
         </div>
 
         <div
-          className={`flex items-center justify-between border-t ${hairline} bg-[#f3eefb] px-3 py-1.5`}
+          className={`flex items-center justify-between border-t ${hairline} bg-tint px-3 py-1.5`}
         >
-          <span className="font-mono text-[9px] text-[#7c6f96]">
+          <span className="font-mono text-[9px] text-ink-3">
             TENANT: 7c9e · REGION: eu-west · SYNCED 3s ago
           </span>
-          <span className="flex items-center gap-1.5 font-mono text-[9px] text-[#581c87]">
-            <span className="h-1.5 w-1.5 bg-[#581c87]" />
+          <span className="flex items-center gap-1.5 font-mono text-[9px] text-ink">
+            <span className="h-1.5 w-1.5 bg-ink" />
             OPERATIONAL
           </span>
         </div>
@@ -541,77 +450,168 @@ function DashboardPreview() {
   );
 }
 
+const brandPillars = [
+  { label: "Smart QR Integration", icon: QrCode },
+  { label: "Multi-Currency Finance", icon: Coins },
+  { label: "Complete HR Suite", icon: Users },
+];
+
+// First word repeats at the end so the CSS loop snaps back invisibly.
+const heroWords = [
+  "success",
+  "inventory",
+  "production",
+  "finance",
+  "workforce",
+  "success",
+];
+
+const riseDelay = (ms: number) =>
+  ({ "--delay": `${ms}ms` }) as React.CSSProperties;
+
+function HeroBackdrop() {
+  return (
+    <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
+      <div className="brand-waves hero-waves-drift absolute inset-0" />
+      <div
+        className="hero-glow -top-48 -left-40 size-[38rem] bg-[radial-gradient(closest-side,rgb(110_195_199/0.32),transparent)]"
+        style={{ "--duration": "22s" } as React.CSSProperties}
+      />
+      <div
+        className="hero-glow top-8 -right-36 size-[32rem] bg-[radial-gradient(closest-side,rgb(3_175_104/0.2),transparent)]"
+        style={
+          { "--duration": "27s", animationDelay: "-9s" } as React.CSSProperties
+        }
+      />
+      <div
+        className="hero-glow -bottom-56 left-1/4 size-[44rem] bg-[radial-gradient(closest-side,rgb(56_97_99/0.28),transparent)]"
+        style={
+          { "--duration": "32s", animationDelay: "-16s" } as React.CSSProperties
+        }
+      />
+      {/* Fine grid, faded toward the edges. */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--ink)_1px,transparent_1px),linear-gradient(to_bottom,var(--ink)_1px,transparent_1px)] bg-size-[56px_56px] opacity-[0.05] mask-[radial-gradient(ellipse_70%_55%_at_50%_30%,black,transparent)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(50%_40%_at_50%_34%,var(--hero-vignette),transparent)]" />
+    </div>
+  );
+}
+
+function RotatingWord() {
+  return (
+    <span className="relative inline-flex h-[1.2em] items-start overflow-hidden align-bottom">
+      <span className="hero-words flex flex-col">
+        {heroWords.map((word, index) => (
+          <span
+            key={`${word}-${index}`}
+            className="block h-[1.2em] bg-linear-to-r from-tagline to-ink-2 bg-clip-text pb-[0.1em] text-right leading-[1.2em] text-transparent"
+          >
+            {word}
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
 function Hero() {
   const { user } = useSession();
   return (
-    <section className="relative overflow-hidden border-b border-[#581c87] bg-[#f9f7fd]">
+    <section className="brand-gradient relative isolate overflow-hidden border-b border-ink">
       <HeroBackdrop />
-      <div className={`${container} relative z-10 pt-16 pb-20 sm:pt-24`}>
-        <div className="mx-auto max-w-3xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
-            className="inline-flex items-center border border-[#581c87] bg-white px-3 py-1.5"
+
+      <div className={`${container} relative pt-16 pb-20 sm:pt-24`}>
+        <div className="mx-auto max-w-4xl text-center">
+          <a
+            href="#platform"
+            className="hero-rise group inline-flex items-center gap-2.5 border border-ink/20 bg-card/70 py-1.5 pr-3 pl-2.5 text-[12px] text-ink-2 backdrop-blur-sm transition-colors hover:border-ink/40 hover:text-ink"
           >
-            <span className="border-r border-[#581c87] pr-2 font-mono text-[10px] font-bold uppercase tracking-widest">
+            <span className="relative flex h-2 w-2">
+              <span className="hero-ping absolute inset-0 rounded-full bg-brand-green" />
+              <span className="relative h-2 w-2 rounded-full bg-brand-green" />
+            </span>
+            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-tagline">
               New
             </span>
-            <span className="pl-2 text-[12px] text-[#4a3a68]">
-              Rona AI assistant is now built into every module
+            <span>Rona AI assistant is now built into every module</span>
+            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          </a>
+
+          <h1
+            className="hero-rise mt-8 font-sans text-[2.3rem] leading-[1.2] font-normal tracking-tight text-ink sm:text-6xl lg:text-[4.6rem]"
+            style={riseDelay(80)}
+          >
+            <span className="sr-only">Streamline your success with RONA.</span>
+            <span aria-hidden className="block">
+              Streamline your
             </span>
-          </motion.div>
+            <span aria-hidden className="block">
+              <RotatingWord /> with{" "}
+              <span className="font-medium text-tagline-strong">RONA.</span>
+            </span>
+          </h1>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.08 }}
-            className={`mt-7 text-[2.6rem] font-semibold leading-[1.05] text-[#111] sm:text-6xl lg:text-[4.4rem] ${serif}`}
+          <p
+            className="hero-rise mx-auto mt-6 max-w-2xl text-[15px] leading-relaxed text-ink-2 sm:text-base"
+            style={riseDelay(160)}
           >
-            Run your entire operation
-            <br />
-            from one workspace
-          </motion.h1>
+            The enterprise-grade platform for retail, manufacturing, services,
+            and distribution — inventory, production, finance, and your
+            workforce in one precise, traceable workspace.
+          </p>
 
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.16 }}
-            className="mx-auto mt-6 max-w-xl text-[15px] leading-relaxed text-[#5c4d77]"
-          >
-            Inventory, manufacturing, quality, and traceability — unified in a
-            single, precise platform built for operations that cannot afford
-            blind spots.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.24 }}
-            className="mt-8 flex flex-wrap items-center justify-center gap-3"
+          <div
+            className="hero-rise mt-9 flex flex-wrap items-center justify-center gap-3"
+            style={riseDelay(240)}
           >
             <Link
               href={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
-              className="group flex items-center gap-2 border border-[#581c87] bg-[#581c87] px-6 py-3 text-[13px] font-semibold text-white hover:bg-white hover:text-[#581c87]"
+              className="group flex items-center gap-2 border border-brand-green bg-brand-green px-6 py-3 text-[13px] font-semibold text-brand-ink shadow-[0_8px_30px_-8px_rgb(3_175_104/0.6)] transition-[background-color,border-color,transform] hover:-translate-y-0.5 hover:border-brand-mint hover:bg-brand-mint"
             >
               {user ? "Go to workspace" : "Launch Workspace"}
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <a
               href="#platform"
-              className="group flex items-center gap-2 border border-[#581c87] bg-white px-6 py-3 text-[13px] font-semibold text-[#581c87] hover:bg-[#581c87] hover:text-white"
+              className="group flex items-center gap-2 border border-ink/30 bg-card/50 px-6 py-3 text-[13px] font-semibold text-ink backdrop-blur-sm transition-colors hover:border-ink/50 hover:bg-card/80"
             >
               Explore platform
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </a>
-          </motion.div>
-          <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-[#7c6f96]">
+          </div>
+          <p
+            className="hero-rise mt-4 font-mono text-[10px] uppercase tracking-widest text-ink-3"
+            style={riseDelay(300)}
+          >
             Free 14-day trial · No card required
           </p>
+
+          <ul
+            className="hero-rise mt-10 flex flex-wrap items-center justify-center gap-2.5"
+            style={riseDelay(360)}
+          >
+            {brandPillars.map((pillar) => (
+              <li
+                key={pillar.label}
+                className="inline-flex items-center gap-2 border border-ink/15 bg-card/60 px-3.5 py-2 text-[12.5px] font-semibold text-tagline backdrop-blur-sm"
+              >
+                <pillar.icon className="h-4 w-4" strokeWidth={1.75} />
+                {pillar.label}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className="mx-auto mt-16 max-w-6xl">
-          <DashboardPreview />
+        <div
+          className="hero-rise relative mx-auto mt-16 max-w-6xl"
+          style={riseDelay(460)}
+        >
+          <div
+            aria-hidden
+            className="absolute -inset-x-16 top-10 -bottom-16 -z-10 bg-[radial-gradient(closest-side,rgb(110_195_199/0.22),transparent)]"
+          />
+          <div className="hero-preview">
+            <DashboardPreview />
+          </div>
         </div>
       </div>
     </section>
@@ -627,9 +627,9 @@ const stats = [
 
 function StatsStrip() {
   return (
-    <section className={`border-b ${hairline} bg-white`}>
+    <section className={`border-b ${hairline} bg-card`}>
       <div
-        className={`${container} grid grid-cols-2 divide-x divide-[#e9e2f2] lg:grid-cols-4`}
+        className={`${container} grid grid-cols-2 divide-x divide-tint-2 lg:grid-cols-4`}
       >
         {stats.map((s, i) => (
           <motion.div
@@ -640,14 +640,14 @@ function StatsStrip() {
             transition={{ duration: 0.3, delay: i * 0.06 }}
             className={`group ${i < 2 ? "border-b lg:border-b-0" : ""} ${
               i % 2 === 1 ? "border-l lg:border-l" : ""
-            } border-[#e9e2f2] px-6 py-8 hover:bg-[#f9f7fd]`}
+            } border-tint-2 px-6 py-8 hover:bg-background`}
           >
             <div
               className={`font-mono text-3xl font-semibold tabular-nums ${hoverFill} px-1 -mx-1`}
             >
               {s.v}
             </div>
-            <div className="mt-1.5 text-[12px] font-medium uppercase tracking-wider text-[#7c6f96]">
+            <div className="mt-1.5 text-[12px] font-medium uppercase tracking-wider text-ink-3">
               {s.k}
             </div>
           </motion.div>
@@ -700,20 +700,20 @@ function ArchitectureSection() {
   return (
     <section
       id="architecture"
-      className={`border-b ${hairline} bg-white py-20 sm:py-28`}
+      className={`border-b ${hairline} bg-card py-20 sm:py-28`}
     >
       <div className={container}>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_2fr] lg:items-end">
           <div>
             <h2
-              className={`text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
+              className={`text-3xl font-semibold text-ink sm:text-5xl ${serif}`}
             >
               Enterprise-grade
               <br />
               performance
             </h2>
           </div>
-          <p className="text-[14px] leading-relaxed text-[#5c4d77] lg:pb-2">
+          <p className="text-[14px] leading-relaxed text-ink-2 lg:pb-2">
             Designed for organizations that need reliable, fast, and auditable
             operations at scale. No redundant data entry, no manual
             reconciliation, no blind spots across your supply chain.
@@ -721,7 +721,7 @@ function ArchitectureSection() {
         </div>
 
         <div
-          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-[#581c87] sm:grid-cols-2 lg:grid-cols-3`}
+          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-ink sm:grid-cols-2 lg:grid-cols-3`}
         >
           {archFeatures.map((f, i) => (
             <motion.article
@@ -730,21 +730,21 @@ function ArchitectureSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.35, delay: (i % 3) * 0.08 }}
-              className="group relative bg-white p-6 hover:bg-[#f9f7fd]"
+              className="group relative bg-card p-6 hover:bg-background"
             >
               <div className="flex items-start justify-between">
-                <f.icon className="h-5 w-5 text-[#581c87]" strokeWidth={1.5} />
-                <span className="font-mono text-[10px] tabular-nums text-[#a893c9] group-hover:text-[#581c87]">
+                <f.icon className="h-5 w-5 text-ink" strokeWidth={1.5} />
+                <span className="font-mono text-[10px] tabular-nums text-ink-3 group-hover:text-ink">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
-              <h3 className="mt-5 text-[14px] font-semibold text-[#581c87]">
+              <h3 className="mt-5 text-[14px] font-semibold text-ink">
                 {f.title}
               </h3>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#5c4d77]">
+              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-2">
                 {f.body}
               </p>
-              <div className="mt-5 border-t border-[#e9e2f2] pt-3 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#7c6f96] group-hover:border-[#581c87] group-hover:text-[#581c87]">
+              <div className="mt-5 border-t border-tint-2 pt-3 font-mono text-[9px] font-semibold uppercase tracking-widest text-ink-3 group-hover:border-ink group-hover:text-ink">
                 {f.spec}
               </div>
             </motion.article>
@@ -786,18 +786,18 @@ function WorkflowSection() {
   return (
     <section
       id="workflow"
-      className={`border-b ${hairline} bg-[#f9f7fd] py-20 sm:py-28`}
+      className={`border-b ${hairline} bg-background py-20 sm:py-28`}
     >
       <div className={container}>
         <div className="max-w-2xl">
           <h2
-            className={`text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
+            className={`text-3xl font-semibold text-ink sm:text-5xl ${serif}`}
           >
             Dock to finished goods,
             <br />
             in four steps
           </h2>
-          <p className="mt-4 text-[14px] leading-relaxed text-[#5c4d77]">
+          <p className="mt-4 text-[14px] leading-relaxed text-ink-2">
             A single, repeatable flow your whole team can trust. Every step
             writes an immutable audit record.
           </p>
@@ -815,7 +815,7 @@ function WorkflowSection() {
               y1="1"
               x2="1200"
               y2="1"
-              stroke="#581c87"
+              className="stroke-ink"
               strokeWidth="2"
               strokeDasharray="8 6"
               initial={{ pathLength: 0 }}
@@ -835,23 +835,21 @@ function WorkflowSection() {
                 transition={{ ...springSnap, delay: 0.25 + i * 0.35 }}
                 className="group relative"
               >
-                <div className="relative z-10 flex h-14 w-14 items-center justify-center border-2 border-[#581c87] bg-white text-[#581c87] shadow-[4px_4px_0_0_#581c87] group-hover:bg-[#581c87] group-hover:text-white group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
+                <div className="relative z-10 flex h-14 w-14 items-center justify-center border-2 border-ink bg-card text-ink shadow-[4px_4px_0_0_var(--ink)] group-hover:bg-ink group-hover:text-card group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
                   <step.icon className="h-6 w-6" strokeWidth={1.5} />
                 </div>
                 <div className="mt-6 flex items-baseline gap-3">
-                  <span className="font-mono text-[11px] font-bold tabular-nums text-[#a893c9]">
+                  <span className="font-mono text-[11px] font-bold tabular-nums text-ink-3">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <h3
-                    className={`text-xl font-semibold text-[#581c87] ${serif}`}
-                  >
+                  <h3 className={`text-xl font-semibold text-ink ${serif}`}>
                     {step.title}
                   </h3>
                 </div>
-                <p className="mt-2.5 text-[12.5px] leading-relaxed text-[#5c4d77]">
+                <p className="mt-2.5 text-[12.5px] leading-relaxed text-ink-2">
                   {step.body}
                 </p>
-                <div className="mt-4 inline-block border border-[#581c87] bg-white px-2 py-1 font-mono text-[10px] font-semibold text-[#581c87] group-hover:bg-[#581c87] group-hover:text-white">
+                <div className="mt-4 inline-block border border-ink bg-card px-2 py-1 font-mono text-[10px] font-semibold text-ink group-hover:bg-ink group-hover:text-card">
                   {step.detail}
                 </div>
               </motion.div>
@@ -932,21 +930,21 @@ const aiPrompts = [
 function RonaAiIntro() {
   return (
     <div
-      className={`mt-14 border-2 ${hairline} bg-white shadow-[8px_8px_0_0_#581c87]`}
+      className={`mt-14 border-2 ${hairline} bg-card shadow-[8px_8px_0_0_var(--ink)]`}
     >
       <div
-        className={`flex items-center justify-between border-b-2 ${hairline} bg-[#581c87] px-5 py-3`}
+        className={`flex items-center justify-between border-b-2 ${hairline} bg-ink px-5 py-3`}
       >
         <div className="flex items-center gap-3">
-          <Sparkles className="h-4 w-4 text-white" strokeWidth={1.5} />
-          <span className={`text-lg font-semibold text-white ${serif}`}>
+          <Sparkles className="h-4 w-4 text-card" strokeWidth={1.5} />
+          <span className={`text-lg font-semibold text-card ${serif}`}>
             Rona AI
           </span>
-          <span className="border border-white px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-white">
+          <span className="border border-card px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-widest text-card">
             Built-in
           </span>
         </div>
-        <span className="hidden font-mono text-[9px] uppercase tracking-widest text-[#e4dcf5] sm:block">
+        <span className="hidden font-mono text-[9px] uppercase tracking-widest text-tint-2 sm:block">
           ASSISTANT · EVERY MODULE
         </span>
       </div>
@@ -956,13 +954,13 @@ function RonaAiIntro() {
           className={`border-b ${hairline} p-6 lg:col-span-2 lg:border-b-0 lg:border-r`}
         >
           <h3
-            className={`text-2xl font-semibold leading-tight text-[#581c87] ${serif}`}
+            className={`text-2xl font-semibold leading-tight text-ink ${serif}`}
           >
             An operations analyst
             <br />
             that never sleeps
           </h3>
-          <p className="mt-4 text-[12.5px] leading-relaxed text-[#5c4d77]">
+          <p className="mt-4 text-[12.5px] leading-relaxed text-ink-2">
             Rona AI lives inside every module with full context of your
             inventory, production, quality, and finance data. Ask it to trace
             lots, draft reports, flag anomalies, or summarize performance — it
@@ -977,9 +975,9 @@ function RonaAiIntro() {
             ].map((t) => (
               <li
                 key={t}
-                className="flex items-start gap-2.5 text-[12.5px] text-[#4a3a68]"
+                className="flex items-start gap-2.5 text-[12.5px] text-ink-2"
               >
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-[#581c87]" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-ink" />
                 {t}
               </li>
             ))}
@@ -994,33 +992,33 @@ function RonaAiIntro() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ ...springSnap, delay: i * 0.15 }}
-              className={`group border-b ${hairline} p-5 last:border-b-0 hover:bg-[#f9f7fd]`}
+              className={`group border-b ${hairline} p-5 last:border-b-0 hover:bg-background`}
             >
               <div className="flex items-start gap-3">
                 <span
-                  className={`shrink-0 border ${hairline} bg-[#581c87] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-white`}
+                  className={`shrink-0 border ${hairline} bg-ink px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-card`}
                 >
                   You
                 </span>
-                <p className="text-[13px] font-medium text-[#581c87]">{m.q}</p>
+                <p className="text-[13px] font-medium text-ink">{m.q}</p>
               </div>
               <div className="mt-3 flex items-start gap-3">
                 <span
-                  className={`shrink-0 border ${hairline} bg-white px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-[#581c87]`}
+                  className={`shrink-0 border ${hairline} bg-card px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase text-ink`}
                 >
                   AI
                 </span>
-                <p className="text-[12.5px] leading-relaxed text-[#4a3a68]">
+                <p className="text-[12.5px] leading-relaxed text-ink-2">
                   {m.a}
                 </p>
               </div>
             </motion.div>
           ))}
           <div
-            className={`flex items-center gap-2 border-t-2 ${hairline} bg-[#f9f7fd] px-5 py-3`}
+            className={`flex items-center gap-2 border-t-2 ${hairline} bg-background px-5 py-3`}
           >
-            <span className="h-1.5 w-1.5 animate-pulse bg-[#581c87]" />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-[#7c6f96]">
+            <span className="h-1.5 w-1.5 animate-pulse bg-ink" />
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink-3">
               Ask anything about your operation
             </span>
           </div>
@@ -1034,20 +1032,20 @@ function ModulesSection() {
   return (
     <section
       id="modules"
-      className={`border-b ${hairline} bg-white py-20 sm:py-28`}
+      className={`border-b ${hairline} bg-card py-20 sm:py-28`}
     >
       <div className={container}>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_2fr] lg:items-end">
           <div>
             <h2
-              className={`text-3xl font-semibold text-[#581c87] sm:text-5xl ${serif}`}
+              className={`text-3xl font-semibold text-ink sm:text-5xl ${serif}`}
             >
               One platform,
               <br />
               every module
             </h2>
           </div>
-          <p className="text-[14px] leading-relaxed text-[#5c4d77] lg:pb-2">
+          <p className="text-[14px] leading-relaxed text-ink-2 lg:pb-2">
             Eight operational modules plus Rona AI on a single data core — every
             record cross-linked, every change audited, no third-party glue
             holding your operation together.
@@ -1055,7 +1053,7 @@ function ModulesSection() {
         </div>
 
         <div
-          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-[#581c87] sm:grid-cols-2 lg:grid-cols-4`}
+          className={`mt-14 grid grid-cols-1 gap-px border ${hairline} bg-ink sm:grid-cols-2 lg:grid-cols-4`}
         >
           {modules.map((m, i) => (
             <motion.article
@@ -1064,29 +1062,29 @@ function ModulesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.35, delay: (i % 3) * 0.08 }}
-              className="group relative bg-white p-6 hover:bg-[#f9f7fd]"
+              className="group relative bg-card p-6 hover:bg-background"
             >
               <div className="flex items-start justify-between">
                 <span
-                  className={`font-mono text-xl font-bold ${serif} text-[#581c87]`}
+                  className={`font-mono text-xl font-bold ${serif} text-ink`}
                 >
                   {m.abbr}
                 </span>
-                <span className="font-mono text-[10px] tabular-nums text-[#a893c9] group-hover:text-[#581c87]">
+                <span className="font-mono text-[10px] tabular-nums text-ink-3 group-hover:text-ink">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
-              <h3 className="mt-4 text-[14px] font-semibold text-[#581c87]">
+              <h3 className="mt-4 text-[14px] font-semibold text-ink">
                 {m.name}
               </h3>
-              <p className="mt-2 text-[12.5px] leading-relaxed text-[#5c4d77]">
+              <p className="mt-2 text-[12.5px] leading-relaxed text-ink-2">
                 {m.body}
               </p>
-              <div className="mt-5 flex flex-wrap gap-1.5 border-t border-[#e9e2f2] pt-3">
+              <div className="mt-5 flex flex-wrap gap-1.5 border-t border-tint-2 pt-3">
                 {m.tags.map((t) => (
                   <span
                     key={t}
-                    className="border border-[#581c87] px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-[#581c87] group-hover:bg-[#581c87] group-hover:text-white"
+                    className="border border-ink px-1.5 py-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-ink group-hover:bg-ink group-hover:text-card"
                   >
                     {t}
                   </span>
@@ -1106,27 +1104,26 @@ function CtaSlab() {
   const { user } = useSession();
 
   return (
-    <section className="bg-[#581c87] py-20 sm:py-24">
+    <section className="brand-gradient-teal relative isolate overflow-hidden py-20 sm:py-24">
+      <div aria-hidden className="brand-waves absolute inset-0 -z-10" />
       <div className={`${container} text-center`}>
-        <h2
-          className={`text-3xl font-semibold text-white sm:text-5xl ${serif}`}
-        >
+        <h2 className={`text-3xl font-semibold text-ink sm:text-5xl ${serif}`}>
           {user ? "Welcome back." : "Ready to streamline your operations?"}
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-[14px] leading-relaxed text-[#e4dcf5]">
+        <p className="mx-auto mt-4 max-w-xl text-[14px] leading-relaxed text-ink-2">
           {user
             ? "Your workspace is ready — pick up right where you left off."
             : "Launch your workspace and manage inventory, manufacturing, and traceability in one place."}
         </p>
         <Link
           href={user ? CLIENT_APP_LAUNCHER_PAGE : "/sign-in"}
-          className="group mt-9 inline-flex items-center gap-2 border border-white bg-white px-7 py-3.5 text-[13px] font-semibold text-[#581c87] hover:bg-[#581c87] hover:text-white"
+          className="group mt-9 inline-flex items-center gap-2 border border-brand-green bg-brand-green px-7 py-3.5 text-[13px] font-semibold text-brand-ink transition-colors hover:border-brand-mint hover:bg-brand-mint"
         >
           {user ? "Go to workspace" : "Launch Workspace"}
           <ArrowRight className="h-4 w-4" />
         </Link>
         {user ? null : (
-          <p className="mt-5 font-mono text-[10px] uppercase tracking-widest text-[#7c6f96]">
+          <p className="mt-5 font-mono text-[10px] uppercase tracking-widest text-ink-3">
             Free 14-day trial · No card required
           </p>
         )}
@@ -1172,27 +1169,22 @@ function Footer() {
   ];
 
   return (
-    <footer className={`border-t ${hairline} bg-white`}>
+    <footer className={`border-t ${hairline} bg-card`}>
       <div className={`${container} py-12`}>
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center">
-              <Image
-                src="/rona-logo.png"
-                alt="Rona ERP"
-                width={500}
-                height={179}
-                className="h-6 w-auto"
-              />
+              <Logo variant="dark" lockup className="h-7 w-auto" />
             </Link>
-            <p className="mt-4 max-w-xs text-[12.5px] leading-relaxed text-[#5c4d77]">
-              Effective and efficient management for workforce, inventory, and
-              production — built for organizations that demand precision.
+            <p className="mt-4 max-w-xs text-[12.5px] leading-relaxed text-ink-2">
+              Streamline Your Success with RONA. Inventory management, financial
+              tracking, and employee management — built for organizations that
+              demand precision.
             </p>
           </div>
           {cols.map((c) => (
             <div key={c.h}>
-              <h4 className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#7c6f96]">
+              <h4 className="font-mono text-[10px] font-bold uppercase tracking-widest text-ink-3">
                 {c.h}
               </h4>
               <ul className="mt-4 space-y-2.5">
@@ -1200,7 +1192,7 @@ function Footer() {
                   <li key={item.l}>
                     <Link
                       href={item.href}
-                      className="text-[12.5px] font-medium text-[#4a3a68] hover:text-[#581c87] hover:underline hover:underline-offset-4 hover:decoration-[#581c87]"
+                      className="text-[12.5px] font-medium text-ink-2 hover:text-ink hover:underline hover:underline-offset-4 hover:decoration-ink"
                     >
                       {item.l}
                     </Link>
@@ -1211,13 +1203,14 @@ function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-[#e9e2f2] pt-6 sm:flex-row">
-          <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-[#5c4d77]">
-            <span className="h-1.5 w-1.5 bg-[#581c87]" />
+        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-tint-2 pt-6 sm:flex-row">
+          <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-ink-2">
+            <span className="h-1.5 w-1.5 bg-ink" />
             All systems operational
           </span>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-[#7c6f96]">
-            © {new Date().getFullYear()} Rona ERP — All rights reserved
+          <span className="font-mono text-[10px] uppercase tracking-widest text-ink-3">
+            © {new Date().getFullYear()} Rona · Enterprise Business Management
+            Platform
           </span>
         </div>
       </div>
@@ -1227,7 +1220,7 @@ function Footer() {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-card">
       <Navbar />
       <main>
         <Hero />

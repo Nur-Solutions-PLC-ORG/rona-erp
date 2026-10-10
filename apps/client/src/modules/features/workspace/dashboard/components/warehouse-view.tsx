@@ -15,6 +15,7 @@ import {
   CLIENT_RESERVATIONS_PAGE,
 } from "@rona/routes/workspace";
 import {
+  CHART_COLORS,
   BarChart,
   ChartCard,
   DonutChart,
@@ -48,7 +49,7 @@ export default function WarehouseDashboardView() {
         (movement) => movement.createdAt,
         (movement) =>
           movementIn(movement.type) ? Number(movement.quantity) || 0 : 0,
-        { key: "in", label: "Stock in", color: "#14b8a6" },
+        { key: "in", label: "Stock in", color: CHART_COLORS.accent },
       ),
     [data.movementHistory],
   );
@@ -61,7 +62,7 @@ export default function WarehouseDashboardView() {
         (movement) => movement.createdAt,
         (movement) =>
           movementOut(movement.type) ? Number(movement.quantity) || 0 : 0,
-        { key: "out", label: "Stock out", color: "#f43f5e" },
+        { key: "out", label: "Stock out", color: CHART_COLORS.negative },
       ),
     [data.movementHistory],
   );

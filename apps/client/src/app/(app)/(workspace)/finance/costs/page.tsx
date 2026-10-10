@@ -10,6 +10,7 @@ import {
   type Column,
 } from "@/modules/workspace/components/ui";
 import {
+  CHART_COLORS,
   AreaChart,
   BarList,
   ChartCard,
@@ -95,7 +96,7 @@ export default function FinanceCostsPage() {
     {
       key: "costs",
       label: "Recorded costs",
-      color: "#e11d48",
+      color: CHART_COLORS.negative,
     },
   );
 

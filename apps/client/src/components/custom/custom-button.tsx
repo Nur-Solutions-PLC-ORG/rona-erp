@@ -27,7 +27,7 @@ const CustomButton = ({
     <Button
       className={cn(
         primary &&
-          "flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-md bg-zinc-900 hover:bg-zinc-800 active:bg-zinc-950 text-white text-xs font-semibold transition disabled:opacity-50 disabled:pointer-events-none h-8",
+          "flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-md bg-primary hover:bg-primary/90 active:bg-primary/80 text-primary-foreground text-xs font-semibold transition disabled:opacity-50 disabled:pointer-events-none h-8",
         className,
         isPending &&
           (variant == "destructive" ? "bg-red-200/50" : "bg-zinc-300"),

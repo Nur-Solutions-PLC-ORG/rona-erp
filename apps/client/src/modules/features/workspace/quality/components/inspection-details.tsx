@@ -172,7 +172,7 @@ export function InspectionDetailsModal({
           <button
             type="button"
             onClick={() => setResultFor(row.id)}
-            className="text-xs font-medium text-purple-600 hover:text-purple-500"
+            className="text-xs font-medium text-primary hover:text-brand-sea"
           >
             Record result
           </button>
@@ -220,7 +220,7 @@ export function InspectionDetailsModal({
               <button
                 type="button"
                 onClick={() => setShowAddTest(true)}
-                className="inline-flex items-center gap-1 text-xs font-medium text-purple-600 hover:text-purple-500"
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-brand-sea"
               >
                 <HiOutlinePlus className="h-4 w-4" /> Add test
               </button>

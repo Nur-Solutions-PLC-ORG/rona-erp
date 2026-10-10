@@ -126,7 +126,7 @@ export const CardWrapperParent = ({
     >
       {centered ? (
         <>
-          {includeLogo && <Logo />}
+          {includeLogo && <Logo variant="dark" className="h-9" />}
           {children}
           {includeLegals && (
             <div className="flex items-center justify-between border-t pt-4">

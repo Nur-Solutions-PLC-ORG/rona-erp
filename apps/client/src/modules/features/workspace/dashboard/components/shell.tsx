@@ -116,7 +116,7 @@ export function KpiCard({
 }) {
   const tone = KPI_ACCENTS[accent];
   return (
-    <div className="flex h-full flex-col justify-between rounded-lg border border-slate-200 bg-white p-3.5 shadow-[0_1px_2px_0_rgb(15_23_42_/_0.05)]">
+    <div className="flex h-full flex-col justify-between rounded-lg border border-slate-200 bg-card p-3.5 shadow-[0_1px_2px_0_rgb(15_23_42_/_0.05)]">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[11px] font-semibold text-slate-600">{label}</span>
         <span className={cn("shrink-0", tone.icon)}>{icon}</span>
@@ -309,7 +309,7 @@ export function ViewAllLink({ href, label = "View all" }: { href: string; label?
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 transition-colors hover:text-purple-600"
+      className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 transition-colors hover:text-primary"
     >
       {label}
       <HiOutlineArrowRight className="h-3 w-3" />

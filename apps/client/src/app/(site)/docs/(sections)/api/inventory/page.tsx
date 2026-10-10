@@ -29,9 +29,9 @@ export default function InventoryPage() {
         <CodeBlock label="Base URL" code={`https://api.rona.pro.et/api`} />
         <P>
           Every endpoint below is shown as a full path including the{" "}
-          <code className="font-mono text-[12.5px] text-[#581c87]">/api</code>{" "}
+          <code className="font-mono text-[12.5px] text-ink">/api</code>{" "}
           prefix. Requests must carry the{" "}
-          <code className="font-mono text-[12.5px] text-[#581c87]">
+          <code className="font-mono text-[12.5px] text-ink">
             session_token
           </code>{" "}
           cookie — see <a href="/docs/api/authentication">API Authentication</a>

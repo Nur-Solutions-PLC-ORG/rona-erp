@@ -3,8 +3,8 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    default: "Admin - Rona ERP",
-    template: "%s | Admin - Rona ERP",
+    default: "Admin",
+    template: "%s | Admin · Rona",
   },
 };
 

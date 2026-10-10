@@ -27,6 +27,7 @@ import {
   type Column,
 } from "@/modules/workspace/components/ui";
 import {
+  CHART_COLORS,
   AreaChart,
   BarList,
   ChartCard,
@@ -509,7 +510,7 @@ export default function SalesOrdersPage() {
     {
       key: "order-value",
       label: "Order value",
-      color: "#18181b",
+      color: CHART_COLORS.primary,
     },
   );
 
@@ -620,7 +621,7 @@ export default function SalesOrdersPage() {
               {
                 key: "order-count",
                 label: "Orders",
-                color: "#18181b",
+                color: CHART_COLORS.primary,
               },
             ).points}
             valueFormat={(value) => String(value)}
@@ -638,7 +639,7 @@ export default function SalesOrdersPage() {
           canCreate ? (
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-zinc-800"
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90"
               onClick={() => setCreateOpen(true)}
             >
               <HiOutlinePlus className="h-4 w-4" />

@@ -2,8 +2,8 @@
 
 import DataHeader from "@/components/custom/data-header";
 import { DataTable } from "@/components/custom/data-table";
-import { usePagination } from "@/hooks/pagination";
-import { useCustomSearchParams } from "@/hooks/search-params";
+import { useAccumulatedList } from "@/hooks/use-accumulated-list";
+import { useListPage } from "@/hooks/list-page";
 import { createColumns } from "@/lib/create-columns";
 import { useAdminOrganizations } from "@/modules/features/admin/organizations/hooks";
 import { useConfirmationModalStore, useModalStore } from "@/store";
@@ -12,6 +12,7 @@ import {
   OrganizationListSearchParamsSchema,
 } from "@rona/types/admin";
 import { organizationListSearchParamsSchema } from "@rona/validation/admin";
+import { useCallback, useState } from "react";
 import {
   HiOutlineBuildingOffice2,
   HiOutlinePlus,
@@ -25,18 +26,44 @@ import OrgLogo from "@/components/custom/org-logo";
 import { highlightSearchMatch } from "@/lib/create-columns";
 
 const Client = () => {
-  const customSearchParams =
-    useCustomSearchParams<OrganizationListSearchParamsSchema>();
-  const { pagination, paginationData } = usePagination();
+  const {
+    pagination,
+    paginationData,
+    searchParams,
+    requestSearchParams,
+    updateParams,
+    clearParams,
+    removeParams,
+  } = useListPage<OrganizationListSearchParamsSchema>();
+  const [localSearch, setLocalSearch] = useState("");
+
   const { organizations, isLoading, deleteMutation, meta } =
-    useAdminOrganizations(
-      customSearchParams.requestSearchParams,
-      paginationData,
-    );
+    useAdminOrganizations(requestSearchParams, paginationData);
+
+  const getSearchableText = useCallback(
+    (org: OrganizationDto) =>
+      [org.name, org.slug, org.email, org.phone, org.country, org.status].join(
+        " ",
+      ),
+    [],
+  );
+
+  const list = useAccumulatedList({
+    items: organizations,
+    meta,
+    pagination,
+    serverFilterKey: JSON.stringify({
+      ...requestSearchParams,
+      limit: paginationData.limit,
+    }),
+    localSearch,
+    getSearchableText,
+    isLoading,
+  });
 
   const columns = createColumns<OrganizationDto>({
     includeActions: true,
-    searchQuery: customSearchParams.searchParams.searchQuery,
+    searchQuery: localSearch || searchParams.searchQuery,
     extraColumns: [
       {
         accessorKey: "name",
@@ -52,7 +79,7 @@ const Client = () => {
             <span className="text-xs font-semibold text-zinc-800">
               {highlightSearchMatch(
                 row.original.name,
-                customSearchParams.searchParams.searchQuery,
+                localSearch || searchParams.searchQuery,
               )}
             </span>
           </div>
@@ -128,14 +155,34 @@ const Client = () => {
       <DataHeader<OrganizationListSearchParamsSchema>
         searchParamsSchema={organizationListSearchParamsSchema}
         head={null}
-        {...customSearchParams}
+        searchParams={searchParams}
+        updateParams={updateParams}
+        clearParams={() => {
+          setLocalSearch("");
+          clearParams();
+        }}
+        removeParams={removeParams}
+        localSearch={localSearch}
+        onLocalSearchChange={setLocalSearch}
+        onSearchServer={(value) => {
+          setLocalSearch(value);
+          if (value) updateParams({ searchQuery: value });
+          else removeParams(["searchQuery"]);
+          pagination.setPage(1);
+        }}
       />
       <DataTable
         columns={columns}
-        data={organizations}
+        data={list.items}
         loading={isLoading}
         pagination={pagination}
         responseMeta={meta}
+        loadMore={{
+          hasMore: list.hasMore,
+          onLoadMore: list.loadMore,
+          cachedCount: list.cachedCount,
+          isFilteringLocally: list.isFilteringLocally,
+        }}
       />
     </div>
   );

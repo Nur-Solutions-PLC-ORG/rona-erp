@@ -384,7 +384,7 @@ export default function MembersView() {
           canCreate ? (
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-zinc-800"
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90"
               onClick={() => setIsCreateOpen(true)}
             >
               <HiOutlineUserPlus className="h-4 w-4" />
@@ -408,7 +408,7 @@ export default function MembersView() {
               onClick={() => setCreateMode("existing")}
               className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
                 createMode === "existing"
-                  ? "bg-white text-zinc-900 shadow-sm"
+                  ? "bg-card text-zinc-900 shadow-sm"
                   : "text-zinc-500 hover:text-zinc-700"
               }`}
             >
@@ -419,7 +419,7 @@ export default function MembersView() {
               onClick={() => setCreateMode("new")}
               className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
                 createMode === "new"
-                  ? "bg-white text-zinc-900 shadow-sm"
+                  ? "bg-card text-zinc-900 shadow-sm"
                   : "text-zinc-500 hover:text-zinc-700"
               }`}
             >
@@ -456,7 +456,7 @@ export default function MembersView() {
                   </button>
                 </div>
               ) : candidates.length > 0 ? (
-                <ul className="mt-2 max-h-44 divide-y overflow-y-auto rounded-lg border border-zinc-200 bg-white">
+                <ul className="mt-2 max-h-44 divide-y overflow-y-auto rounded-lg border border-zinc-200 bg-card">
                   {candidates.map((candidate) => (
                     <li key={candidate.id}>
                       <button
