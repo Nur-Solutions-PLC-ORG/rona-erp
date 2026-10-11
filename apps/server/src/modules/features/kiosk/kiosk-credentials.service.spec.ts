@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { Logger } from '@nestjs/common';
 import {
   EMPLOYEE,
   EMPLOYEE_ID,
@@ -174,6 +175,50 @@ describe('KioskCredentialsService', () => {
         }),
       ]);
       expect(new Date(result.serverTime).getTime()).not.toBeNaN();
+    });
+
+    it('skips a template that cannot be decrypted and returns the rest', async () => {
+      const warn = jest
+        .spyOn(Logger.prototype, 'warn')
+        .mockImplementation(() => undefined);
+      // Encrypted under a different key (e.g. the JWT_SECRET-derived dev key).
+      const foreignCiphertext = encryptTemplate(randomBytes(32), TEMPLATE);
+      credentialsRepository.listTemplatesSince.mockResolvedValue([
+        templateRow(),
+        templateRow({
+          id: 'template-bad',
+          templateCiphertext: foreignCiphertext,
+        }),
+        templateRow({ id: 'template-3' }),
+        templateRow({
+          id: 'template-4',
+          templateCiphertext: foreignCiphertext,
+          revokedAt: new Date('2026-01-02T00:00:00Z'),
+        }),
+      ]);
+
+      const before = Date.now();
+      const result = await runAsDevice(() =>
+        credentialsService.syncTemplates(new Date('2026-01-01T00:00:00Z')),
+      );
+
+      expect(result.templates).toEqual([
+        expect.objectContaining({ id: 'template-1', template: TEMPLATE }),
+        expect.objectContaining({ id: 'template-3', template: TEMPLATE }),
+        // Revoked rows are never decrypted, so they still propagate.
+        expect.objectContaining({ id: 'template-4', template: null }),
+      ]);
+      // The cursor still advances past the skipped row.
+      expect(new Date(result.serverTime).getTime()).toBeGreaterThanOrEqual(
+        before,
+      );
+      expect(warn).toHaveBeenCalledTimes(1);
+      const message = String(warn.mock.calls[0][0]);
+      expect(message).toContain('template-bad');
+      expect(message).not.toContain(TEMPLATE);
+      expect(message).not.toContain(foreignCiphertext);
+      expect(message).not.toContain(KEY.toString('base64'));
+      warn.mockRestore();
     });
   });
 

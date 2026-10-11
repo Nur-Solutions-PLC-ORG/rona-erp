@@ -131,7 +131,8 @@ export class KioskCredentialsService {
       return created;
     });
 
-    return { ...this.toSyncEntry(row), template: input.template };
+    // The plaintext is already in hand; no need to decrypt what we just stored.
+    return this.toSyncEntry(row, input.template);
   }
 
   async revokeTemplateFromKiosk(
@@ -151,7 +152,10 @@ export class KioskCredentialsService {
     const rows = await this.credentialsRepository.listTemplatesSince(since);
     return {
       serverTime: serverTime.toISOString(),
-      templates: rows.map((row) => this.toSyncEntry(row)),
+      // A template that can't be decrypted is skipped (and logged) rather than
+      // failing the whole listing for every terminal. serverTime is still the
+      // cursor, so a skipped row never stalls the delta sync.
+      templates: rows.flatMap((row) => this.tryToSyncEntry(row) ?? []),
     };
   }
 
@@ -328,7 +332,24 @@ export class KioskCredentialsService {
     return this.key;
   }
 
-  private toSyncEntry(row: TemplateRow): KioskTemplateSyncEntry {
+  /** Like toSyncEntry, but returns null (and logs) when decryption fails. */
+  private tryToSyncEntry(row: TemplateRow): KioskTemplateSyncEntry | null {
+    try {
+      return this.toSyncEntry(row);
+    } catch (error) {
+      // Never log template bytes, ciphertext or key material.
+      this.logger.warn(
+        `Skipping biometric template ${row.id} (employee ${row.employeeId}, ${row.kind}, ${row.algorithmVersion}) in kiosk sync: decryption failed (${error instanceof Error ? error.message : 'unknown error'}). Check KIOSK_TEMPLATE_ENCRYPTION_KEY or re-enroll the template.`,
+      );
+      return null;
+    }
+  }
+
+  /** Revoked rows carry no template; active rows are decrypted unless given. */
+  private toSyncEntry(
+    row: TemplateRow,
+    template?: string,
+  ): KioskTemplateSyncEntry {
     return {
       id: row.id,
       employeeId: row.employeeId,
@@ -337,7 +358,8 @@ export class KioskCredentialsService {
       algorithmVersion: row.algorithmVersion,
       template: row.revokedAt
         ? null
-        : decryptTemplate(this.templateKey(), row.templateCiphertext),
+        : (template ??
+          decryptTemplate(this.templateKey(), row.templateCiphertext)),
       createdAt: row.createdAt.toISOString(),
       revokedAt: row.revokedAt?.toISOString() ?? null,
     };

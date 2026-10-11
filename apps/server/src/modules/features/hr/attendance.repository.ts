@@ -2,6 +2,7 @@ import {
   and,
   asc,
   count,
+  desc,
   eq,
   gte,
   ilike,
@@ -128,7 +129,8 @@ export class AttendanceRepository extends TenantScopedRepository {
       .from(attendanceEvents)
       .leftJoin(kiosks, eq(kiosks.id, attendanceEvents.kioskId))
       .where(where)
-      .orderBy(asc(attendanceEvents.eventAt), asc(attendanceEvents.createdAt))
+      // Newest first: the attendance log is read from the latest punch down.
+      .orderBy(desc(attendanceEvents.eventAt), desc(attendanceEvents.createdAt))
       .limit(params.limit)
       .offset(offset);
 

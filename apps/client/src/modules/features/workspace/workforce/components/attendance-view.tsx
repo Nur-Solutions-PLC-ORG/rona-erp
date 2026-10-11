@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { format } from "date-fns";
+import { format, formatDistanceToNow, isToday, isYesterday, subDays } from "date-fns";
 import { toast } from "sonner";
 import { HiOutlineClock, HiOutlinePlus } from "react-icons/hi2";
 import { ATTENDANCE_EVENT_TYPE_LIST } from "@rona/config/hr";
@@ -19,12 +19,14 @@ import {
   Card,
   Column,
   DataTable,
+  DotBadge,
   EmptyState,
   FIELD_TOOLBAR_CLASS,
   FilterSelect,
   Pagination,
   PageHeader,
   StatusBadge,
+  type Tone,
 } from "@/modules/workspace/components/ui";
 import {
   FormModal,
@@ -33,6 +35,7 @@ import {
   LabeledTextarea,
   ModalActions,
 } from "@/modules/workspace/components/form";
+import { initials } from "@/modules/features/workspace/dashboard/components/shell";
 import {
   useAttendanceEvents,
   useEmployeeLookup,
@@ -103,8 +106,53 @@ const EVENT_LABELS: Record<AttendanceEventType, string> = {
   BREAK_END: "End Break",
 };
 
+// Same colours as the kiosk action tiles.
+const EVENT_TONES: Record<AttendanceEventType, Tone> = {
+  CLOCK_IN: "emerald",
+  CLOCK_OUT: "rose",
+  BREAK_START: "amber",
+  BREAK_END: "sky",
+};
+
 function formatTimestamp(value: string | Date): string {
   return format(new Date(value), "dd MMM yyyy HH:mm");
+}
+
+function dayLabel(date: Date): string {
+  if (isToday(date)) return "Today";
+  if (isYesterday(date)) return "Yesterday";
+  return format(date, "EEE, dd MMM yyyy");
+}
+
+function WhenCell({ value }: { value: string | Date }) {
+  const date = new Date(value);
+  return (
+    <div
+      className="flex flex-col leading-tight"
+      title={`${formatTimestamp(date)} · ${formatDistanceToNow(date, { addSuffix: true })}`}
+    >
+      <span className="font-mono text-sm font-semibold text-zinc-800">
+        {format(date, "HH:mm")}
+      </span>
+      <span className="text-[11px] text-zinc-500">{dayLabel(date)}</span>
+    </div>
+  );
+}
+
+const DATE_PRESETS = [
+  { key: "today", label: "Today", days: 0 },
+  { key: "7d", label: "Last 7 days", days: 6 },
+  { key: "30d", label: "Last 30 days", days: 29 },
+  { key: "all", label: "All time", days: null },
+] as const;
+
+function presetRange(days: number | null): { from: string; to: string } {
+  if (days === null) return { from: "", to: "" };
+  const today = new Date();
+  return {
+    from: format(subDays(today, days), "yyyy-MM-dd"),
+    to: format(today, "yyyy-MM-dd"),
+  };
 }
 
 export default function AttendanceView() {
@@ -138,6 +186,11 @@ export default function AttendanceView() {
   const selfStatus = useSelfAttendanceStatus();
   const punchSelf = usePunchSelf();
   const punchManaged = usePunchManaged();
+
+  const employeeById = useMemo(
+    () => new Map(employees.map((employee) => [employee.id, employee])),
+    [employees],
+  );
 
   const userNameLookup = useMemo(() => {
     const map = new Map<string, string>();
@@ -181,42 +234,68 @@ export default function AttendanceView() {
     });
   };
 
-  const columns: Column<AttendanceEvent>[] = [
+  const columns: Column<AttendanceRow>[] = [
     {
       key: "employee",
       header: "Employee",
-      render: (row) =>
-        nameLookup.get(row.employeeId) ?? (
-          <span className="font-mono text-zinc-400">{row.employeeId.slice(0, 8)}</span>
-        ),
+      render: (row) => {
+        const employee = employeeById.get(row.employeeId);
+        if (!employee) {
+          return (
+            <span className="font-mono text-zinc-400">
+              {nameLookup.get(row.employeeId) ?? row.employeeId.slice(0, 8)}
+            </span>
+          );
+        }
+        return (
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-aqua/15 text-[11px] font-semibold text-brand-sea">
+              {initials(employee.fullName)}
+            </span>
+            <div className="min-w-0 leading-tight">
+              <p className="truncate font-medium text-zinc-800">{employee.fullName}</p>
+              <p className="font-mono text-[11px] text-zinc-500">{employee.eId}</p>
+            </div>
+          </div>
+        );
+      },
     },
     {
       key: "event",
       header: "Event",
-      render: (row) => <StatusBadge status={row.eventType} />,
+      render: (row) => (
+        <DotBadge tone={EVENT_TONES[row.eventType]} label={EVENT_LABELS[row.eventType]} />
+      ),
     },
     {
       key: "time",
-      header: "Time",
-      render: (row) => (
-        <span className="font-mono text-zinc-600">{formatTimestamp(row.eventAt)}</span>
-      ),
+      header: "When",
+      render: (row) => <WhenCell value={row.eventAt} />,
     },
     {
       key: "source",
       header: "Source",
+      className: "hidden sm:table-cell",
       render: (row) => <SourceCell row={row} />,
     },
     {
-      key: "recordedBy",
-      header: "Recorded By",
-      render: (row) =>
-        row.recordedBy ? (userNameLookup.get(row.recordedBy) ?? "Manager") : "—",
-    },
-    {
-      key: "notes",
-      header: "Notes",
-      render: (row) => row.notes ?? "—",
+      key: "details",
+      header: "Details",
+      className: "hidden lg:table-cell",
+      render: (row) => {
+        const recordedBy = row.recordedBy
+          ? (userNameLookup.get(row.recordedBy) ?? "Manager")
+          : null;
+        // Legacy kiosk punches carry the note "Kiosk", already shown as the source.
+        const notes = row.notes && !(row.source === "KIOSK" && row.notes === "Kiosk") ? row.notes : null;
+        if (!recordedBy && !notes) return <span className="text-zinc-400">—</span>;
+        return (
+          <div className="max-w-xs space-y-0.5 text-xs leading-snug">
+            {recordedBy ? <p className="text-zinc-600">Recorded by {recordedBy}</p> : null}
+            {notes ? <p className="truncate text-zinc-500" title={notes}>{notes}</p> : null}
+          </div>
+        );
+      },
     },
   ];
 
@@ -288,7 +367,32 @@ export default function AttendanceView() {
 
       {canRead ? (
         <>
-          <Card className="p-3">
+          <Card className="p-3 space-y-3">
+            <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Date range">
+              {DATE_PRESETS.map((preset) => {
+                const range = presetRange(preset.days);
+                const active = fromFilter === range.from && toFilter === range.to;
+                return (
+                  <button
+                    key={preset.key}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => {
+                      setFromFilter(range.from);
+                      setToFilter(range.to);
+                      setPage(1);
+                    }}
+                    className={
+                      active
+                        ? "rounded-full border border-brand-teal bg-brand-teal px-3 py-1 text-xs font-medium text-white"
+                        : "rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 hover:border-brand-sea hover:text-brand-sea"
+                    }
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
+            </div>
             <div className="flex flex-wrap items-center gap-2">
               <SearchInput
                 value={search}
